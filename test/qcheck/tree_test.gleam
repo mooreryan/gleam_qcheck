@@ -28,3 +28,30 @@ pub fn int_option_tree_test() {
   })
   |> birdie.snap("int_option_tree_test")
 }
+
+type Either(a, b) {
+  First(a)
+  Second(b)
+}
+
+fn either_to_string(either: Either(a, b), a_to_string, b_to_string) -> String {
+  case either {
+    First(a) -> "First(" <> a_to_string(a) <> ")"
+    Second(b) -> "Second(" <> b_to_string(b) <> ")"
+  }
+}
+
+pub fn either_test() {
+  tree.make_primative(4, shrink.int_towards_zero())
+  |> tree.map(fn(n) {
+    case n % 2 == 0 {
+      True -> First(n)
+      False -> Second(n)
+    }
+  })
+  |> tree.to_string(fn(either) {
+    either
+    |> either_to_string(int.to_string, int.to_string)
+  })
+  |> birdie.snap("either_test")
+}

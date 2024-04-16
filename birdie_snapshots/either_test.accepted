@@ -1,0 +1,20 @@
+---
+version: 1.1.2
+title: either_test
+file: ./test/qcheck/tree_test.gleam
+test_name: either_test
+---
+First(4)
+-First(0)
+-First(2)
+--First(0)
+--Second(1)
+---First(0)
+-Second(3)
+--First(0)
+--Second(1)
+---First(0)
+--First(2)
+---First(0)
+---Second(1)
+----First(0)

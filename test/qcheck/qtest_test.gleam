@@ -111,6 +111,10 @@ pub fn run_result_failing_test() {
   |> should.equal(Error(0))
 }
 
+// qtest with custom types
+//
+//
+
 type MyInt {
   MyInt(Int)
 }
@@ -151,14 +155,49 @@ pub fn option_passing_test() {
     config: qtest_config.default(),
     generator: generator.small_positive_or_zero_int()
       |> generator.option,
-    property: fn(maybe_int) {
-      case maybe_int {
+    property: fn(int_option) {
+      case int_option {
         Some(n) -> n + 1 == 1 + n
         None -> True
       }
     },
   )
   |> should.equal(Ok(Nil))
+}
+
+pub fn option_failing_test() {
+  let run = fn(property) {
+    qtest.run(
+      config: qtest_config.default(),
+      generator: generator.small_positive_or_zero_int()
+        |> generator.option,
+      property: property,
+    )
+  }
+
+  run(fn(n) {
+    case n {
+      Some(n) -> n == n + 1
+      None -> True
+    }
+  })
+  |> should.equal(Error(Some(0)))
+
+  run(fn(n) {
+    case n {
+      Some(n) -> n <= 5 || n == n + 1
+      None -> True
+    }
+  })
+  |> should.equal(Error(Some(6)))
+
+  run(fn(n) {
+    case n {
+      Some(n) -> n == n
+      None -> False
+    }
+  })
+  |> should.equal(Error(None))
 }
 
 pub fn option_sometimes_generates_none_test() {
@@ -169,4 +208,70 @@ pub fn option_sometimes_generates_none_test() {
     property: option.is_some,
   )
   |> should.equal(Error(None))
+}
+
+type Either(a, b) {
+  First(a)
+  Second(b)
+}
+
+fn even_odd(n: Int) -> Either(Int, Int) {
+  case n % 2 == 0 {
+    True -> First(n)
+    False -> Second(n)
+  }
+}
+
+pub fn either_passing_test() {
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.small_positive_or_zero_int()
+      |> generator.map(even_odd),
+    property: fn(v) {
+      case v {
+        First(n) -> n % 2 == 0
+        Second(n) -> n % 2 == 1
+      }
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn either_failing_test() {
+  let run = fn(property) {
+    qtest.run(
+      config: qtest_config.default(),
+      generator: generator.small_positive_or_zero_int()
+        |> generator.map(even_odd),
+      property: property,
+    )
+  }
+
+  run(fn(v) {
+    case v {
+      First(n) -> n % 2 == 1
+      Second(n) -> n % 2 == 0
+    }
+  })
+  |> should.equal(Error(First(0)))
+
+  // The n == 0 will prevent the First(0) from being a shrink that fails
+  // the property.
+  run(fn(v) {
+    case v {
+      First(n) -> n == 0 || n % 2 == 1
+      Second(n) -> n % 2 == 0
+    }
+  })
+  |> should.equal(Error(Second(1)))
+
+  // The n == 1 will prevent the Second(1) from being a shrink that
+  // fails the property.
+  run(fn(v) {
+    case v {
+      First(n) -> n == 0 || n % 2 == 1
+      Second(n) -> n == 1 || n % 2 == 0
+    }
+  })
+  |> should.equal(Error(First(2)))
 }
