@@ -33,7 +33,6 @@ pub fn option(tree: Tree(a)) -> Tree(Option(a)) {
   let Tree(x, xs) = tree
 
   // Shrink trees will all have None as a value.
-  // TODO: should put at beginning or end?
   let shrinks = iterator_cons(return(None), fn() { iterator.map(xs, option) })
 
   Tree(Some(x), shrinks)
