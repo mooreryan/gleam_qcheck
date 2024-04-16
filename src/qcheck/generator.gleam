@@ -36,11 +36,11 @@ pub fn small_positive_or_zero_int() -> Generator(Int) {
   make_primative(
     random_generator: random.float(0.0, 1.0)
       |> random.then(fn(x) {
-        case x <. 0.75 {
-          True -> random.int(0, 10)
-          False -> random.int(0, 100)
-        }
-      }),
+      case x <. 0.75 {
+        True -> random.int(0, 10)
+        False -> random.int(0, 100)
+      }
+    }),
     make_tree: fn(n) {
       tree.make_primative(root: n, shrink: shrink.int_towards_zero())
     },
@@ -52,15 +52,18 @@ pub fn small_strictly_positive_int() -> Generator(Int) {
   |> map(int.add(_, 1))
 }
 
-// TODO: doesn't hit the interesting cases very often.  Use something more like
+// TODO handle cases with bad args: when low < random.min_int and high >
+//   random.max_int
+pub fn int_uniform_inclusive(low: Int, high: Int) -> Generator(Int) {
+  make_primative(random_generator: random.int(low, high), make_tree: fn(n) {
+    tree.make_primative(root: n, shrink: shrink.int_towards_zero())
+  })
+}
+
+// WARNING: doesn't hit the interesting cases very often.  Use something more like
 //   qcheck2 or base_quickcheck.
 pub fn int_uniform() -> Generator(Int) {
-  make_primative(
-    random_generator: random.int(random.min_int, random.max_int),
-    make_tree: fn(n) {
-      tree.make_primative(root: n, shrink: shrink.int_towards_zero())
-    },
-  )
+  int_uniform_inclusive(random.min_int, random.max_int)
 }
 
 type GenerateOption {

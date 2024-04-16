@@ -5,10 +5,10 @@ pub type Tree(a) {
   Tree(a, Iterator(Tree(a)))
 }
 
-pub fn make_primative(shrink shrink: fn(a) -> Iterator(a), root x: a) -> Tree(a) {
+pub fn make_primative(root x: a, shrink shrink: fn(a) -> Iterator(a)) -> Tree(a) {
   let shrink_trees =
     shrink(x)
-    |> iterator.map(make_primative(shrink, _))
+    |> iterator.map(make_primative(_, shrink))
 
   Tree(x, shrink_trees)
 }
@@ -37,4 +37,37 @@ pub fn option(tree: Tree(a)) -> Tree(Option(a)) {
   let shrinks = iterator_cons(return(None), fn() { iterator.map(xs, option) })
 
   Tree(Some(x), shrinks)
+}
+
+// Debugging trees
+
+import gleam/string
+
+pub fn to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
+  do_to_string(tree, a_to_string, level: 0, acc: [])
+}
+
+fn do_to_string(
+  tree: Tree(a),
+  a_to_string a_to_string: fn(a) -> String,
+  level level: Int,
+  acc acc: List(String),
+) -> String {
+  case tree {
+    Tree(root, children) -> {
+      let padding = string.repeat("-", times: level)
+
+      let children =
+        children
+        |> iterator.map(fn(tree) {
+          do_to_string(tree, a_to_string, level + 1, acc)
+        })
+        |> iterator.to_list
+        |> string.join("")
+
+      let root = padding <> a_to_string(root)
+
+      root <> "\n" <> children
+    }
+  }
 }
