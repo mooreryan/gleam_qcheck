@@ -32,6 +32,23 @@ pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   })
 }
 
+pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
+  let Generator(generate) = generator
+
+  Generator(fn(seed) {
+    let #(tree, seed) = generate(seed)
+
+    let tree =
+      tree.bind(tree, fn(x) {
+        let Generator(generate) = f(x)
+        let #(tree, _seed) = generate(seed)
+        tree
+      })
+
+    #(tree, seed)
+  })
+}
+
 pub fn small_positive_or_zero_int() -> Generator(Int) {
   make_primative(
     random_generator: random.float(0.0, 1.0)

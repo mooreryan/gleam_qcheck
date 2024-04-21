@@ -5,6 +5,7 @@ pub type Tree(a) {
   Tree(a, Iterator(Tree(a)))
 }
 
+// `shrink` should probably be `shrink_steps` or `make_shrink_steps`
 pub fn make_primative(root x: a, shrink shrink: fn(a) -> Iterator(a)) -> Tree(a) {
   let shrink_trees =
     shrink(x)
@@ -17,6 +18,18 @@ pub fn map(tree: Tree(a), f: fn(a) -> b) -> Tree(b) {
   let Tree(x, xs) = tree
   let y = f(x)
   let ys = iterator.map(xs, fn(smaller_x) { map(smaller_x, f) })
+
+  Tree(y, ys)
+}
+
+pub fn bind(tree: Tree(a), f: fn(a) -> Tree(b)) -> Tree(b) {
+  let Tree(x, xs) = tree
+
+  let Tree(y, ys_of_x) = f(x)
+
+  let ys_of_xs = iterator.map(xs, fn(smaller_x) { bind(smaller_x, f) })
+
+  let ys = iterator.append(ys_of_xs, ys_of_x)
 
   Tree(y, ys)
 }
