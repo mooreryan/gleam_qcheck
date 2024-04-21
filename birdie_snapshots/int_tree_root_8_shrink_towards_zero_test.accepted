@@ -1,8 +1,8 @@
 ---
 version: 1.1.2
-title: tree_root_8_test
+title: int_tree_root_8_shrink_towards_zero__test
 file: ./test/qcheck/tree_test.gleam
-test_name: tree_root_8_test
+test_name: int_tree_root_8_shrink_towards_zero__test
 ---
 8
 -0

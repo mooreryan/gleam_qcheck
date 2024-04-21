@@ -1,8 +1,8 @@
 ---
 version: 1.1.2
-title: either_test
+title: custom_type_tree__test
 file: ./test/qcheck/tree_test.gleam
-test_name: either_test
+test_name: custom_type_tree__test
 ---
 First(4)
 -First(0)
