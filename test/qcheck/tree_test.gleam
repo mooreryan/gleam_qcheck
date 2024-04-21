@@ -115,3 +115,20 @@ pub fn custom_type_tree_with_bind__test() {
   |> tree.to_string(my_int_to_string)
   |> birdie.snap("custom_type_tree_with_bind__test")
 }
+
+import gleam/io
+import pprint
+
+pub fn tree_pprint_debug__test() {
+  io.println_error("\n")
+
+  let tree = tree.make_primative(4, shrink.int_towards_zero())
+
+  // Ok
+  io.debug(tree)
+
+  // Triggers `Failure: undef`
+  pprint.debug(tree)
+
+  should.equal(1, 1)
+}
