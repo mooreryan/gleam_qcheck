@@ -1,6 +1,9 @@
 check:
   gleam check
 
+testw:
+  watchexec --no-process-group gleam test
+
 test:
   gleam test
 
