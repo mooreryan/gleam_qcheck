@@ -1,4 +1,5 @@
 import gleam/int
+import gleam/result
 import gleeunit/should
 import qcheck/generator
 import qcheck/qtest
@@ -119,4 +120,170 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
     },
   )
   |> should.equal(Error(First(14)))
+}
+
+// apply
+// 
+// 
+
+fn curry3(f) {
+  fn(a) { fn(b) { fn(c) { f(a, b, c) } } }
+}
+
+fn tuple3() {
+  fn(a, b, c) { #(a, b, c) }
+  |> curry3
+}
+
+pub fn apply__test() {
+  let generator =
+    generator.int_uniform_inclusive(-5, 5)
+    |> generator.map(tuple3())
+    |> generator.apply(generator.int_uniform_inclusive(-10, 10), _)
+    |> generator.apply(generator.int_uniform_inclusive(-100, 100), _)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -5 <= a && a <= 5
+      let b_prop = -10 <= b && b <= 10
+      let c_prop = -100 <= c && c <= 100
+
+      a_prop && b_prop && c_prop
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn shrinking_works_with_apply__test() {
+  let generator =
+    generator.int_uniform_inclusive(-5, 5)
+    |> generator.map(tuple3())
+    |> generator.apply(generator.int_uniform_inclusive(-10, 10), _)
+    |> generator.apply(generator.int_uniform_inclusive(-100, 100), _)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -5 <= a && a <= 3
+      let b_prop = -10 <= b && b <= 10
+      let c_prop = -100 <= c && c <= 100
+
+      a_prop && b_prop && c_prop
+    },
+  )
+  |> should.equal(Error(#(4, 0, 0)))
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -3 <= a && a <= 5
+      let b_prop = -10 <= b && b <= 10
+      let c_prop = -100 <= c && c <= 100
+
+      a_prop && b_prop && c_prop
+    },
+  )
+  |> should.equal(Error(#(-4, 0, 0)))
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -5 <= a && a <= 5
+      let b_prop = -10 <= b && b <= 5
+      let c_prop = -100 <= c && c <= 100
+
+      a_prop && b_prop && c_prop
+    },
+  )
+  |> should.equal(Error(#(0, 6, 0)))
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -5 <= a && a <= 5
+      let b_prop = -5 <= b && b <= 10
+      let c_prop = -100 <= c && c <= 100
+
+      a_prop && b_prop && c_prop
+    },
+  )
+  |> should.equal(Error(#(0, -6, 0)))
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -5 <= a && a <= 5
+      let b_prop = -10 <= b && b <= 10
+      let c_prop = -100 <= c && c <= 50
+
+      a_prop && b_prop && c_prop
+    },
+  )
+  |> should.equal(Error(#(0, 0, 51)))
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -5 <= a && a <= 5
+      let b_prop = -10 <= b && b <= 10
+      let c_prop = -50 <= c && c <= 100
+
+      a_prop && b_prop && c_prop
+    },
+  )
+  |> should.equal(Error(#(0, 0, -51)))
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -5 <= a && a <= 3
+      let b_prop = -10 <= b && b <= 5
+      let c_prop = -100 <= c && c <= 50
+
+      a_prop || b_prop || c_prop
+    },
+  )
+  |> should.equal(Error(#(4, 6, 51)))
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator,
+    property: fn(ns) {
+      let #(a, b, c) = ns
+      let a_prop = -3 <= a && a <= 3
+      let b_prop = -5 <= b && b <= 5
+      let c_prop = -50 <= c && c <= 50
+
+      a_prop || b_prop || c_prop
+    },
+  )
+  // The way this is set up, the failing values will either be positve or 
+  // negative for each "slot", so we must map the absolute value.
+  |> result.map_error(fn(e) {
+    case e {
+      #(a, b, c) -> #(
+        int.absolute_value(a),
+        int.absolute_value(b),
+        int.absolute_value(c),
+      )
+    }
+  })
+  |> should.equal(Error(#(4, 6, 51)))
 }

@@ -20,6 +20,7 @@ fn make_primative(
   })
 }
 
+// These arguments also feel reversed (see apply).
 pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   let Generator(generate) = generator
 
@@ -44,6 +45,20 @@ pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
         let #(tree, _seed) = generate(seed)
         tree
       })
+
+    #(tree, seed)
+  })
+}
+
+// Really these arguments feel backwards.
+pub fn apply(x: Generator(a), f: Generator(fn(a) -> b)) -> Generator(b) {
+  let Generator(f) = f
+  let Generator(x) = x
+
+  Generator(fn(seed) {
+    let #(y_of_x, seed) = x(seed)
+    let #(y_of_f, seed) = f(seed)
+    let tree = tree.apply(y_of_x, y_of_f)
 
     #(tree, seed)
   })
