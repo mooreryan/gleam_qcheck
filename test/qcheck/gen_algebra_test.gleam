@@ -138,9 +138,9 @@ pub fn apply__test() {
   let generator =
     tuple3
     |> generator.return
-    |> generator.apply(generator.int_uniform_inclusive(-5, 5), _)
-    |> generator.apply(generator.int_uniform_inclusive(-10, 10), _)
-    |> generator.apply(generator.int_uniform_inclusive(-100, 100), _)
+    |> generator.apply(generator.int_uniform_inclusive(-5, 5))
+    |> generator.apply(generator.int_uniform_inclusive(-10, 10))
+    |> generator.apply(generator.int_uniform_inclusive(-100, 100))
 
   qtest.run(
     config: qtest_config.default(),
@@ -165,9 +165,9 @@ pub fn shrinking_works_with_apply__test() {
   let generator =
     tuple3
     |> generator.return
-    |> generator.apply(generator.int_uniform_inclusive(-5, 5), _)
-    |> generator.apply(generator.int_uniform_inclusive(-10, 10), _)
-    |> generator.apply(generator.int_uniform_inclusive(-100, 100), _)
+    |> generator.apply(generator.int_uniform_inclusive(-5, 5))
+    |> generator.apply(generator.int_uniform_inclusive(-10, 10))
+    |> generator.apply(generator.int_uniform_inclusive(-100, 100))
 
   qtest.run(
     config: qtest_config.default(),

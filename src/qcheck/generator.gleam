@@ -54,15 +54,14 @@ pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   })
 }
 
-// Really these arguments feel backwards.
-pub fn apply(x: Generator(a), f: Generator(fn(a) -> b)) -> Generator(b) {
+pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   let Generator(f) = f
   let Generator(x) = x
 
   Generator(fn(seed) {
     let #(y_of_x, seed) = x(seed)
     let #(y_of_f, seed) = f(seed)
-    let tree = tree.apply(y_of_x, y_of_f)
+    let tree = tree.apply(y_of_f, y_of_x)
 
     #(tree, seed)
   })

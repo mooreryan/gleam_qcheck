@@ -145,9 +145,9 @@ pub fn apply__test() {
   let result =
     tuple3
     |> tree.return
-    |> tree.apply(make_tree(3), _)
-    |> tree.apply(make_tree(33), _)
-    |> tree.apply(make_tree(333), _)
+    |> tree.apply(make_tree(3))
+    |> tree.apply(make_tree(33))
+    |> tree.apply(make_tree(333))
 
   let expected = make_tree(#(3, 33, 333))
 
@@ -174,8 +174,8 @@ pub fn apply_with_shrinking__test() {
   let result =
     tuple2
     |> tree.return
-    |> tree.apply(make_int_tree(1), _)
-    |> tree.apply(make_int_tree(2), _)
+    |> tree.apply(make_int_tree(1))
+    |> tree.apply(make_int_tree(2))
 
   result
   |> tree.to_string(int2_tuple_to_string)
