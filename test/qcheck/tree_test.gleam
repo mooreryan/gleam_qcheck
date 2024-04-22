@@ -4,7 +4,7 @@ import gleam/iterator
 import gleam/option.{None, Some}
 import gleeunit/should
 import qcheck/shrink
-import qcheck/tree
+import qcheck/tree.{type Tree}
 
 fn identity(x) {
   x
@@ -114,4 +114,74 @@ pub fn custom_type_tree_with_bind__test() {
   })
   |> tree.to_string(my_int_to_string)
   |> birdie.snap("custom_type_tree_with_bind__test")
+}
+
+fn curry2(f) {
+  fn(a) { fn(b) { f(a, b) } }
+}
+
+fn curry3(f) {
+  fn(a) { fn(b) { fn(c) { f(a, b, c) } } }
+}
+
+// apply
+//
+//
+
+pub fn apply__test() {
+  let int3_tuple_to_string = fn(abc) {
+    let #(a, b, c) = abc
+    int.to_string(a) <> ", " <> int.to_string(b) <> ", " <> int.to_string(c)
+  }
+
+  let tuple3 =
+    fn(a, b, c) { #(a, b, c) }
+    |> curry3
+
+  let tree_tuple3 = fn(tree1, tree2, tree3) {
+    tree1
+    |> tree.map(tuple3)
+    |> tree.apply(tree2, _)
+    |> tree.apply(tree3, _)
+  }
+
+  let make_tree = fn(root: a) -> Tree(a) {
+    tree.make_primative(root, shrink.atomic())
+  }
+
+  let result = tree_tuple3(make_tree(3), make_tree(33), make_tree(333))
+
+  let expected = make_tree(#(3, 33, 333))
+
+  should.equal(
+    tree.to_string(result, int3_tuple_to_string),
+    tree.to_string(expected, int3_tuple_to_string),
+  )
+}
+
+pub fn apply_with_shrinking__test() {
+  let int2_tuple_to_string = fn(abc) {
+    let #(a, b) = abc
+    "(" <> int.to_string(a) <> ", " <> int.to_string(b) <> ")"
+  }
+
+  let tuple2 =
+    fn(a, b) { #(a, b) }
+    |> curry2
+
+  let tree_tuple2 = fn(tree1, tree2) {
+    tree1
+    |> tree.map(tuple2)
+    |> tree.apply(tree2, _)
+  }
+
+  let make_int_tree = fn(root: Int) -> Tree(Int) {
+    tree.make_primative(root, shrink.int_towards_zero())
+  }
+
+  let result = tree_tuple2(make_int_tree(1), make_int_tree(2))
+
+  result
+  |> tree.to_string(int2_tuple_to_string)
+  |> birdie.snap("apply_with_shrinking__test")
 }

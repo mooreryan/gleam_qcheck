@@ -34,6 +34,21 @@ pub fn bind(tree: Tree(a), f: fn(a) -> Tree(b)) -> Tree(b) {
   Tree(y, ys)
 }
 
+pub fn apply(tree: Tree(a), f: Tree(fn(a) -> b)) -> Tree(b) {
+  let Tree(x0, xs) = tree
+  let Tree(f0, fs) = f
+
+  let y = f0(x0)
+
+  let ys =
+    iterator.append(
+      iterator.map(fs, fn(f_) { apply(tree, f_) }),
+      iterator.map(xs, fn(x_) { apply(x_, f) }),
+    )
+
+  Tree(y, ys)
+}
+
 pub fn return(x: a) -> Tree(a) {
   Tree(x, iterator.empty())
 }
