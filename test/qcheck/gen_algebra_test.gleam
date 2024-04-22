@@ -130,15 +130,15 @@ fn curry3(f) {
   fn(a) { fn(b) { fn(c) { f(a, b, c) } } }
 }
 
-fn tuple3() {
-  fn(a, b, c) { #(a, b, c) }
-  |> curry3
-}
-
 pub fn apply__test() {
+  let tuple3 =
+    fn(a, b, c) { #(a, b, c) }
+    |> curry3
+
   let generator =
-    generator.int_uniform_inclusive(-5, 5)
-    |> generator.map(tuple3())
+    tuple3
+    |> generator.return
+    |> generator.apply(generator.int_uniform_inclusive(-5, 5), _)
     |> generator.apply(generator.int_uniform_inclusive(-10, 10), _)
     |> generator.apply(generator.int_uniform_inclusive(-100, 100), _)
 
@@ -158,9 +158,14 @@ pub fn apply__test() {
 }
 
 pub fn shrinking_works_with_apply__test() {
+  let tuple3 =
+    fn(a, b, c) { #(a, b, c) }
+    |> curry3
+
   let generator =
-    generator.int_uniform_inclusive(-5, 5)
-    |> generator.map(tuple3())
+    tuple3
+    |> generator.return
+    |> generator.apply(generator.int_uniform_inclusive(-5, 5), _)
     |> generator.apply(generator.int_uniform_inclusive(-10, 10), _)
     |> generator.apply(generator.int_uniform_inclusive(-100, 100), _)
 

@@ -20,6 +20,10 @@ fn make_primative(
   })
 }
 
+pub fn return(a) {
+  Generator(fn(seed) { #(tree.return(a), seed) })
+}
+
 // These arguments also feel reversed (see apply).
 pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   let Generator(generate) = generator
