@@ -138,18 +138,16 @@ pub fn apply__test() {
     fn(a, b, c) { #(a, b, c) }
     |> curry3
 
-  let tree_tuple3 = fn(tree1, tree2, tree3) {
-    tree1
-    |> tree.map(tuple3)
-    |> tree.apply(tree2, _)
-    |> tree.apply(tree3, _)
-  }
-
   let make_tree = fn(root: a) -> Tree(a) {
     tree.make_primative(root, shrink.atomic())
   }
 
-  let result = tree_tuple3(make_tree(3), make_tree(33), make_tree(333))
+  let result =
+    tuple3
+    |> tree.return
+    |> tree.apply(make_tree(3), _)
+    |> tree.apply(make_tree(33), _)
+    |> tree.apply(make_tree(333), _)
 
   let expected = make_tree(#(3, 33, 333))
 
@@ -169,17 +167,15 @@ pub fn apply_with_shrinking__test() {
     fn(a, b) { #(a, b) }
     |> curry2
 
-  let tree_tuple2 = fn(tree1, tree2) {
-    tree1
-    |> tree.map(tuple2)
-    |> tree.apply(tree2, _)
-  }
-
   let make_int_tree = fn(root: Int) -> Tree(Int) {
     tree.make_primative(root, shrink.int_towards_zero())
   }
 
-  let result = tree_tuple2(make_int_tree(1), make_int_tree(2))
+  let result =
+    tuple2
+    |> tree.return
+    |> tree.apply(make_int_tree(1), _)
+    |> tree.apply(make_int_tree(2), _)
 
   result
   |> tree.to_string(int2_tuple_to_string)
