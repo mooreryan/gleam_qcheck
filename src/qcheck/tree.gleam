@@ -1,4 +1,6 @@
+import gleam/function
 import gleam/iterator.{type Iterator}
+import gleam/list
 import gleam/option.{type Option, None, Some}
 
 pub type Tree(a) {
@@ -53,6 +55,27 @@ pub fn return(x: a) -> Tree(a) {
   Tree(x, iterator.empty())
 }
 
+fn map2(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
+  f
+  |> function.curry2
+  |> return
+  |> apply(a)
+  |> apply(b)
+}
+
+fn list_cons(x, xs) {
+  [x, ..xs]
+}
+
+pub fn iterator_list(l: List(Tree(a))) -> Tree(List(a)) {
+  case l {
+    [] -> return([])
+    [hd, ..tl] -> {
+      map2(list_cons, hd, iterator_list(tl))
+    }
+  }
+}
+
 fn iterator_cons(element: a, iterator: fn() -> Iterator(a)) -> Iterator(a) {
   iterator.yield(element, iterator)
 }
@@ -71,26 +94,43 @@ pub fn option(tree: Tree(a)) -> Tree(Option(a)) {
 import gleam/string
 
 pub fn to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
-  do_to_string(tree, a_to_string, level: 0, acc: [])
+  do_to_string(tree, a_to_string, level: 0, max_level: 99_999_999, acc: [])
+}
+
+pub fn to_string_(
+  tree: Tree(a),
+  a_to_string: fn(a) -> String,
+  max_depth max_depth: Int,
+) -> String {
+  do_to_string(tree, a_to_string, level: 0, max_level: max_depth, acc: [])
 }
 
 fn do_to_string(
   tree: Tree(a),
   a_to_string a_to_string: fn(a) -> String,
   level level: Int,
+  max_level max_level: Int,
   acc acc: List(String),
 ) -> String {
   case tree {
     Tree(root, children) -> {
       let padding = string.repeat("-", times: level)
 
-      let children =
-        children
-        |> iterator.map(fn(tree) {
-          do_to_string(tree, a_to_string, level + 1, acc)
-        })
-        |> iterator.to_list
-        |> string.join("")
+      let children = case level > max_level {
+        False ->
+          children
+          |> iterator.map(fn(tree) {
+            do_to_string(tree, a_to_string, level + 1, max_level, acc)
+          })
+          |> iterator.to_list
+          |> string.join("")
+
+        True ->
+          children
+          |> iterator.map(fn(_) { "" })
+          |> iterator.to_list
+          |> string.join("")
+      }
 
       let root = padding <> a_to_string(root)
 

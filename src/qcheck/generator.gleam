@@ -1,5 +1,8 @@
 import gleam/int
+import gleam/list
 import gleam/option.{type Option, None}
+import gleam/string
+import gleam/string_builder
 import prng/random
 import prng/seed.{type Seed}
 import qcheck/shrink
@@ -148,4 +151,154 @@ pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
       }
     }
   })
+}
+
+// char
+//
+//
+
+// Though gleam doesn't have a `Char` type, we need these one-character string
+// generators so that we can shrink the `Generator(String)` type properly.
+
+// For now, this is only used in setting up the string generators.
+pub fn char_uniform_inclusive(low, high) {
+  // 97: "a"
+  let shrink = shrink.int_towards(97)
+
+  Generator(fn(seed) {
+    let #(n, seed) =
+      random.int(low, high)
+      |> random.step(seed)
+
+    let tree =
+      tree.make_primative(n, shrink)
+      |> tree.map(int_to_char)
+
+    #(tree, seed)
+  })
+}
+
+// string
+//
+//
+
+fn do_gen_string(i, string_builder, char_gen, char_trees_rev, seed) {
+  let Generator(gen_char_tree) = char_gen
+
+  let #(char_tree, seed) = gen_char_tree(seed)
+
+  case i <= 0 {
+    True -> #(string_builder.to_string(string_builder), char_trees_rev, seed)
+    False -> {
+      let Tree(root, _) = char_tree
+
+      do_gen_string(
+        i - 1,
+        string_builder
+          |> string_builder.append(root),
+        char_gen,
+        [char_tree, ..char_trees_rev],
+        seed,
+      )
+    }
+  }
+}
+
+// This is the base string generator. The others are implemented in terms of
+// this one.
+//
+/// Generate strings of the given length from the given character generator.
+pub fn string_with_length_from(
+  char_gen: Generator(String),
+  size,
+) -> Generator(String) {
+  Generator(fn(seed) {
+    let #(generated_string, char_trees_rev, seed) =
+      do_gen_string(size, string_builder.new(), char_gen, [], seed)
+
+    // TODO: Ideally this whole thing would be delayed until needed.
+    let shrink = fn() {
+      let char_trees: List(Tree(String)) = list.reverse(char_trees_rev)
+      let char_list_tree: Tree(List(String)) = tree.iterator_list(char_trees)
+
+      // Technically `Tree(_root, children)` is the whole tree, but we create it
+      // eagerly above.
+      let Tree(_root, children) =
+        char_list_tree
+        |> tree.map(fn(char_list) { string.join(char_list, "") })
+
+      children
+    }
+
+    let tree = Tree(generated_string, shrink())
+
+    #(tree, seed)
+  })
+}
+
+// Note: Even though this is named `string_base`, it is not the "base" generator
+// for defining other string generators.  Rather it is the "basic" one a user
+// might use that wants full control over string generation.  So, probably it
+// should have a different name.
+//
+/// Fully customizable string generator.
+pub fn string_base(
+  char_gen: Generator(String),
+  length_gen: Generator(Int),
+) -> Generator(String) {
+  length_gen
+  |> bind(string_with_length_from(char_gen, _))
+}
+
+/// Generate strings with the default character generator and the default length
+/// generator.
+pub fn string() -> Generator(String) {
+  todo
+}
+
+/// Generate non-empty strings with the default character generator and the
+/// default length generator.
+pub fn string_non_empty() -> Generator(String) {
+  todo
+}
+
+/// Generate strings of the given length with the default character generator.
+pub fn string_with_length(length: Int) -> Generator(String) {
+  todo
+}
+
+/// Generate strings from the given character generator using the default length
+/// generator.
+pub fn string_from(char_gen: Generator(String)) -> Generator(String) {
+  // TODO: pick better size generator
+  todo
+}
+
+/// Generate non-empty strings from the given character generator using the
+/// default length generator.
+pub fn string_non_empty_from(char_gen: Generator(String)) -> Generator(String) {
+  todo
+}
+
+// utils
+//
+//
+
+fn ok_exn(result) {
+  let assert Ok(x) = result
+
+  x
+}
+
+fn list_return(a) {
+  [a]
+}
+
+// TODO: Could this be simplified?
+fn int_to_char(n: Int) -> String {
+  n
+  |> string.utf_codepoint
+  |> ok_exn
+  |> list_return
+  |> string.from_utf_codepoints
 }
