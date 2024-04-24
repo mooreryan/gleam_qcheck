@@ -97,3 +97,51 @@ pub fn int_uniform__negative_numbers_shrink_towards_zero__test() {
   )
   |> should.equal(Error(-5))
 }
+
+// int_uniform_inclusive
+//
+//
+
+pub fn int_uniform_range__test() {
+  let run_result =
+    qtest.run(
+      config: qtest_config.default(),
+      generator: generator.int_uniform_inclusive(-10, 10),
+      property: fn(n) { -5 <= n && n <= 5 },
+    )
+
+  case run_result {
+    Error(-6) -> True
+    Error(6) -> True
+    _ -> False
+  }
+  |> should.be_true
+}
+
+// This test ensures that you aren't shrinking to zero if the int range doesn't
+// include zero.
+pub fn positive_int_uniform_range_not_including_zero__shrinks_ok__test() {
+  let result =
+    qtest.run(
+      config: qtest_config.default(),
+      generator: generator.int_uniform_inclusive(5, 10),
+      property: fn(n) { 7 <= n && n <= 8 },
+    )
+
+  result
+  |> should.equal(Error(5))
+}
+
+// This test ensures that you aren't shrinking to zero if the int range doesn't
+// include zero.
+pub fn negative_int_uniform_range_not_including_zero__shrinks_ok__test() {
+  let result =
+    qtest.run(
+      config: qtest_config.default(),
+      generator: generator.int_uniform_inclusive(-10, -5),
+      property: fn(n) { -8 >= n && n >= -7 },
+    )
+
+  result
+  |> should.equal(Error(-5))
+}

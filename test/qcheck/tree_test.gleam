@@ -16,6 +16,12 @@ pub fn int_tree_root_8_shrink_towards_zero__test() {
   |> birdie.snap("int_tree_root_8_shrink_towards_zero__test")
 }
 
+pub fn int_tree_root_2_shrink_towards_6__test() {
+  tree.make_primative(2, shrink.int_towards(6))
+  |> tree.to_string(int.to_string)
+  |> birdie.snap("int_tree_root_2_shrink_towards_6__test")
+}
+
 pub fn int_tree_atomic_shrinker__test() {
   tree.make_primative(10, shrink.atomic())
   |> tree.to_string(int.to_string)

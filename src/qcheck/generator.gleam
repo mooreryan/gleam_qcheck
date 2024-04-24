@@ -87,11 +87,32 @@ pub fn small_strictly_positive_int() -> Generator(Int) {
   |> map(int.add(_, 1))
 }
 
-// TODO handle cases with bad args: when low < random.min_int and high >
-//   random.max_int
+// Assumes that the args are properly ordered.
+fn pick_origin_within_range(low: Int, high: Int, goal goal: Int) {
+  case low > goal {
+    True -> low
+    False ->
+      case high < goal {
+        True -> high
+        False -> goal
+      }
+  }
+}
+
+// The QCheck2 code does some fancy stuff to avoid generating ranges wider than
+// `Int.max_int`. TODO: consider the implications for this code.
+//
+// TODO: QCheck2 code also has a parameter for the shrink origin.
 pub fn int_uniform_inclusive(low: Int, high: Int) -> Generator(Int) {
+  case high < low {
+    True -> panic as "int_uniform_includive: high < low"
+    False -> Nil
+  }
+
   make_primative(random_generator: random.int(low, high), make_tree: fn(n) {
-    tree.make_primative(root: n, shrink: shrink.int_towards_zero())
+    let origin = pick_origin_within_range(low, high, goal: 0)
+
+    tree.make_primative(root: n, shrink: shrink.int_towards(origin))
   })
 }
 

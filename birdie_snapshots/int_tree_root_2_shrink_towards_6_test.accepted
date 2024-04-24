@@ -1,0 +1,18 @@
+---
+version: 1.1.2
+title: int_tree_root_2_shrink_towards_6__test
+file: ./test/qcheck/tree_test.gleam
+test_name: int_tree_root_2_shrink_towards_6__test
+---
+2
+-6
+-4
+--6
+--5
+---6
+-3
+--6
+--4
+---6
+---5
+----6
