@@ -1,6 +1,5 @@
 import gleam/function
 import gleam/iterator.{type Iterator}
-import gleam/list
 import gleam/option.{type Option, None, Some}
 
 pub type Tree(a) {
