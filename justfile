@@ -1,6 +1,9 @@
 check:
   gleam check
 
+check_no_cache:
+  rm -r build/dev/*/qcheck; gleam check
+
 checkw:
   watchexec --no-process-group gleam check
 
