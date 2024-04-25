@@ -7,6 +7,7 @@ import prng/random
 import prng/seed.{type Seed}
 import qcheck/shrink
 import qcheck/tree.{type Tree, Tree}
+import qcheck/utils
 
 pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
@@ -22,6 +23,10 @@ fn make_primative(
     #(make_tree(generated_value), next_seed)
   })
 }
+
+// basics
+//
+//
 
 pub fn return(a) {
   Generator(fn(seed) { #(tree.return(a), seed) })
@@ -70,6 +75,42 @@ pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   })
 }
 
+/// Chooses a generator from a list of generators weighted uniformly, then
+/// chooses a value from that generator.
+pub fn from_generators(generators) {
+  // TODO: better error message on empty list
+  let assert [generator, ..generators] = generators
+
+  Generator(fn(seed) {
+    let #(Generator(generator), seed) =
+      random.uniform(generator, generators)
+      |> random.step(seed)
+
+    generator(seed)
+  })
+}
+
+/// Chooses a generator from a list of generators weighted by the given weights,
+/// then chooses a value from that generator.
+/// 
+/// TODO: describe requirements for weights
+pub fn from_weighted_generators(generators) {
+  // TODO: better error message on empty list
+  let assert [generator, ..generators] = generators
+
+  Generator(fn(seed) {
+    let #(Generator(generator), seed) =
+      random.weighted(generator, generators)
+      |> random.step(seed)
+
+    generator(seed)
+  })
+}
+
+// ints
+//
+//
+
 pub fn small_positive_or_zero_int() -> Generator(Int) {
   make_primative(
     random_generator: random.float(0.0, 1.0)
@@ -90,18 +131,6 @@ pub fn small_strictly_positive_int() -> Generator(Int) {
   |> map(int.add(_, 1))
 }
 
-// Assumes that the args are properly ordered.
-fn pick_origin_within_range(low: Int, high: Int, goal goal: Int) {
-  case low > goal {
-    True -> low
-    False ->
-      case high < goal {
-        True -> high
-        False -> goal
-      }
-  }
-}
-
 // The QCheck2 code does some fancy stuff to avoid generating ranges wider than
 // `Int.max_int`. TODO: consider the implications for this code.
 //
@@ -113,7 +142,7 @@ pub fn int_uniform_inclusive(low: Int, high: Int) -> Generator(Int) {
   }
 
   make_primative(random_generator: random.int(low, high), make_tree: fn(n) {
-    let origin = pick_origin_within_range(low, high, goal: 0)
+    let origin = utils.pick_origin_within_range(low, high, goal: 0)
 
     tree.make_primative(root: n, shrink: shrink.int_towards(origin))
   })
@@ -160,10 +189,17 @@ pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
 // Though gleam doesn't have a `Char` type, we need these one-character string
 // generators so that we can shrink the `Generator(String)` type properly.
 
+const char_min_value: Int = 0
+
+// TODO: what is a reasonable value here?
+const char_max_value: Int = 255
+
+// TODO: why not take the "char" directly?
 // For now, this is only used in setting up the string generators.
-pub fn char_uniform_inclusive(low, high) {
-  // 97: "a"
-  let shrink = shrink.int_towards(97)
+pub fn char_uniform_inclusive(low: Int, high: Int) -> Generator(String) {
+  let a = 97
+  let origin = utils.pick_origin_within_range(low, high, goal: a)
+  let shrink = shrink.int_towards(origin)
 
   Generator(fn(seed) {
     let #(n, seed) =
@@ -172,10 +208,122 @@ pub fn char_uniform_inclusive(low, high) {
 
     let tree =
       tree.make_primative(n, shrink)
-      |> tree.map(int_to_char)
+      |> tree.map(utils.int_to_char)
 
     #(tree, seed)
   })
+}
+
+pub fn char_uppercase() -> Generator(String) {
+  let a = utils.char_to_int("A")
+  let z = utils.char_to_int("Z")
+
+  char_uniform_inclusive(a, z)
+}
+
+pub fn char_lowercase() -> Generator(String) {
+  let a = utils.char_to_int("a")
+  let z = utils.char_to_int("z")
+
+  char_uniform_inclusive(a, z)
+}
+
+pub fn char_digit() -> Generator(String) {
+  let zero = utils.char_to_int("0")
+  let nine = utils.char_to_int("9")
+
+  char_uniform_inclusive(zero, nine)
+}
+
+// TODO: name char_printable_uniform?
+// Note: the shrink target for this will be `"a"`.
+pub fn char_print_uniform() -> Generator(String) {
+  let space = utils.char_to_int(" ")
+  let tilde = utils.char_to_int("~")
+
+  char_uniform_inclusive(space, tilde)
+}
+
+pub fn char_uniform() -> Generator(String) {
+  char_uniform_inclusive(char_min_value, char_max_value)
+}
+
+pub fn char_alpha() -> Generator(String) {
+  [char_uppercase(), char_lowercase()]
+  |> from_generators
+}
+
+pub fn char_alpha_numeric() -> Generator(String) {
+  [#(52.0, char_alpha()), #(10.0, char_digit())]
+  |> from_weighted_generators
+}
+
+pub fn char_from_list(chars: List(String)) -> Generator(String) {
+  let ints = list.map(chars, utils.char_to_int)
+  // TODO: assert that they are all single length chars
+  let assert [hd, ..tl] = ints
+
+  // Take the char with the minimum int representation as the shrink target.
+  let shrink_target = list.fold(tl, hd, int.min)
+
+  Generator(fn(seed) {
+    let #(n, seed) =
+      random.uniform(hd, tl)
+      |> random.step(seed)
+
+    let tree =
+      tree.make_primative(n, shrink.int_towards(shrink_target))
+      |> tree.map(utils.int_to_char)
+
+    #(tree, seed)
+  })
+}
+
+fn all_char_list() {
+  list.range(char_min_value, char_max_value)
+}
+
+// TODO: should probably account for other non-ascii whitespace chars
+// This is from OCaml Stdlib.Char module
+fn char_is_whitespace(c) {
+  case c {
+    // Horizontal tab
+    9 -> True
+    // Line feed
+    10 -> True
+    // Vertical tab
+    11 -> True
+    // Form feed 
+    12 -> True
+    // Carriage return
+    13 -> True
+    // Space
+    32 -> True
+    _ -> False
+  }
+}
+
+pub fn char_whitespace() -> Generator(String) {
+  all_char_list()
+  |> list.filter(char_is_whitespace)
+  |> list.map(utils.int_to_char)
+  |> char_from_list
+}
+
+pub fn char_print() -> Generator(String) {
+  from_weighted_generators([
+    #(10.0, char_alpha_numeric()),
+    #(1.0, char_print_uniform()),
+  ])
+}
+
+pub fn char() {
+  from_weighted_generators([
+    #(100.0, char_print()),
+    #(10.0, char_uniform()),
+    #(1.0, return(utils.int_to_char(char_min_value))),
+    #(1.0, return(utils.int_to_char(char_max_value))),
+  ])
 }
 
 // string
@@ -278,27 +426,4 @@ pub fn string_from(char_gen: Generator(String)) -> Generator(String) {
 /// default length generator.
 pub fn string_non_empty_from(char_gen: Generator(String)) -> Generator(String) {
   todo
-}
-
-// utils
-//
-//
-
-fn ok_exn(result) {
-  let assert Ok(x) = result
-
-  x
-}
-
-fn list_return(a) {
-  [a]
-}
-
-// TODO: Could this be simplified?
-fn int_to_char(n: Int) -> String {
-  n
-  |> string.utf_codepoint
-  |> ok_exn
-  |> list_return
-  |> string.from_utf_codepoints
 }
