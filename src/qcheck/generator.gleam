@@ -14,17 +14,23 @@ import qcheck/shrink
 import qcheck/tree.{type Tree, Tree}
 import qcheck/utils
 
+/// `Generator(a)` is a random generator for values of type `a`.
+/// 
+/// *Note:* It is likely that this type will become opaque in the future.
 pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
 }
 
+/// `generate(gen, seed)` generates a value of type `a` and its shrinks using the generator `gen`.
+/// 
+/// You should not use this function directly. It is for internal use only.
 pub fn generate_tree(gen: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
   let Generator(generate) = gen
 
   generate(seed)
 }
 
-fn make_primative(
+fn make_primitive(
   random_generator random_generator: random.Generator(a),
   make_tree make_tree: fn(a) -> Tree(a),
 ) -> Generator(a) {
@@ -39,11 +45,14 @@ fn make_primative(
 //
 //
 
+/// `return(a)` creates a generator that always returns `a` and does not shrink.
 pub fn return(a) {
   Generator(fn(seed) { #(tree.return(a), seed) })
 }
 
 // These arguments also feel reversed (see apply).
+/// `map(gen, f)` transforms the generator `gen` by applying `f` to each 
+/// generated value.  Shrinks as `gen` shrinks, but with `f` applied.
 pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   let Generator(generate) = generator
 
@@ -56,6 +65,8 @@ pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   })
 }
 
+/// `bind(gen, f)` generates a value of type `a` with `gen`, then passes that 
+/// value to `f`, which uses it to generate values of type `b`.
 pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   let Generator(generate) = generator
 
@@ -73,6 +84,8 @@ pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   })
 }
 
+/// `apply(f, x)` applies a function generator, `f`, and an argument generator, 
+/// `x`, into a result generator.
 pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   let Generator(f) = f
   let Generator(x) = x
@@ -86,6 +99,8 @@ pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   })
 }
 
+/// `map2(f, a, b)` transforms two generators, `a` and `b`, by applying `f` to 
+/// each pair of generated values.
 pub fn map2(f: fn(a, b) -> c, a: Generator(a), b: Generator(b)) -> Generator(c) {
   f
   |> function.curry2
@@ -94,6 +109,8 @@ pub fn map2(f: fn(a, b) -> c, a: Generator(a), b: Generator(b)) -> Generator(c) 
   |> apply(b)
 }
 
+/// `map3(f, a, b, c)` transforms three generators, `a`, `b`, and `c`, by
+/// applying `f` to each triple of generated values.
 pub fn map3(
   f: fn(a, b, c) -> d,
   a: Generator(a),
@@ -108,6 +125,8 @@ pub fn map3(
   |> apply(c)
 }
 
+/// `map4(f, a, b, c, d)` transforms four generators, `a`, `b`, `c`, and `d`, by
+/// applying `f` to each quadruple of generated values.
 pub fn map4(
   f: fn(a, b, c, d) -> e,
   a: Generator(a),
@@ -124,6 +143,8 @@ pub fn map4(
   |> apply(d)
 }
 
+/// `map5(f, a, b, c, d, e)` transforms five generators, `a`, `b`, `c`, `d`, and
+/// `e`, by applying `f` to each quintuple of generated values.
 pub fn map5(
   f: fn(a, b, c, d, e) -> f,
   a: Generator(a),
@@ -142,6 +163,8 @@ pub fn map5(
   |> apply(e)
 }
 
+/// `map6(f, a, b, c, d, e, f_)` transforms six generators, `a`, `b`, `c`, `d`,
+/// `e`, and `f_`, by applying `f` to each sextuple of generated values.
 pub fn map6(
   f: fn(a, b, c, d, e, f) -> g,
   a: Generator(a),
@@ -162,11 +185,15 @@ pub fn map6(
   |> apply(f_)
 }
 
+/// `tuple2(a, b)` generates a tuple of two values, one from generator `a` and
+/// one from generator `b`.
 pub fn tuple2(a: Generator(a), b: Generator(b)) -> Generator(#(a, b)) {
   fn(a, b) { #(a, b) }
   |> map2(a, b)
 }
 
+/// `tuple3(a, b, c)` generates a tuple of three values, one each from
+/// generators `a`, `b`, and `c`.
 pub fn tuple3(
   a: Generator(a),
   b: Generator(b),
@@ -176,6 +203,8 @@ pub fn tuple3(
   |> map3(a, b, c)
 }
 
+/// `tuple4(a, b, c, d)` generates a tuple of four values, one each from 
+/// generators `a`, `b`, `c`, and `d`.
 pub fn tuple4(
   a: Generator(a),
   b: Generator(b),
@@ -186,6 +215,8 @@ pub fn tuple4(
   |> map4(a, b, c, d)
 }
 
+/// `tuple5(a, b, c, d, e)` generates a tuple of five values, one each from
+/// generators `a`, `b`, `c`, `d`, and `e`.
 pub fn tuple5(
   a: Generator(a),
   b: Generator(b),
@@ -197,6 +228,8 @@ pub fn tuple5(
   |> map5(a, b, c, d, e)
 }
 
+/// `tuple6(a, b, c, d, e, f)` generates a tuple of six values, one each from
+/// generators `a`, `b`, `c`, `d`, `e`, and `f`.
 pub fn tuple6(
   a: Generator(a),
   b: Generator(b),
@@ -209,9 +242,9 @@ pub fn tuple6(
   |> map6(a, b, c, d, e, f)
 }
 
-/// Chooses a generator from a list of generators weighted uniformly, then
-/// chooses a value from that generator.
-pub fn from_generators(generators) {
+/// `from_generators(generators)` chooses a generator from a list of generators 
+/// weighted uniformly, then chooses a value from that generator.
+pub fn from_generators(generators: List(Generator(a))) -> Generator(a) {
   // TODO: better error message on empty list
   let assert [generator, ..generators] = generators
 
@@ -224,11 +257,11 @@ pub fn from_generators(generators) {
   })
 }
 
-/// Chooses a generator from a list of generators weighted by the given weights,
-/// then chooses a value from that generator.
-/// 
-/// TODO: describe requirements for weights
-pub fn from_weighted_generators(generators) {
+/// `from_generators(generators)` chooses a generator from a list of generators
+/// weighted by the given weigths, then chooses a value from that generator.
+pub fn from_weighted_generators(
+  generators: List(#(Float, Generator(a))),
+) -> Generator(a) {
   // TODO: better error message on empty list
   let assert [generator, ..generators] = generators
 
@@ -246,9 +279,14 @@ pub fn from_weighted_generators(generators) {
 //
 
 // TODO: consider switching to base_quickcheck small int generator
-/// This is good for generating sizes of things like lists or strings.
+/// `small_positive_or_zero_int()` generates small integers well suited for 
+/// modeling the sizes of sized elements like lists or strings.
+/// 
+/// Smaller numbers are more likely than larger numbers.
+/// 
+/// Shrinks towards `0`.
 pub fn small_positive_or_zero_int() -> Generator(Int) {
-  make_primative(
+  make_primitive(
     random_generator: random.float(0.0, 1.0)
       |> random.then(fn(x) {
       case x <. 0.75 {
@@ -257,11 +295,13 @@ pub fn small_positive_or_zero_int() -> Generator(Int) {
       }
     }),
     make_tree: fn(n) {
-      tree.make_primative(root: n, shrink: shrink.int_towards_zero())
+      tree.make_primitive(root: n, shrink: shrink.int_towards_zero())
     },
   )
 }
 
+/// `small_strictly_positive_int()` generates small integers strictly greater
+/// than `0`.
 pub fn small_strictly_positive_int() -> Generator(Int) {
   small_positive_or_zero_int()
   |> map(int.add(_, 1))
@@ -271,21 +311,30 @@ pub fn small_strictly_positive_int() -> Generator(Int) {
 // `Int.max_int`. TODO: consider the implications for this code.
 //
 // TODO: QCheck2 code also has a parameter for the shrink origin.
+// 
+/// `int_uniform_inclusive(low, high)` generates integers uniformly distributed
+/// between `low` and `high`, inclusive.
+/// 
+/// Shrinks towards `0`, but won't shrink outside of the range `[low, high]`.
 pub fn int_uniform_inclusive(low: Int, high: Int) -> Generator(Int) {
   case high < low {
     True -> panic as "int_uniform_includive: high < low"
     False -> Nil
   }
 
-  make_primative(random_generator: random.int(low, high), make_tree: fn(n) {
+  make_primitive(random_generator: random.int(low, high), make_tree: fn(n) {
     let origin = utils.pick_origin_within_range(low, high, goal: 0)
 
-    tree.make_primative(root: n, shrink: shrink.int_towards(origin))
+    tree.make_primitive(root: n, shrink: shrink.int_towards(origin))
   })
 }
 
 // WARNING: doesn't hit the interesting cases very often.  Use something more like
 //   qcheck2 or base_quickcheck.
+/// `int_uniform()` generates uniformly distributed integers across a large 
+/// range and shrinks towards `0`.
+/// 
+/// Note: this generator does not hit interesting or corner cases very often.
 pub fn int_uniform() -> Generator(Int) {
   int_uniform_inclusive(random.min_int, random.max_int)
 }
@@ -299,8 +348,8 @@ fn generate_option() -> random.Generator(GenerateOption) {
   random.weighted(#(0.15, GenerateNone), [#(0.85, GenerateSome)])
 }
 
-/// `option(generator)` shrinks towards `None` then towards shrinks of
-/// `generator`. 
+/// `option(gen)` is an `Option` generator that uses `gen` to generate `Some` 
+/// values.  Shrinks towards `None` then towards shrinks of `gen`. 
 pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
   let Generator(generate) = generator
 
@@ -332,6 +381,19 @@ const char_max_value: Int = 255
 
 // TODO: why not take the "char" directly?
 // For now, this is only used in setting up the string generators.
+//
+/// `char_uniform_inclusive(low, high)` generates "characters" uniformly
+/// distributed between `low` and `high`, inclusive.  Here, "characters" are 
+/// strings of a single codepoint.
+/// 
+/// *Note*: this function is slightly weird in that it takes the integer 
+/// representation of the range of codepoints, not the strings themselves.  
+/// This behavior will likely change.
+/// 
+/// These `char_*` functions are mainly used for setting up the string 
+/// generators.
+/// 
+/// Shrinks towards `a` when possible, but won't go outside of the range.
 pub fn char_uniform_inclusive(low: Int, high: Int) -> Generator(String) {
   let a = 97
   let origin = utils.pick_origin_within_range(low, high, goal: a)
@@ -343,13 +405,14 @@ pub fn char_uniform_inclusive(low: Int, high: Int) -> Generator(String) {
       |> random.step(seed)
 
     let tree =
-      tree.make_primative(n, shrink)
+      tree.make_primitive(n, shrink)
       |> tree.map(utils.int_to_char)
 
     #(tree, seed)
   })
 }
 
+/// `char_uppercase()` generates uppercase (ASCII) letters.
 pub fn char_uppercase() -> Generator(String) {
   let a = utils.char_to_int("A")
   let z = utils.char_to_int("Z")
@@ -357,6 +420,7 @@ pub fn char_uppercase() -> Generator(String) {
   char_uniform_inclusive(a, z)
 }
 
+/// `char_lowercase()` generates lowercase (ASCII) letters.
 pub fn char_lowercase() -> Generator(String) {
   let a = utils.char_to_int("a")
   let z = utils.char_to_int("z")
@@ -364,6 +428,7 @@ pub fn char_lowercase() -> Generator(String) {
   char_uniform_inclusive(a, z)
 }
 
+/// `char_digit()` generates digits from `0` to `9`, inclusive.
 pub fn char_digit() -> Generator(String) {
   let zero = utils.char_to_int("0")
   let nine = utils.char_to_int("9")
@@ -373,6 +438,8 @@ pub fn char_digit() -> Generator(String) {
 
 // TODO: name char_printable_uniform?
 // Note: the shrink target for this will be `"a"`.
+//
+/// `char_print_uniform()` generates printable ASCII characters.
 pub fn char_print_uniform() -> Generator(String) {
   let space = utils.char_to_int(" ")
   let tilde = utils.char_to_int("~")
@@ -380,20 +447,26 @@ pub fn char_print_uniform() -> Generator(String) {
   char_uniform_inclusive(space, tilde)
 }
 
+/// `char_uniform()` generates characters uniformly distributed across the 
+/// default range.
 pub fn char_uniform() -> Generator(String) {
   char_uniform_inclusive(char_min_value, char_max_value)
 }
 
+/// `char_alpha()` generates alphabetic (ASCII) characters.
 pub fn char_alpha() -> Generator(String) {
   [char_uppercase(), char_lowercase()]
   |> from_generators
 }
 
+/// `char_alpha_numeric()` generates alphanumeric (ASCII) characters.
 pub fn char_alpha_numeric() -> Generator(String) {
   [#(52.0, char_alpha()), #(10.0, char_digit())]
   |> from_weighted_generators
 }
 
+/// `char_from_list(chars)` generates characters from the given list of
+/// characters.
 pub fn char_from_list(chars: List(String)) -> Generator(String) {
   let ints = list.map(chars, utils.char_to_int)
   // TODO: assert that they are all single length chars
@@ -408,7 +481,7 @@ pub fn char_from_list(chars: List(String)) -> Generator(String) {
       |> random.step(seed)
 
     let tree =
-      tree.make_primative(n, shrink.int_towards(shrink_target))
+      tree.make_primitive(n, shrink.int_towards(shrink_target))
       |> tree.map(utils.int_to_char)
 
     #(tree, seed)
@@ -439,6 +512,7 @@ fn char_is_whitespace(c) {
   }
 }
 
+/// `char_whitespace()` generates whitespace (ASCII) characters.
 pub fn char_whitespace() -> Generator(String) {
   all_char_list()
   |> list.filter(char_is_whitespace)
@@ -446,6 +520,8 @@ pub fn char_whitespace() -> Generator(String) {
   |> char_from_list
 }
 
+/// `char_print()` generates printable ASCII characters, with a bias towards
+/// alphanumeric characters.
 pub fn char_print() -> Generator(String) {
   from_weighted_generators([
     #(10.0, char_alpha_numeric()),
@@ -453,6 +529,8 @@ pub fn char_print() -> Generator(String) {
   ])
 }
 
+/// `char()` generates characters with a bias towards printable ASCII 
+/// characters, while still hitting some edge cases.
 pub fn char() {
   from_weighted_generators([
     #(100.0, char_print()),
@@ -491,14 +569,15 @@ fn do_gen_string(i, string_builder, char_gen, char_trees_rev, seed) {
 // This is the base string generator. The others are implemented in terms of
 // this one.
 //
-/// Generate strings of the given length from the given character generator.
+/// `string_with_length_from(gen, length)` generates strings of the given 
+/// `length` from the given generator.
 pub fn string_with_length_from(
-  char_gen: Generator(String),
-  size,
+  gen: Generator(String),
+  length,
 ) -> Generator(String) {
   Generator(fn(seed) {
     let #(generated_string, char_trees_rev, seed) =
-      do_gen_string(size, string_builder.new(), char_gen, [], seed)
+      do_gen_string(length, string_builder.new(), gen, [], seed)
 
     // TODO: Ideally this whole thing would be delayed until needed.
     let shrink = fn() {
@@ -520,43 +599,45 @@ pub fn string_with_length_from(
   })
 }
 
-/// Fully customizable string generator.
+/// `string_generic(char_gen, length_gen)` generates strings with characters
+/// from `char_gen` and lengths from `length_gen`.
 pub fn string_generic(char_gen, length_gen) {
   length_gen
   |> bind(string_with_length_from(char_gen, _))
 }
 
-/// Generate strings with the default character generator and the default length
-/// generator.
+/// `string() generates strings with the default character generator and the 
+/// default length generator.
 pub fn string() -> Generator(String) {
   bind(small_positive_or_zero_int(), fn(length) {
     string_with_length_from(char(), length)
   })
 }
 
-/// Generate non-empty strings with the default character generator and the
-/// default length generator.
+/// `string_non_empty()` generates non-empty strings with the default character 
+/// generator and the default length generator.
 pub fn string_non_empty() -> Generator(String) {
   bind(small_strictly_positive_int(), fn(length) {
     string_with_length_from(char(), length)
   })
 }
 
-/// Generate strings of the given length with the default character generator.
+/// `string_with_length(length)` generates strings of the given `length` with the 
+/// default character generator.
 pub fn string_with_length(length: Int) -> Generator(String) {
   string_with_length_from(char(), length)
 }
 
-/// Generate strings from the given character generator using the default length
-/// generator.
+/// `string_from(char_gen)` generates strings from the given character generator 
+/// using the default length generator.
 pub fn string_from(char_gen: Generator(String)) -> Generator(String) {
   bind(small_positive_or_zero_int(), fn(length) {
     string_with_length_from(char_gen, length)
   })
 }
 
-/// Generate non-empty strings from the given character generator using the
-/// default length generator.
+/// `string_non_empty_from(char_gen)` generates non-empty strings from the given 
+/// character generator using the default length generator.
 pub fn string_non_empty_from(char_gen: Generator(String)) -> Generator(String) {
   bind(small_strictly_positive_int(), fn(length) {
     string_with_length_from(char_gen, length)
@@ -567,6 +648,7 @@ pub fn string_non_empty_from(char_gen: Generator(String)) -> Generator(String) {
 //
 //
 
+/// `nil()` is the `Nil` generator. It always returns `Nil` and does not shrink.
 pub fn nil() -> Generator(Nil) {
   Generator(fn(seed) { #(tree.return(Nil), seed) })
 }
@@ -575,6 +657,7 @@ pub fn nil() -> Generator(Nil) {
 //
 //
 
+/// `bool()` generates booleans and shrinks towards `False`.
 pub fn bool() -> Generator(Bool) {
   Generator(fn(seed) {
     let #(bool, seed) =
@@ -601,6 +684,9 @@ fn exp(x: Float) -> Float {
 
 // Note: The base_quickcheck float generators are much fancier.  Should consider
 // using their generation method.
+//
+/// `float()` generates floats with a bias towards smaller values and shrinks 
+/// towards `0.0`.
 pub fn float() -> Generator(Float) {
   Generator(fn(seed) {
     let #(x, seed) =
@@ -618,7 +704,7 @@ pub fn float() -> Generator(Float) {
     // sure about that.
     let generated_value = exp(x) *. y *. z
 
-    let tree = tree.make_primative(generated_value, shrink.float_towards_zero())
+    let tree = tree.make_primitive(generated_value, shrink.float_towards_zero())
 
     #(tree, seed)
   })
@@ -650,6 +736,10 @@ fn list_generic_loop(
   }
 }
 
+/// `list_generic(elt_gen, min_len, max_len)` generates lists of elements from
+/// `elt_gen` with lengths between `min_len` and `max_len`, inclusive.
+/// 
+/// Shrinks first on the number of elements, then on the elements themselves.
 pub fn list_generic(
   elt_gen: Generator(a),
   min_length min_len: Int,
@@ -667,6 +757,9 @@ pub fn list_generic(
 //
 // 
 
+/// `set_generic(elt_gen, max_len)` generates sets of elements from `elt_gen`.
+/// 
+/// Shrinks first on the number of elements, then on the elements themselves.
 pub fn set_generic(elt_gen: Generator(a), max_length max_len: Int) {
   list_generic(elt_gen, 0, max_len)
   |> map(set.from_list)
@@ -676,6 +769,10 @@ pub fn set_generic(elt_gen: Generator(a), max_length max_len: Int) {
 //
 // 
 
+/// `dict_generic(key_gen, value_gen, max_len)` generates dictionaries with keys
+/// from `key_gen` and values from `value_gen` with lengths up to `max_len`.
+/// 
+/// Shrinks on size then on elements.
 pub fn dict_generic(
   key key: Generator(key),
   value value: Generator(value),

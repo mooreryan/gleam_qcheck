@@ -1,3 +1,6 @@
+//// This module provides internal utility functions and should be considered 
+//// private.
+
 import gleam/list
 import gleam/string
 

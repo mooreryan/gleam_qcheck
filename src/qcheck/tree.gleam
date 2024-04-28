@@ -1,3 +1,8 @@
+//// This module provides a tree data structure used to represent a 
+//// pseudo-randomly generated value an its shrunk values.  This "integrated
+//// shrinking" is convenient as most generators get shrinking "for free" that 
+//// that shrinking does not break invaraints. 
+
 import gleam/function
 import gleam/iterator.{type Iterator}
 import gleam/option.{type Option, None, Some}
@@ -8,10 +13,10 @@ pub type Tree(a) {
 }
 
 // `shrink` should probably be `shrink_steps` or `make_shrink_steps`
-pub fn make_primative(root x: a, shrink shrink: fn(a) -> Iterator(a)) -> Tree(a) {
+pub fn make_primitive(root x: a, shrink shrink: fn(a) -> Iterator(a)) -> Tree(a) {
   let shrink_trees =
     shrink(x)
-    |> iterator.map(make_primative(_, shrink))
+    |> iterator.map(make_primitive(_, shrink))
 
   Tree(x, shrink_trees)
 }

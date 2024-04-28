@@ -1,3 +1,7 @@
+//// This module provides helpers for shrinking values.  
+//// 
+//// You likely won't be interacting with this module directly.
+
 import gleam/iterator.{type Iterator}
 import gleam/option.{type Option, None, Some}
 import qcheck/tree.{type Tree}
