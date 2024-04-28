@@ -1,3 +1,6 @@
+//// This module provides functions for generating values of various types as 
+//// well as functions for creating new generators from existing ones.
+
 import gleam/dict.{type Dict}
 import gleam/float
 import gleam/function
