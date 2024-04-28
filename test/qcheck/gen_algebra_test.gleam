@@ -5,6 +5,9 @@ import qcheck/generator
 import qcheck/qtest
 import qcheck/qtest/config as qtest_config
 
+// TODO: a lot of the shrink tests could probably be simplified by inspecting
+//   the output of `generator.generate_tree` instead.
+
 // map
 // 
 //
@@ -17,6 +20,253 @@ pub fn map__test() {
     property: fn(n) { n == 0.0 || n >. 1.0 },
   )
   |> should.equal(Error(1.0))
+}
+
+fn in_range(min, max) {
+  fn(x) { min <= x && x <= max }
+}
+
+pub fn map2__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.map2(fn(a, b) { #(a, b) }, gen_int, gen_int),
+    property: fn(tup2) {
+      let #(a, b) = tup2
+
+      in_range(a) && in_range(b)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn map3__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.map3(
+      fn(a, b, c) { #(a, b, c) },
+      gen_int,
+      gen_int,
+      gen_int,
+    ),
+    property: fn(tup3) {
+      let #(a, b, c) = tup3
+
+      in_range(a) && in_range(b) && in_range(c)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn map4__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.map4(
+      fn(a, b, c, d) { #(a, b, c, d) },
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+    ),
+    property: fn(tup4) {
+      let #(a, b, c, d) = tup4
+
+      in_range(a) && in_range(b) && in_range(c) && in_range(d)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn map5__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.map5(
+      fn(a, b, c, d, e) { #(a, b, c, d, e) },
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+    ),
+    property: fn(tup5) {
+      let #(a, b, c, d, e) = tup5
+
+      in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn map6__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.map6(
+      fn(a, b, c, d, e, f) { #(a, b, c, d, e, f) },
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+    ),
+    property: fn(tup6) {
+      let #(a, b, c, d, e, f) = tup6
+
+      in_range(a)
+      && in_range(b)
+      && in_range(c)
+      && in_range(d)
+      && in_range(e)
+      && in_range(f)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn tuple2__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.tuple2(gen_int, gen_int),
+    property: fn(tup2) {
+      let #(a, b) = tup2
+
+      in_range(a) && in_range(b)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn tuple3__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.tuple3(gen_int, gen_int, gen_int),
+    property: fn(tup3) {
+      let #(a, b, c) = tup3
+
+      in_range(a) && in_range(b) && in_range(c)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn tuple4__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.tuple4(gen_int, gen_int, gen_int, gen_int),
+    property: fn(tup4) {
+      let #(a, b, c, d) = tup4
+
+      in_range(a) && in_range(b) && in_range(c) && in_range(d)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn tuple5__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.tuple5(gen_int, gen_int, gen_int, gen_int, gen_int),
+    property: fn(tup5) {
+      let #(a, b, c, d, e) = tup5
+
+      in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e)
+    },
+  )
+  |> should.equal(Ok(Nil))
+}
+
+pub fn tuple6__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = generator.int_uniform_inclusive(min, max)
+
+  qtest.run(
+    config: qtest_config.default(),
+    generator: generator.tuple6(
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+    ),
+    property: fn(tup6) {
+      let #(a, b, c, d, e, f) = tup6
+
+      in_range(a)
+      && in_range(b)
+      && in_range(c)
+      && in_range(d)
+      && in_range(e)
+      && in_range(f)
+    },
+  )
+  |> should.equal(Ok(Nil))
 }
 
 // bind
@@ -157,6 +407,7 @@ pub fn apply__test() {
   |> should.equal(Ok(Nil))
 }
 
+/// TODO: consider replacing this with a `generate_tree` inspection.
 pub fn shrinking_works_with_apply__test() {
   let tuple3 =
     fn(a, b, c) { #(a, b, c) }

@@ -395,8 +395,11 @@ pub fn char__failures_shrink_ok__test() {
     Error("Z") -> True
     Error("9") -> True
     Error(" ") -> True
+    // The generators that return edges don't shrink at all.
     Error("\u{0000}") -> True
-    _ -> False
+    Error("\u{00FF}") -> True
+    Error(_) -> False
+    Ok(Nil) -> False
   }
   |> should.be_true
 }

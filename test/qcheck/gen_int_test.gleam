@@ -111,8 +111,9 @@ pub fn int_uniform_range__test() {
     )
 
   case run_result {
-    Error(-6) -> True
-    Error(6) -> True
+    // One of either glexer or glance is broken with Error(-6) here, so use the 
+    // guard for now.
+    Error(n) if n == -6 || n == 6 -> True
     _ -> False
   }
   |> should.be_true

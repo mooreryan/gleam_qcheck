@@ -1,6 +1,11 @@
+import gleam/dict.{type Dict}
+import gleam/float
+import gleam/function
 import gleam/int
+import gleam/iterator
 import gleam/list
 import gleam/option.{type Option, None}
+import gleam/set
 import gleam/string
 import gleam/string_builder
 import prng/random
@@ -11,6 +16,12 @@ import qcheck/utils
 
 pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
+}
+
+pub fn generate_tree(gen: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
+  let Generator(generate) = gen
+
+  generate(seed)
 }
 
 fn make_primative(
@@ -75,6 +86,129 @@ pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   })
 }
 
+pub fn map2(f: fn(a, b) -> c, a: Generator(a), b: Generator(b)) -> Generator(c) {
+  f
+  |> function.curry2
+  |> return
+  |> apply(a)
+  |> apply(b)
+}
+
+pub fn map3(
+  f: fn(a, b, c) -> d,
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+) -> Generator(d) {
+  f
+  |> function.curry3
+  |> return
+  |> apply(a)
+  |> apply(b)
+  |> apply(c)
+}
+
+pub fn map4(
+  f: fn(a, b, c, d) -> e,
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+  d: Generator(d),
+) -> Generator(e) {
+  f
+  |> function.curry4
+  |> return
+  |> apply(a)
+  |> apply(b)
+  |> apply(c)
+  |> apply(d)
+}
+
+pub fn map5(
+  f: fn(a, b, c, d, e) -> f,
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+  d: Generator(d),
+  e: Generator(e),
+) -> Generator(f) {
+  f
+  |> function.curry5
+  |> return
+  |> apply(a)
+  |> apply(b)
+  |> apply(c)
+  |> apply(d)
+  |> apply(e)
+}
+
+pub fn map6(
+  f: fn(a, b, c, d, e, f) -> g,
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+  d: Generator(d),
+  e: Generator(e),
+  f_: Generator(f),
+) -> Generator(g) {
+  f
+  |> function.curry6
+  |> return
+  |> apply(a)
+  |> apply(b)
+  |> apply(c)
+  |> apply(d)
+  |> apply(e)
+  |> apply(f_)
+}
+
+pub fn tuple2(a: Generator(a), b: Generator(b)) -> Generator(#(a, b)) {
+  fn(a, b) { #(a, b) }
+  |> map2(a, b)
+}
+
+pub fn tuple3(
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+) -> Generator(#(a, b, c)) {
+  fn(a, b, c) { #(a, b, c) }
+  |> map3(a, b, c)
+}
+
+pub fn tuple4(
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+  d: Generator(d),
+) -> Generator(#(a, b, c, d)) {
+  fn(a, b, c, d) { #(a, b, c, d) }
+  |> map4(a, b, c, d)
+}
+
+pub fn tuple5(
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+  d: Generator(d),
+  e: Generator(e),
+) -> Generator(#(a, b, c, d, e)) {
+  fn(a, b, c, d, e) { #(a, b, c, d, e) }
+  |> map5(a, b, c, d, e)
+}
+
+pub fn tuple6(
+  a: Generator(a),
+  b: Generator(b),
+  c: Generator(c),
+  d: Generator(d),
+  e: Generator(e),
+  f: Generator(f),
+) -> Generator(#(a, b, c, d, e, f)) {
+  fn(a, b, c, d, e, f) { #(a, b, c, d, e, f) }
+  |> map6(a, b, c, d, e, f)
+}
+
 /// Chooses a generator from a list of generators weighted uniformly, then
 /// chooses a value from that generator.
 pub fn from_generators(generators) {
@@ -111,6 +245,8 @@ pub fn from_weighted_generators(generators) {
 //
 //
 
+// TODO: consider switching to base_quickcheck small int generator
+/// This is good for generating sizes of things like lists or strings.
 pub fn small_positive_or_zero_int() -> Generator(Int) {
   make_primative(
     random_generator: random.float(0.0, 1.0)
@@ -384,16 +520,8 @@ pub fn string_with_length_from(
   })
 }
 
-// Note: Even though this is named `string_base`, it is not the "base" generator
-// for defining other string generators.  Rather it is the "basic" one a user
-// might use that wants full control over string generation.  So, probably it
-// should have a different name.
-//
 /// Fully customizable string generator.
-pub fn string_base(
-  char_gen: Generator(String),
-  length_gen: Generator(Int),
-) -> Generator(String) {
+pub fn string_generic(char_gen, length_gen) {
   length_gen
   |> bind(string_with_length_from(char_gen, _))
 }
@@ -401,29 +529,159 @@ pub fn string_base(
 /// Generate strings with the default character generator and the default length
 /// generator.
 pub fn string() -> Generator(String) {
-  todo
+  bind(small_positive_or_zero_int(), fn(length) {
+    string_with_length_from(char(), length)
+  })
 }
 
 /// Generate non-empty strings with the default character generator and the
 /// default length generator.
 pub fn string_non_empty() -> Generator(String) {
-  todo
+  bind(small_strictly_positive_int(), fn(length) {
+    string_with_length_from(char(), length)
+  })
 }
 
 /// Generate strings of the given length with the default character generator.
 pub fn string_with_length(length: Int) -> Generator(String) {
-  todo
+  string_with_length_from(char(), length)
 }
 
 /// Generate strings from the given character generator using the default length
 /// generator.
 pub fn string_from(char_gen: Generator(String)) -> Generator(String) {
-  // TODO: pick better size generator
-  todo
+  bind(small_positive_or_zero_int(), fn(length) {
+    string_with_length_from(char_gen, length)
+  })
 }
 
 /// Generate non-empty strings from the given character generator using the
 /// default length generator.
 pub fn string_non_empty_from(char_gen: Generator(String)) -> Generator(String) {
-  todo
+  bind(small_strictly_positive_int(), fn(length) {
+    string_with_length_from(char_gen, length)
+  })
+}
+
+// Nil (unit type)
+//
+//
+
+pub fn nil() -> Generator(Nil) {
+  Generator(fn(seed) { #(tree.return(Nil), seed) })
+}
+
+// Bool
+//
+//
+
+pub fn bool() -> Generator(Bool) {
+  Generator(fn(seed) {
+    let #(bool, seed) =
+      random.choose(True, False)
+      |> random.step(seed)
+
+    let tree = case bool {
+      True -> Tree(True, iterator.once(fn() { tree.return(False) }))
+      False -> tree.return(False)
+    }
+
+    #(tree, seed)
+  })
+}
+
+// Float
+//
+// 
+
+fn exp(x: Float) -> Float {
+  let assert Ok(result) = float.power(2.71828, x)
+  result
+}
+
+// Note: The base_quickcheck float generators are much fancier.  Should consider
+// using their generation method.
+pub fn float() -> Generator(Float) {
+  Generator(fn(seed) {
+    let #(x, seed) =
+      random.float(0.0, 15.0)
+      |> random.step(seed)
+
+    let #(y, seed) =
+      random.choose(1.0, -1.0)
+      |> random.step(seed)
+    let #(z, seed) =
+      random.choose(1.0, -1.0)
+      |> random.step(seed)
+
+    // The QCheck2.Gen.float code has this double multiply in it. Actually not
+    // sure about that.
+    let generated_value = exp(x) *. y *. z
+
+    let tree = tree.make_primative(generated_value, shrink.float_towards_zero())
+
+    #(tree, seed)
+  })
+}
+
+// List
+//
+// 
+
+fn list_generic_loop(
+  n: Int,
+  acc: Tree(List(a)),
+  elt_gen: Generator(a),
+  seed: Seed,
+) -> #(Tree(List(a)), Seed) {
+  case n <= 0 {
+    True -> #(acc, seed)
+    False -> {
+      let Generator(generate) = elt_gen
+      let #(tree, seed) = generate(seed)
+
+      list_generic_loop(
+        n - 1,
+        tree.map2(utils.list_cons, tree, acc),
+        elt_gen,
+        seed,
+      )
+    }
+  }
+}
+
+pub fn list_generic(
+  elt_gen: Generator(a),
+  min_length min_len: Int,
+  max_length max_len: Int,
+) -> Generator(List(a)) {
+  int_uniform_inclusive(min_len, max_len)
+  |> bind(fn(length) {
+    Generator(fn(seed) {
+      list_generic_loop(length, tree.return([]), elt_gen, seed)
+    })
+  })
+}
+
+// Set
+//
+// 
+
+pub fn set_generic(elt_gen: Generator(a), max_length max_len: Int) {
+  list_generic(elt_gen, 0, max_len)
+  |> map(set.from_list)
+}
+
+// Dict
+//
+// 
+
+pub fn dict_generic(
+  key key: Generator(key),
+  value value: Generator(value),
+  max_length max_length: Int,
+) -> Generator(Dict(key, value)) {
+  tuple2(key, value)
+  |> list_generic(1, max_length)
+  |> map(dict.from_list)
 }

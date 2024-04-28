@@ -2,11 +2,18 @@ import gleam/iterator.{type Iterator}
 import gleam/option.{type Option, None, Some}
 import qcheck/tree.{type Tree}
 
-fn int_half_difference(x, y) {
+fn float_half_difference(x: Float, y: Float) -> Float {
+  { x /. 2.0 } -. { y /. 2.0 }
+}
+
+fn int_half_difference(x: Int, y: Int) -> Int {
   { x / 2 } - { y / 2 }
 }
 
-fn int_shrink_step(x x, current_shrink current_shrink) {
+fn int_shrink_step(
+  x x: Int,
+  current_shrink current_shrink: Int,
+) -> iterator.Step(Int, Int) {
   case x == current_shrink {
     True -> iterator.Done
     False -> {
@@ -24,6 +31,27 @@ fn int_shrink_step(x x, current_shrink current_shrink) {
   }
 }
 
+fn float_shrink_step(
+  x x: Float,
+  current_shrink current_shrink: Float,
+) -> iterator.Step(Float, Float) {
+  case x == current_shrink {
+    True -> iterator.Done
+    False -> {
+      let half_difference = float_half_difference(x, current_shrink)
+
+      case half_difference == 0.0 {
+        True -> {
+          iterator.Next(current_shrink, x)
+        }
+        False -> {
+          iterator.Next(current_shrink, current_shrink +. half_difference)
+        }
+      }
+    }
+  }
+}
+
 pub fn int_towards(
   destination destination: Int,
 ) -> fn(Int) -> iterator.Iterator(Int) {
@@ -34,8 +62,25 @@ pub fn int_towards(
   }
 }
 
+pub fn float_towards(
+  destination destination: Float,
+) -> fn(Float) -> iterator.Iterator(Float) {
+  fn(x) {
+    iterator.unfold(destination, fn(current_shrink) {
+      float_shrink_step(x: x, current_shrink: current_shrink)
+    })
+    // (Arbitrarily) Limit to the first 15 elements as dividing a `Float` by 2
+    // doesn't converge quickly towards the destination.
+    |> iterator.take(15)
+  }
+}
+
 pub fn int_towards_zero() -> fn(Int) -> iterator.Iterator(Int) {
   int_towards(destination: 0)
+}
+
+pub fn float_towards_zero() -> fn(Float) -> iterator.Iterator(Float) {
+  float_towards(destination: 0.0)
 }
 
 fn do_filter_map(

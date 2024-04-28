@@ -11,6 +11,10 @@ pub fn ok_exn(result) {
   x
 }
 
+pub fn list_cons(x, xs) {
+  [x, ..xs]
+}
+
 pub fn utf_codepoint_exn(n) {
   let assert Ok(cp) = string.utf_codepoint(n)
 

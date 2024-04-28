@@ -1,0 +1,8 @@
+---
+version: 1.1.4
+title: bool_true_shrink_tree__test
+file: ./test/gen_string_test.gleam
+test_name: bool_true_shrink_tree__test
+---
+True
+-False

@@ -1,6 +1,7 @@
 import gleam/function
 import gleam/iterator.{type Iterator}
 import gleam/option.{type Option, None, Some}
+import qcheck/utils
 
 pub type Tree(a) {
   Tree(a, Iterator(Tree(a)))
@@ -54,7 +55,7 @@ pub fn return(x: a) -> Tree(a) {
   Tree(x, iterator.empty())
 }
 
-fn map2(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
+pub fn map2(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
   f
   |> function.curry2
   |> return
@@ -62,15 +63,11 @@ fn map2(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
   |> apply(b)
 }
 
-fn list_cons(x, xs) {
-  [x, ..xs]
-}
-
 pub fn iterator_list(l: List(Tree(a))) -> Tree(List(a)) {
   case l {
     [] -> return([])
     [hd, ..tl] -> {
-      map2(list_cons, hd, iterator_list(tl))
+      map2(utils.list_cons, hd, iterator_list(tl))
     }
   }
 }
