@@ -10,7 +10,7 @@ import gleam/list
 import gleam/option.{type Option, None}
 import gleam/set
 import gleam/string
-import gleam/string_builder
+import gleam/string_builder.{type StringBuilder}
 import prng/random
 import prng/seed.{type Seed}
 import qcheck/shrink
@@ -27,8 +27,8 @@ pub type Generator(a) {
 /// `generate(gen, seed)` generates a value of type `a` and its shrinks using the generator `gen`.
 /// 
 /// You should not use this function directly. It is for internal use only.
-pub fn generate_tree(gen: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
-  let Generator(generate) = gen
+pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
+  let Generator(generate) = generator
 
   generate(seed)
 }
@@ -53,10 +53,9 @@ pub fn return(a) {
   Generator(fn(seed) { #(tree.return(a), seed) })
 }
 
-// These arguments also feel reversed (see apply).
-/// `map(gen, f)` transforms the generator `gen` by applying `f` to each 
-/// generated value.  Shrinks as `gen` shrinks, but with `f` applied.
-pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
+/// `map(generator, f)` transforms the generator `generator` by applying `f` to 
+/// each generated value.  Shrinks as `generator` shrinks, but with `f` applied.
+pub fn map(generator generator: Generator(a), f f: fn(a) -> b) -> Generator(b) {
   let Generator(generate) = generator
 
   Generator(fn(seed) {
@@ -68,9 +67,12 @@ pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   })
 }
 
-/// `bind(gen, f)` generates a value of type `a` with `gen`, then passes that 
-/// value to `f`, which uses it to generate values of type `b`.
-pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
+/// `bind(generator, f)` generates a value of type `a` with `generator`, then 
+/// passes that value to `f`, which uses it to generate values of type `b`.
+pub fn bind(
+  generator generator: Generator(a),
+  f f: fn(a) -> Generator(b),
+) -> Generator(b) {
   let Generator(generate) = generator
 
   Generator(fn(seed) {
@@ -89,7 +91,10 @@ pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
 
 /// `apply(f, x)` applies a function generator, `f`, and an argument generator, 
 /// `x`, into a result generator.
-pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
+pub fn apply(
+  f f: Generator(fn(a) -> b),
+  generator x: Generator(a),
+) -> Generator(b) {
   let Generator(f) = f
   let Generator(x) = x
 
@@ -102,147 +107,151 @@ pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   })
 }
 
-/// `map2(f, a, b)` transforms two generators, `a` and `b`, by applying `f` to 
-/// each pair of generated values.
-pub fn map2(f: fn(a, b) -> c, a: Generator(a), b: Generator(b)) -> Generator(c) {
+/// `map2(f, g1, g2)` transforms two generators, `g1` and `g2`, by applying `f` 
+/// to each pair of generated values.
+pub fn map2(
+  f f: fn(t1, t2) -> t3,
+  g1 g1: Generator(t1),
+  g2 g2: Generator(t2),
+) -> Generator(t3) {
   f
   |> function.curry2
   |> return
-  |> apply(a)
-  |> apply(b)
+  |> apply(g1)
+  |> apply(g2)
 }
 
-/// `map3(f, a, b, c)` transforms three generators, `a`, `b`, and `c`, by
+/// `map3(f, g1, g2, g3)` transforms three generators, `g1`, `g2`, and `g3`, by
 /// applying `f` to each triple of generated values.
 pub fn map3(
-  f: fn(a, b, c) -> d,
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-) -> Generator(d) {
+  f f: fn(t1, t2, t3) -> t4,
+  g1 g1: Generator(t1),
+  g2 g2: Generator(t2),
+  g3 g3: Generator(t3),
+) -> Generator(t4) {
   f
   |> function.curry3
   |> return
-  |> apply(a)
-  |> apply(b)
-  |> apply(c)
+  |> apply(g1)
+  |> apply(g2)
+  |> apply(g3)
 }
 
-/// `map4(f, a, b, c, d)` transforms four generators, `a`, `b`, `c`, and `d`, by
-/// applying `f` to each quadruple of generated values.
+/// `map4(f, g1, g2, g3, g4)` transforms four generators, `g1`, `g2`, `g3`, and
+/// `g4`, by applying `f` to each quadruple of generated values.
 pub fn map4(
-  f: fn(a, b, c, d) -> e,
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-  d: Generator(d),
-) -> Generator(e) {
+  f f: fn(t1, t2, t3, t4) -> t5,
+  g1 g1: Generator(t1),
+  g2 g2: Generator(t2),
+  g3 g3: Generator(t3),
+  g4 g4: Generator(t4),
+) -> Generator(t5) {
   f
   |> function.curry4
   |> return
-  |> apply(a)
-  |> apply(b)
-  |> apply(c)
-  |> apply(d)
+  |> apply(g1)
+  |> apply(g2)
+  |> apply(g3)
+  |> apply(g4)
 }
 
-/// `map5(f, a, b, c, d, e)` transforms five generators, `a`, `b`, `c`, `d`, and
-/// `e`, by applying `f` to each quintuple of generated values.
+/// `map5(f, g1, g2, g3, g4, g5)` transforms five generators, `g1`, `g2`, `g3`,
+/// `g4`, and `g5`, by applying `f` to each quintuple of generated values.
 pub fn map5(
-  f: fn(a, b, c, d, e) -> f,
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-  d: Generator(d),
-  e: Generator(e),
-) -> Generator(f) {
+  f f: fn(t1, t2, t3, t4, t5) -> t6,
+  g1 g1: Generator(t1),
+  g2 g2: Generator(t2),
+  g3 g3: Generator(t3),
+  g4 g4: Generator(t4),
+  g5 g5: Generator(t5),
+) -> Generator(t6) {
   f
   |> function.curry5
   |> return
-  |> apply(a)
-  |> apply(b)
-  |> apply(c)
-  |> apply(d)
-  |> apply(e)
+  |> apply(g1)
+  |> apply(g2)
+  |> apply(g3)
+  |> apply(g4)
+  |> apply(g5)
 }
 
-/// `map6(f, a, b, c, d, e, f_)` transforms six generators, `a`, `b`, `c`, `d`,
-/// `e`, and `f_`, by applying `f` to each sextuple of generated values.
+/// `map6(f, g1, g2, g3, g4, g5, g6)` transforms six generators, `g1`, `g2`, `g3`,
+/// `g4`, `g5`, and `g6`, by applying `f` to each sextuple of generated values.
 pub fn map6(
-  f: fn(a, b, c, d, e, f) -> g,
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-  d: Generator(d),
-  e: Generator(e),
-  f_: Generator(f),
-) -> Generator(g) {
+  f f: fn(t1, t2, t3, t4, t5, t6) -> t7,
+  g1 g1: Generator(t1),
+  g2 g2: Generator(t2),
+  g3 g3: Generator(t3),
+  g4 g4: Generator(t4),
+  g5 g5: Generator(t5),
+  g6 g6: Generator(t6),
+) -> Generator(t7) {
   f
   |> function.curry6
   |> return
-  |> apply(a)
-  |> apply(b)
-  |> apply(c)
-  |> apply(d)
-  |> apply(e)
-  |> apply(f_)
+  |> apply(g1)
+  |> apply(g2)
+  |> apply(g3)
+  |> apply(g4)
+  |> apply(g5)
+  |> apply(g6)
 }
 
-/// `tuple2(a, b)` generates a tuple of two values, one from generator `a` and
-/// one from generator `b`.
-pub fn tuple2(a: Generator(a), b: Generator(b)) -> Generator(#(a, b)) {
-  fn(a, b) { #(a, b) }
-  |> map2(a, b)
+/// `tuple2(g1, g2)` generates a tuple of two values, one each from generators 
+/// `g1` and `g2`.
+pub fn tuple2(g1: Generator(t1), g2: Generator(t2)) -> Generator(#(t1, t2)) {
+  fn(t1, t2) { #(t1, t2) }
+  |> map2(g1, g2)
 }
 
-/// `tuple3(a, b, c)` generates a tuple of three values, one each from
-/// generators `a`, `b`, and `c`.
+/// `tuple3(g1, g2, g3)` generates a tuple of three values, one each from
+/// generators `g1`, `g2`, and `g3`.
 pub fn tuple3(
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-) -> Generator(#(a, b, c)) {
-  fn(a, b, c) { #(a, b, c) }
-  |> map3(a, b, c)
+  g1: Generator(t1),
+  g2: Generator(t2),
+  g3: Generator(t3),
+) -> Generator(#(t1, t2, t3)) {
+  fn(t1, t2, t3) { #(t1, t2, t3) }
+  |> map3(g1, g2, g3)
 }
 
-/// `tuple4(a, b, c, d)` generates a tuple of four values, one each from 
-/// generators `a`, `b`, `c`, and `d`.
+/// `tuple4(g1, g2, g3, g4)` generates a tuple of four values, one each from
+/// generators `g1`, `g2`, `g3`, and `g4`.
 pub fn tuple4(
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-  d: Generator(d),
-) -> Generator(#(a, b, c, d)) {
-  fn(a, b, c, d) { #(a, b, c, d) }
-  |> map4(a, b, c, d)
+  g1: Generator(t1),
+  g2: Generator(t2),
+  g3: Generator(t3),
+  g4: Generator(t4),
+) -> Generator(#(t1, t2, t3, t4)) {
+  fn(t1, t2, t3, t4) { #(t1, t2, t3, t4) }
+  |> map4(g1, g2, g3, g4)
 }
 
-/// `tuple5(a, b, c, d, e)` generates a tuple of five values, one each from
-/// generators `a`, `b`, `c`, `d`, and `e`.
+/// `tuple5(g1, g2, g3, g4, g5)` generates a tuple of five values, one each from
+/// generators `g1`, `g2`, `g3`, `g4`, and `g5`.
 pub fn tuple5(
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-  d: Generator(d),
-  e: Generator(e),
-) -> Generator(#(a, b, c, d, e)) {
-  fn(a, b, c, d, e) { #(a, b, c, d, e) }
-  |> map5(a, b, c, d, e)
+  g1: Generator(t1),
+  g2: Generator(t2),
+  g3: Generator(t3),
+  g4: Generator(t4),
+  g5: Generator(t5),
+) -> Generator(#(t1, t2, t3, t4, t5)) {
+  fn(t1, t2, t3, t4, t5) { #(t1, t2, t3, t4, t5) }
+  |> map5(g1, g2, g3, g4, g5)
 }
 
-/// `tuple6(a, b, c, d, e, f)` generates a tuple of six values, one each from
-/// generators `a`, `b`, `c`, `d`, `e`, and `f`.
+/// `tuple6(g1, g2, g3, g4, g5, g6)` generates a tuple of six values, one each 
+/// from generators `g1`, `g2`, `g3`, `g4`, `g5`, and `g6`.
 pub fn tuple6(
-  a: Generator(a),
-  b: Generator(b),
-  c: Generator(c),
-  d: Generator(d),
-  e: Generator(e),
-  f: Generator(f),
-) -> Generator(#(a, b, c, d, e, f)) {
-  fn(a, b, c, d, e, f) { #(a, b, c, d, e, f) }
-  |> map6(a, b, c, d, e, f)
+  g1: Generator(t1),
+  g2: Generator(t2),
+  g3: Generator(t3),
+  g4: Generator(t4),
+  g5: Generator(t5),
+  g6: Generator(t6),
+) -> Generator(#(t1, t2, t3, t4, t5, t6)) {
+  fn(t1, t2, t3, t4, t5, t6) { #(t1, t2, t3, t4, t5, t6) }
+  |> map6(g1, g2, g3, g4, g5, g6)
 }
 
 /// `from_generators(generators)` chooses a generator from a list of generators 
@@ -319,7 +328,7 @@ pub fn small_strictly_positive_int() -> Generator(Int) {
 /// between `low` and `high`, inclusive.
 /// 
 /// Shrinks towards `0`, but won't shrink outside of the range `[low, high]`.
-pub fn int_uniform_inclusive(low: Int, high: Int) -> Generator(Int) {
+pub fn int_uniform_inclusive(low low: Int, high high: Int) -> Generator(Int) {
   case high < low {
     True -> panic as "int_uniform_includive: high < low"
     False -> Nil
@@ -397,7 +406,7 @@ const char_max_value: Int = 255
 /// generators.
 /// 
 /// Shrinks towards `a` when possible, but won't go outside of the range.
-pub fn char_uniform_inclusive(low: Int, high: Int) -> Generator(String) {
+pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String) {
   let a = 97
   let origin = utils.pick_origin_within_range(low, high, goal: a)
   let shrink = shrink.int_towards(origin)
@@ -547,7 +556,13 @@ pub fn char() {
 //
 //
 
-fn do_gen_string(i, string_builder, char_gen, char_trees_rev, seed) {
+fn do_gen_string(
+  i: Int,
+  string_builder: StringBuilder,
+  char_gen: Generator(String),
+  char_trees_rev: List(Tree(String)),
+  seed: Seed,
+) -> #(String, List(Tree(String)), Seed) {
   let Generator(gen_char_tree) = char_gen
 
   let #(char_tree, seed) = gen_char_tree(seed)
@@ -575,12 +590,12 @@ fn do_gen_string(i, string_builder, char_gen, char_trees_rev, seed) {
 /// `string_with_length_from(gen, length)` generates strings of the given 
 /// `length` from the given generator.
 pub fn string_with_length_from(
-  gen: Generator(String),
+  generator: Generator(String),
   length,
 ) -> Generator(String) {
   Generator(fn(seed) {
     let #(generated_string, char_trees_rev, seed) =
-      do_gen_string(length, string_builder.new(), gen, [], seed)
+      do_gen_string(length, string_builder.new(), generator, [], seed)
 
     // TODO: Ideally this whole thing would be delayed until needed.
     let shrink = fn() {
@@ -602,11 +617,14 @@ pub fn string_with_length_from(
   })
 }
 
-/// `string_generic(char_gen, length_gen)` generates strings with characters
-/// from `char_gen` and lengths from `length_gen`.
-pub fn string_generic(char_gen, length_gen) {
-  length_gen
-  |> bind(string_with_length_from(char_gen, _))
+/// `string_generic(char_generator, length_generator)` generates strings with 
+/// characters from `char_generator` and lengths from `length_generator`.
+pub fn string_generic(
+  char_generator: Generator(String),
+  length_generator: Generator(Int),
+) -> Generator(String) {
+  length_generator
+  |> bind(string_with_length_from(char_generator, _))
 }
 
 /// `string() generates strings with the default character generator and the 
@@ -631,19 +649,21 @@ pub fn string_with_length(length: Int) -> Generator(String) {
   string_with_length_from(char(), length)
 }
 
-/// `string_from(char_gen)` generates strings from the given character generator 
+/// `string_from(char_generator)` generates strings from the given character generator 
 /// using the default length generator.
-pub fn string_from(char_gen: Generator(String)) -> Generator(String) {
+pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
   bind(small_positive_or_zero_int(), fn(length) {
-    string_with_length_from(char_gen, length)
+    string_with_length_from(char_generator, length)
   })
 }
 
-/// `string_non_empty_from(char_gen)` generates non-empty strings from the given 
+/// `string_non_empty_from(char_generator)` generates non-empty strings from the given 
 /// character generator using the default length generator.
-pub fn string_non_empty_from(char_gen: Generator(String)) -> Generator(String) {
+pub fn string_non_empty_from(
+  char_generator: Generator(String),
+) -> Generator(String) {
   bind(small_strictly_positive_int(), fn(length) {
-    string_with_length_from(char_gen, length)
+    string_with_length_from(char_generator, length)
   })
 }
 
@@ -720,38 +740,39 @@ pub fn float() -> Generator(Float) {
 fn list_generic_loop(
   n: Int,
   acc: Tree(List(a)),
-  elt_gen: Generator(a),
+  element_generator: Generator(a),
   seed: Seed,
 ) -> #(Tree(List(a)), Seed) {
   case n <= 0 {
     True -> #(acc, seed)
     False -> {
-      let Generator(generate) = elt_gen
+      let Generator(generate) = element_generator
       let #(tree, seed) = generate(seed)
 
       list_generic_loop(
         n - 1,
         tree.map2(utils.list_cons, tree, acc),
-        elt_gen,
+        element_generator,
         seed,
       )
     }
   }
 }
 
-/// `list_generic(elt_gen, min_len, max_len)` generates lists of elements from
-/// `elt_gen` with lengths between `min_len` and `max_len`, inclusive.
-/// 
+/// `list_generic(element_generator, min_len, max_len)` generates lists of 
+/// elements from `element_generator` with lengths between `min_len` and 
+/// `max_len`, inclusive.
+///  
 /// Shrinks first on the number of elements, then on the elements themselves.
 pub fn list_generic(
-  elt_gen: Generator(a),
+  element_generator: Generator(a),
   min_length min_len: Int,
   max_length max_len: Int,
 ) -> Generator(List(a)) {
   int_uniform_inclusive(min_len, max_len)
   |> bind(fn(length) {
     Generator(fn(seed) {
-      list_generic_loop(length, tree.return([]), elt_gen, seed)
+      list_generic_loop(length, tree.return([]), element_generator, seed)
     })
   })
 }
@@ -760,11 +781,12 @@ pub fn list_generic(
 //
 // 
 
-/// `set_generic(elt_gen, max_len)` generates sets of elements from `elt_gen`.
+/// `set_generic(element_generator, max_len)` generates sets of elements from 
+/// `element_generator`.
 /// 
 /// Shrinks first on the number of elements, then on the elements themselves.
-pub fn set_generic(elt_gen: Generator(a), max_length max_len: Int) {
-  list_generic(elt_gen, 0, max_len)
+pub fn set_generic(element_generator: Generator(a), max_length max_len: Int) {
+  list_generic(element_generator, 0, max_len)
   |> map(set.from_list)
 }
 
@@ -772,16 +794,16 @@ pub fn set_generic(elt_gen: Generator(a), max_length max_len: Int) {
 //
 // 
 
-/// `dict_generic(key_gen, value_gen, max_len)` generates dictionaries with keys
-/// from `key_gen` and values from `value_gen` with lengths up to `max_len`.
+/// `dict_generic(key_generator, value_generator, max_len)` generates dictionaries with keys
+/// from `key_generator` and values from `value_generator` with lengths up to `max_len`.
 /// 
 /// Shrinks on size then on elements.
 pub fn dict_generic(
-  key key: Generator(key),
-  value value: Generator(value),
+  key_generator key_generator: Generator(key),
+  value_generator value_generator: Generator(value),
   max_length max_length: Int,
 ) -> Generator(Dict(key, value)) {
-  tuple2(key, value)
+  tuple2(key_generator, value_generator)
   |> list_generic(1, max_length)
   |> map(dict.from_list)
 }

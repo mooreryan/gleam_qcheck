@@ -51,8 +51,8 @@ pub fn dict_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     generator.generate_tree(
       generator.dict_generic(
-        key: generator.int_uniform_inclusive(0, 2),
-        value: generator.int_uniform_inclusive(10, 12),
+        key_generator: generator.int_uniform_inclusive(0, 2),
+        value_generator: generator.int_uniform_inclusive(10, 12),
         max_length: 3,
       ),
       seed.new(2),
