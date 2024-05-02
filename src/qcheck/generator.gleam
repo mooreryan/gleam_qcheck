@@ -733,6 +733,19 @@ pub fn float() -> Generator(Float) {
   })
 }
 
+pub fn float_uniform_inclusive(low: Float, high: Float) {
+  case high <. low {
+    True -> panic as "int_uniform_includive: high < low"
+    False -> Nil
+  }
+
+  make_primitive(random_generator: random.float(low, high), make_tree: fn(n) {
+    let origin = utils.pick_origin_within_range_float(low, high, goal: 0.0)
+
+    tree.make_primitive(root: n, shrink: shrink.float_towards(origin))
+  })
+}
+
 // List
 //
 // 

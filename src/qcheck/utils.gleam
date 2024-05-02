@@ -51,3 +51,15 @@ pub fn pick_origin_within_range(low: Int, high: Int, goal goal: Int) {
       }
   }
 }
+
+// Assumes that the args are properly ordered.
+pub fn pick_origin_within_range_float(low: Float, high: Float, goal goal: Float) {
+  case low >. goal {
+    True -> low
+    False ->
+      case high <. goal {
+        True -> high
+        False -> goal
+      }
+  }
+}
