@@ -547,11 +547,15 @@ pub fn char_print() -> Generator(String) {
 /// `char()` generates characters with a bias towards printable ASCII 
 /// characters, while still hitting some edge cases.
 pub fn char() {
+  // Numbers indicate percent chance of picking the generator.
   from_weighted_generators([
-    #(100.0, char_print()),
-    #(10.0, char_uniform()),
-    #(1.0, return(utils.int_to_char(char_min_value))),
-    #(1.0, return(utils.int_to_char(char_max_value))),
+    #(34.0, char_uppercase()),
+    #(34.0, char_lowercase()),
+    #(13.1, char_digit()),
+    #(8.1, char_print_uniform()),
+    #(8.9, char_uniform()),
+    #(0.9, return(utils.int_to_char(char_min_value))),
+    #(0.9, return(utils.int_to_char(char_max_value))),
   ])
 }
 
