@@ -1,5 +1,5 @@
-import gleeunit
+import qcheck_gleeunit_utils/run
 
 pub fn main() {
-  gleeunit.main()
+  run.run_gleeunit()
 }
