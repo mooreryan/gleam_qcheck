@@ -28,4 +28,4 @@ birdie = { version = ">= 1.1.2 and < 2.0.0" }
 gleam_stdlib = { version = "~> 0.34 or ~> 1.0" }
 gleeunit = { version = "~> 1.0" }
 prng = { version = "~> 3.0" }
-qcheck_gleeunit_utils = { version = ">= 0.1.0 and < 1.0.0"}
+qcheck_gleeunit_utils = { version = ">= 0.1.0 and < 0.2.0" }

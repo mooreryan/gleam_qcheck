@@ -1,5 +1,5 @@
 name = "qcheck"
-version = "0.0.1"
+version = "0.0.2"
 
 internal_modules = ["qcheck/utils"]
 
@@ -14,4 +14,4 @@ prng = "~> 3.0"
 [dev-dependencies]
 birdie = ">= 1.1.2 and < 2.0.0"
 gleeunit = "~> 1.0"
-qcheck_gleeunit_utils = ">= 0.1.0 and < 1.0.0"
+qcheck_gleeunit_utils = ">= 0.1.0 and < 0.2.0"
