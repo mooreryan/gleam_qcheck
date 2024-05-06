@@ -535,9 +535,12 @@ pub fn char_whitespace() -> Generator(String) {
 /// `char_print()` generates printable ASCII characters, with a bias towards
 /// alphanumeric characters.
 pub fn char_print() -> Generator(String) {
+  // Numbers indicate percent chance of picking the generator.
   from_weighted_generators([
-    #(10.0, char_alpha_numeric()),
-    #(1.0, char_print_uniform()),
+    #(38.1, char_uppercase()),
+    #(38.1, char_lowercase()),
+    #(14.7, char_digit()),
+    #(9.1, char_print_uniform()),
   ])
 }
 
