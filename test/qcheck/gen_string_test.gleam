@@ -10,7 +10,7 @@ import qcheck/qtest
 import qcheck/qtest/config as qtest_config
 import qcheck/tree
 
-const short_test_count: Int = 100
+const test_count: Int = 5000
 
 pub fn string_generic__test() {
   let assert Ok(all_letters) =
@@ -175,7 +175,7 @@ pub fn string_smoke_test() {
   qtest.run(
     config: qtest_config.default()
       // TODO: this single test is about 1.5s using the default config.
-      |> qtest_config.with_test_count(short_test_count),
+      |> qtest_config.with_test_count(test_count),
     generator: generator.string(),
     property: fn(s) { string.length(s) >= 0 },
   )
@@ -186,7 +186,7 @@ pub fn string_non_empty_generates_non_empty_strings__test() {
   qtest.run(
     config: qtest_config.default()
       // TODO: this single test is about 1.5s using the default config.
-      |> qtest_config.with_test_count(short_test_count),
+      |> qtest_config.with_test_count(test_count),
     generator: generator.string_non_empty(),
     property: fn(s) { string.length(s) > 0 },
   )
@@ -197,7 +197,7 @@ pub fn string_with_length__generates_length_n_strings__test() {
   qtest.run(
     config: qtest_config.default()
       // TODO: this single test is about 1.5s using the default config.
-      |> qtest_config.with_test_count(short_test_count),
+      |> qtest_config.with_test_count(test_count),
     generator: generator.string_with_length(3),
     property: string_length_is(3),
   )
@@ -213,7 +213,7 @@ pub fn string_from__generates_correct_values__test() {
 
   qtest.run(
     config: qtest_config.default()
-      |> qtest_config.with_test_count(short_test_count),
+      |> qtest_config.with_test_count(test_count),
     generator: generator.string_from(generator.char_lowercase()),
     property: fn(s) {
       string.is_empty(s) || regex.check(all_ascii_lowercase, s)
@@ -231,7 +231,7 @@ pub fn string_non_empty_from__generates_correct_values__test() {
 
   qtest.run(
     config: qtest_config.default()
-      |> qtest_config.with_test_count(short_test_count),
+      |> qtest_config.with_test_count(test_count),
     generator: generator.string_non_empty_from(generator.char_lowercase()),
     property: fn(s) { regex.check(all_ascii_lowercase, s) },
   )

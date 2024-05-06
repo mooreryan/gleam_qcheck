@@ -4,7 +4,7 @@ import qcheck/generator
 import qcheck/qtest
 import qcheck/qtest/config as qtest_config
 
-const short_test_count: Int = 100
+const test_count: Int = 2500
 
 pub fn using_use__test() {
   let generator = {
@@ -56,7 +56,7 @@ pub fn person__test() {
   {
     use #(name, age) <- qtest.run_result(
       config: qtest_config.default()
-        |> qtest_config.with_test_count(short_test_count),
+        |> qtest_config.with_test_count(test_count),
       generator: valid_name_and_age_generator(),
     )
 
@@ -86,7 +86,7 @@ pub fn bind_with_use__test() {
   {
     use generated_value <- qtest.run(
       config: qtest_config.default()
-        |> qtest_config.with_test_count(short_test_count),
+        |> qtest_config.with_test_count(test_count),
       generator: generator,
     )
 
