@@ -473,7 +473,7 @@ pub fn char_alpha() -> Generator(String) {
 
 /// `char_alpha_numeric()` generates alphanumeric (ASCII) characters.
 pub fn char_alpha_numeric() -> Generator(String) {
-  [#(52.0, char_alpha()), #(10.0, char_digit())]
+  [#(26.0, char_uppercase()), #(26.0, char_lowercase()), #(10.0, char_digit())]
   |> from_weighted_generators
 }
 
