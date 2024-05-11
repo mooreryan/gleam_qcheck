@@ -1,7 +1,11 @@
 name = "qcheck"
 version = "0.0.2"
 
-internal_modules = ["qcheck/utils"]
+internal_modules = [
+  "qcheck/utils",
+  "qcheck/qtest/test_error",
+  "qcheck/qtest/test_error_message",
+]
 
 description = "QuickCheck-inspired property testing with integrated shrinking"
 licences = ["Apache-2.0", "MIT"]
@@ -10,6 +14,7 @@ repository = { type = "github", user = "mooreryan", repo = "gleam_qcheck" }
 [dependencies]
 gleam_stdlib = "~> 0.34 or ~> 1.0"
 prng = "~> 3.0"
+exception = ">= 2.0.0 and < 3.0.0"
 
 [dev-dependencies]
 birdie = ">= 1.1.2 and < 2.0.0"

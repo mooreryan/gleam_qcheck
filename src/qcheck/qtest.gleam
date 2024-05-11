@@ -30,8 +30,10 @@
 //// }
 //// ```
 
+import exception
 import qcheck/generator.{type Generator, Generator}
 import qcheck/qtest/config.{type Config} as qtest_config
+import qcheck/qtest/test_error
 import qcheck/shrink
 import qcheck/tree.{type Tree, Tree}
 
@@ -136,4 +138,56 @@ pub fn run_result(
   property property: fn(a) -> Result(b, error),
 ) -> Result(Nil, a) {
   do_run_result(config, generator, property, 0)
+}
+
+pub fn run_panic(
+  config config: Config,
+  generator generator: Generator(a),
+  property property: fn(a) -> b,
+) -> Nil {
+  do_run_panic(config, generator, property, 0)
+}
+
+fn do_run_panic(
+  config: Config,
+  generator: Generator(a),
+  property: fn(a) -> b,
+  i: Int,
+) -> Nil {
+  case i >= config.test_count {
+    True -> Nil
+    False -> {
+      let Generator(generate) = generator
+      let #(tree, seed) = generate(config.random_seed)
+      let Tree(value, _shrinks) = tree
+
+      let result = exception.rescue(fn() { property(value) })
+
+      case result {
+        Ok(_) -> {
+          do_run_panic(
+            config
+              |> qtest_config.with_random_seed(seed),
+            generator,
+            property,
+            i + 1,
+          )
+        }
+        Error(_) -> {
+          let #(shrunk_value, shrink_steps) =
+            shrink.shrink_panic(
+              tree,
+              property,
+              run_property_max_retries: config.max_retries,
+            )
+
+          test_error.failwith(
+            original_value: value,
+            shrunk_value: shrunk_value,
+            shrink_steps: shrink_steps,
+          )
+        }
+      }
+    }
+  }
 }
