@@ -140,15 +140,15 @@ pub fn run_result(
   do_run_result(config, generator, property, 0)
 }
 
-pub fn run_panic(
+pub fn run_assert(
   config config: Config,
   generator generator: Generator(a),
   property property: fn(a) -> b,
 ) -> Nil {
-  do_run_panic(config, generator, property, 0)
+  do_run_assert(config, generator, property, 0)
 }
 
-fn do_run_panic(
+fn do_run_assert(
   config: Config,
   generator: Generator(a),
   property: fn(a) -> b,
@@ -165,7 +165,7 @@ fn do_run_panic(
 
       case result {
         Ok(_) -> {
-          do_run_panic(
+          do_run_assert(
             config
               |> qtest_config.with_random_seed(seed),
             generator,

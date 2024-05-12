@@ -12,7 +12,7 @@ pub fn gleeunit_fail__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qtest.run_panic(
+    qtest.run_assert(
       config: qtest_config.default(),
       generator: generator,
       property: fn(n) { should.be_true(n <= 13 || n >= 25) },
@@ -31,7 +31,7 @@ pub fn assert_fail__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qtest.run_panic(
+    qtest.run_assert(
       config: qtest_config.default(),
       generator: generator,
       property: fn(n) {
