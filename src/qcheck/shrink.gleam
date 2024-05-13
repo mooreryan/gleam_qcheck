@@ -2,10 +2,10 @@
 //// 
 //// You likely won't be interacting with this module directly.
 
-import exception
 import gleam/iterator.{type Iterator}
 import gleam/option.{type Option, None, Some}
 import qcheck/tree.{type Tree}
+import qcheck/try.{NoPanic, Panic, try}
 
 fn float_half_difference(x: Float, y: Float) -> Float {
   { x /. 2.0 } -. { y /. 2.0 }
@@ -117,12 +117,17 @@ type RunPropertyResult {
 }
 
 // See QCheck2.run_law for why we bother with this seemingly pointless thing.
-fn do_run_property(property, value, max_retries, i) {
+fn do_run_property(
+  property: fn(a) -> Bool,
+  value: a,
+  max_retries: Int,
+  i: Int,
+) -> RunPropertyResult {
   case i < max_retries {
     True -> {
-      case property(value) {
-        True -> do_run_property(property, value, max_retries, i + 1)
-        False -> RunPropertyFail
+      case try(fn() { property(value) }) {
+        NoPanic(True) -> do_run_property(property, value, max_retries, i + 1)
+        NoPanic(False) | Panic(_) -> RunPropertyFail
       }
     }
     False -> RunPropertyOk
@@ -130,24 +135,37 @@ fn do_run_property(property, value, max_retries, i) {
 }
 
 // See QCheck2.run_law for why we bother with this seemingly pointless thing.
-fn do_run_property_result(property, value, max_retries, i) {
+fn do_run_property_result(
+  property: fn(a) -> Result(b, error),
+  value: a,
+  max_retries: Int,
+  i: Int,
+) -> RunPropertyResult {
   case i < max_retries {
     True -> {
-      case property(value) {
-        Ok(_) -> do_run_property_result(property, value, max_retries, i + 1)
-        // TODO: return this error
-        Error(_error) -> RunPropertyFail
+      case try(fn() { property(value) }) {
+        NoPanic(Ok(_)) ->
+          do_run_property_result(property, value, max_retries, i + 1)
+        NoPanic(Error(_)) | Panic(_) -> RunPropertyFail
       }
     }
     False -> RunPropertyOk
   }
 }
 
-fn run_property(property, value, max_retries) -> RunPropertyResult {
+fn run_property(
+  property: fn(a) -> Bool,
+  value: a,
+  max_retries: Int,
+) -> RunPropertyResult {
   do_run_property(property, value, max_retries, 0)
 }
 
-fn run_property_result(property, value, max_retries) -> RunPropertyResult {
+fn run_property_result(
+  property: fn(a) -> Result(b, error),
+  value: a,
+  max_retries: Int,
+) -> RunPropertyResult {
   do_run_property_result(property, value, max_retries, 0)
 }
 
@@ -155,7 +173,16 @@ pub fn shrink(
   tree: Tree(a),
   property: fn(a) -> Bool,
   run_property_max_retries run_property_max_retries: Int,
-) -> a {
+) {
+  do_shrink(tree, property, run_property_max_retries, 0)
+}
+
+pub fn do_shrink(
+  tree: Tree(a),
+  property: fn(a) -> Bool,
+  run_property_max_retries run_property_max_retries: Int,
+  shrink_count shrink_count: Int,
+) -> #(a, Int) {
   let tree.Tree(original_failing_value, shrinks) = tree
 
   let result =
@@ -172,9 +199,10 @@ pub fn shrink(
 
   case result {
     // Error means no head here.
-    Error(Nil) -> original_failing_value
+    Error(Nil) -> #(original_failing_value, shrink_count)
     // We have a head, that means we had a fail in one of the shrinks.
-    Ok(next_tree) -> shrink(next_tree, property, run_property_max_retries)
+    Ok(next_tree) ->
+      do_shrink(next_tree, property, run_property_max_retries, shrink_count + 1)
   }
 }
 
@@ -182,7 +210,16 @@ pub fn shrink_result(
   tree: Tree(a),
   property: fn(a) -> Result(b, error),
   run_property_max_retries run_property_max_retries: Int,
-) -> a {
+) {
+  do_shrink_result(tree, property, run_property_max_retries, 0)
+}
+
+pub fn do_shrink_result(
+  tree: Tree(a),
+  property: fn(a) -> Result(b, error),
+  run_property_max_retries run_property_max_retries: Int,
+  shrink_count shrink_count: Int,
+) -> #(a, Int) {
   let tree.Tree(original_failing_value, shrinks) = tree
 
   let result =
@@ -199,10 +236,15 @@ pub fn shrink_result(
 
   case result {
     // Error means no head here.
-    Error(Nil) -> original_failing_value
+    Error(Nil) -> #(original_failing_value, shrink_count)
     // We have a head, that means we had a fail in one of the shrinks.
     Ok(next_tree) ->
-      shrink_result(next_tree, property, run_property_max_retries)
+      do_shrink_result(
+        next_tree,
+        property,
+        run_property_max_retries,
+        shrink_count + 1,
+      )
   }
 }
 
@@ -210,76 +252,4 @@ pub fn shrink_result(
 /// smaller values.
 pub fn atomic() -> fn(a) -> Iterator(a) {
   fn(_) { iterator.empty() }
-}
-
-// exceptions
-//
-//
-
-// See QCheck2.run_law for why we bother with this seemingly pointless thing.
-fn do_run_property_panic(
-  property: fn(a) -> b,
-  value: a,
-  max_retries: Int,
-  i: Int,
-) -> RunPropertyResult {
-  case i < max_retries {
-    True -> {
-      case exception.rescue(fn() { property(value) }) {
-        Ok(_) -> do_run_property_panic(property, value, max_retries, i + 1)
-        Error(_) -> RunPropertyFail
-      }
-    }
-    False -> RunPropertyOk
-  }
-}
-
-fn run_property_panic(
-  property: fn(a) -> b,
-  value: a,
-  max_retries: Int,
-) -> RunPropertyResult {
-  do_run_property_panic(property, value, max_retries, 0)
-}
-
-pub fn shrink_panic(
-  tree: Tree(a),
-  property: fn(a) -> b,
-  run_property_max_retries run_property_max_retries: Int,
-) -> #(a, Int) {
-  do_shrink_panic(tree, property, run_property_max_retries, 0)
-}
-
-fn do_shrink_panic(
-  tree: Tree(a),
-  property: fn(a) -> b,
-  run_property_max_retries run_property_max_retries: Int,
-  shrink_count shrink_count: Int,
-) -> #(a, Int) {
-  let tree.Tree(original_failing_value, shrinks) = tree
-
-  let result =
-    shrinks
-    |> filter_map(fn(tree) {
-      let tree.Tree(value, _) = tree
-
-      case run_property_panic(property, value, run_property_max_retries) {
-        RunPropertyOk -> None
-        RunPropertyFail -> Some(tree)
-      }
-    })
-    |> iterator.first
-
-  case result {
-    // Error means no head here.
-    Error(Nil) -> #(original_failing_value, shrink_count)
-    // We have a head, that means we had a fail in one of the shrinks.
-    Ok(next_tree) ->
-      do_shrink_panic(
-        next_tree,
-        property,
-        run_property_max_retries,
-        shrink_count + 1,
-      )
-  }
 }
