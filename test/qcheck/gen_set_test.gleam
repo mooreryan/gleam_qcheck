@@ -3,7 +3,6 @@ import gleam/int
 import gleam/list
 import gleam/set
 import gleam/string
-import gleeunit/should
 import prng/seed
 import qcheck/generator
 import qcheck/qtest
@@ -25,7 +24,6 @@ pub fn set_generic__generates_valid_values__test() {
       len <= 5 && correct_elements
     },
   )
-  |> should.equal(Ok(Nil))
 }
 
 fn int_set_to_string(s) {

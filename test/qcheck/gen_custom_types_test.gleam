@@ -1,16 +1,9 @@
+import gleam/string
 import gleeunit/should
 import qcheck/generator
 import qcheck/qtest
 import qcheck/qtest/config as qtest_config
-
-type MyInt {
-  MyInt(Int)
-}
-
-fn my_int_to_int(my_int) {
-  let MyInt(n) = my_int
-  n
-}
+import qcheck/qtest/test_error_message as err
 
 pub fn custom_type_passing_test() {
   qtest.run(
@@ -22,20 +15,23 @@ pub fn custom_type_passing_test() {
       n == my_int_to_int(my_int)
     },
   )
-  |> should.equal(Ok(Nil))
 }
 
 pub fn custom_type_failing_test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.small_positive_or_zero_int()
-      |> generator.map(MyInt),
-    property: fn(my_int) {
-      let MyInt(n) = my_int
-      n < 10
-    },
-  )
-  |> should.equal(Error(MyInt(10)))
+  let assert Error(msg) = {
+    use <- err.rescue
+    qtest.run(
+      config: qtest_config.default(),
+      generator: generator.small_positive_or_zero_int()
+        |> generator.map(MyInt),
+      property: fn(my_int) {
+        let MyInt(n) = my_int
+        n < 10
+      },
+    )
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(MyInt(10)))
 }
 
 type Either(a, b) {
@@ -62,7 +58,6 @@ pub fn either_passing_test() {
       }
     },
   )
-  |> should.equal(Ok(Nil))
 }
 
 pub fn either_failing_test() {
@@ -75,31 +70,56 @@ pub fn either_failing_test() {
     )
   }
 
-  run(fn(v) {
-    case v {
-      First(n) -> n % 2 == 1
-      Second(n) -> n % 2 == 0
-    }
-  })
-  |> should.equal(Error(First(0)))
+  let assert Error(msg) = {
+    use <- err.rescue
+    run(fn(v) {
+      case v {
+        First(n) -> n % 2 == 1
+        Second(n) -> n % 2 == 0
+      }
+    })
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(First(0)))
 
   // The n == 0 will prevent the First(0) from being a shrink that fails
   // the property.
-  run(fn(v) {
-    case v {
-      First(n) -> n == 0 || n % 2 == 1
-      Second(n) -> n % 2 == 0
-    }
-  })
-  |> should.equal(Error(Second(1)))
+  let assert Error(msg) = {
+    use <- err.rescue
+    run(fn(v) {
+      case v {
+        First(n) -> n == 0 || n % 2 == 1
+        Second(n) -> n % 2 == 0
+      }
+    })
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(Second(1)))
 
   // The n == 1 will prevent the Second(1) from being a shrink that
   // fails the property.
-  run(fn(v) {
-    case v {
-      First(n) -> n == 0 || n % 2 == 1
-      Second(n) -> n == 1 || n % 2 == 0
-    }
-  })
-  |> should.equal(Error(First(2)))
+  let assert Error(msg) = {
+    use <- err.rescue
+    run(fn(v) {
+      case v {
+        First(n) -> n == 0 || n % 2 == 1
+        Second(n) -> n == 1 || n % 2 == 0
+      }
+    })
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(First(2)))
+}
+
+// utils
+//
+//
+
+type MyInt {
+  MyInt(Int)
+}
+
+fn my_int_to_int(my_int) {
+  let MyInt(n) = my_int
+  n
 }

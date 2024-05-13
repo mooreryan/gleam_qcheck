@@ -1,4 +1,3 @@
-import gleeunit/should
 import qcheck/generator
 import qcheck/qtest
 import qcheck/qtest/config as qtest_config
@@ -13,5 +12,4 @@ pub fn nil_only_generates_nil__test() {
       }
     },
   )
-  |> should.equal(Ok(Nil))
 }

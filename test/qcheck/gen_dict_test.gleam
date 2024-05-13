@@ -2,7 +2,6 @@ import birdie
 import gleam/dict
 import gleam/int
 import gleam/list
-import gleeunit/should
 import prng/seed
 import qcheck/generator
 import qcheck/qtest
@@ -31,7 +30,6 @@ pub fn dict_generic__generates_valid_values__test() {
       size_is_good && keys_are_good && values_are_good
     },
   )
-  |> should.equal(Ok(Nil))
 }
 
 import gleam/string_builder

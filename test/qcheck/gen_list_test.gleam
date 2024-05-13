@@ -2,7 +2,6 @@ import birdie
 import gleam/int
 import gleam/list
 import gleam/string
-import gleeunit/should
 import prng/seed
 import qcheck/generator
 import qcheck/qtest
@@ -22,7 +21,6 @@ pub fn list_generic__generates_valid_values__test() {
       2 <= len && len <= 5 && list.all(l, fn(n) { -5 <= n && n <= 5 })
     },
   )
-  |> should.equal(Ok(Nil))
 }
 
 fn int_list_to_string(l) {

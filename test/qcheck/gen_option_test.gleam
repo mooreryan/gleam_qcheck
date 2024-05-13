@@ -1,8 +1,10 @@
 import gleam/option.{None, Some}
+import gleam/string
 import gleeunit/should
 import qcheck/generator
 import qcheck/qtest
 import qcheck/qtest/config as qtest_config
+import qcheck/qtest/test_error_message as err
 
 pub fn option__test() {
   qtest.run(
@@ -16,7 +18,6 @@ pub fn option__test() {
       }
     },
   )
-  |> should.equal(Ok(Nil))
 }
 
 pub fn option__failures_shrink_ok__test() {
@@ -29,38 +30,54 @@ pub fn option__failures_shrink_ok__test() {
     )
   }
 
-  run(fn(n) {
-    case n {
-      Some(n) -> n == n + 1
-      None -> True
-    }
-  })
-  |> should.equal(Error(Some(0)))
+  let assert Error(msg) = {
+    use <- err.rescue
+    run(fn(n) {
+      case n {
+        Some(n) -> n == n + 1
+        None -> True
+      }
+    })
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(Some(0)))
 
-  run(fn(n) {
-    case n {
-      Some(n) -> n <= 5 || n == n + 1
-      None -> True
-    }
-  })
-  |> should.equal(Error(Some(6)))
+  let assert Error(msg) = {
+    use <- err.rescue
+    run(fn(n) {
+      case n {
+        Some(n) -> n <= 5 || n == n + 1
+        None -> True
+      }
+    })
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(Some(6)))
 
-  run(fn(n) {
-    case n {
-      Some(n) -> n == n
-      None -> False
-    }
-  })
-  |> should.equal(Error(None))
+  let assert Error(msg) = {
+    use <- err.rescue
+    run(fn(n) {
+      case n {
+        Some(n) -> n == n
+        None -> False
+      }
+    })
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(None))
 }
 
 pub fn option_sometimes_generates_none__test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.small_positive_or_zero_int()
-      |> generator.option,
-    // All values are `Some` (False)
-    property: option.is_some,
-  )
-  |> should.equal(Error(None))
+  let assert Error(msg) = {
+    use <- err.rescue
+    qtest.run(
+      config: qtest_config.default(),
+      generator: generator.small_positive_or_zero_int()
+        |> generator.option,
+      // All values are `Some` (False)
+      property: option.is_some,
+    )
+  }
+  err.shrunk_value(msg)
+  |> should.equal(string.inspect(None))
 }
