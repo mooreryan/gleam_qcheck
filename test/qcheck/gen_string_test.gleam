@@ -178,12 +178,9 @@ pub fn string_generators_with_specific_length_dont_shrink_on_length__test() {
 // The string shrinking is basically tested above and not tested here in the
 // context of the `qtest.run`.
 
-// TODO: these string generators are quite slow!
-
 pub fn string_smoke_test() {
   qtest.run(
     config: qtest_config.default()
-      // TODO: this single test is about 1.5s using the default config.
       |> qtest_config.with_test_count(test_count),
     generator: generator.string(),
     property: fn(s) { string.length(s) >= 0 },
@@ -193,7 +190,6 @@ pub fn string_smoke_test() {
 pub fn string_non_empty_generates_non_empty_strings__test() {
   qtest.run(
     config: qtest_config.default()
-      // TODO: this single test is about 1.5s using the default config.
       |> qtest_config.with_test_count(test_count),
     generator: generator.string_non_empty(),
     property: fn(s) { string.length(s) > 0 },
@@ -203,7 +199,6 @@ pub fn string_non_empty_generates_non_empty_strings__test() {
 pub fn string_with_length__generates_length_n_strings__test() {
   qtest.run(
     config: qtest_config.default()
-      // TODO: this single test is about 1.5s using the default config.
       |> qtest_config.with_test_count(test_count),
     generator: generator.string_with_length(3),
     property: string_length_is(3),
