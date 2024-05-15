@@ -35,6 +35,7 @@
 //// 
 //// 
 
+import gleam/string
 import qcheck/generator.{type Generator, Generator}
 import qcheck/qtest/config.{type Config} as qtest_config
 import qcheck/qtest/test_error
@@ -113,7 +114,7 @@ fn do_run(
             property,
             i + 1,
           )
-        NoPanic(False) | Panic(_) -> {
+        NoPanic(False) -> {
           let #(shrunk_value, shrink_steps) =
             shrink.shrink(
               tree,
@@ -125,6 +126,22 @@ fn do_run(
             original_value: value,
             shrunk_value: shrunk_value,
             shrink_steps: shrink_steps,
+            error_msg: "property was False",
+          )
+        }
+        Panic(exn) -> {
+          let #(shrunk_value, shrink_steps) =
+            shrink.shrink(
+              tree,
+              property,
+              run_property_max_retries: config.max_retries,
+            )
+
+          test_error.failwith(
+            original_value: value,
+            shrunk_value: shrunk_value,
+            shrink_steps: shrink_steps,
+            error_msg: string.inspect(exn),
           )
         }
       }
@@ -154,7 +171,7 @@ fn do_run_result(
             property,
             i + 1,
           )
-        NoPanic(Error(_)) | Panic(_) -> {
+        NoPanic(Error(e)) -> {
           let #(shrunk_value, shrink_steps) =
             shrink.shrink_result(
               tree,
@@ -166,6 +183,22 @@ fn do_run_result(
             original_value: value,
             shrunk_value: shrunk_value,
             shrink_steps: shrink_steps,
+            error_msg: string.inspect(e),
+          )
+        }
+        Panic(exn) -> {
+          let #(shrunk_value, shrink_steps) =
+            shrink.shrink_result(
+              tree,
+              property,
+              run_property_max_retries: config.max_retries,
+            )
+
+          test_error.failwith(
+            original_value: value,
+            shrunk_value: shrunk_value,
+            shrink_steps: shrink_steps,
+            error_msg: string.inspect(exn),
           )
         }
       }

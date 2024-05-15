@@ -5,7 +5,12 @@
 import gleam/string
 
 pub opaque type TestError(a) {
-  TestError(original_value: a, shrunk_value: a, shrink_steps: Int)
+  TestError(
+    original_value: a,
+    shrunk_value: a,
+    shrink_steps: Int,
+    error_msg: String,
+  )
 }
 
 pub opaque type TestErrorDisplay {
@@ -16,8 +21,14 @@ pub fn new(
   original_value orig: a,
   shrunk_value shrunk: a,
   shrink_steps steps: Int,
+  error_msg error_msg: String,
 ) -> TestError(a) {
-  TestError(original_value: orig, shrunk_value: shrunk, shrink_steps: steps)
+  TestError(
+    original_value: orig,
+    shrunk_value: shrunk,
+    shrink_steps: steps,
+    error_msg: error_msg,
+  )
 }
 
 fn to_string(test_error: TestError(a)) -> String {
@@ -27,6 +38,8 @@ fn to_string(test_error: TestError(a)) -> String {
   <> string.inspect(test_error.shrunk_value)
   <> "; shrink_steps: "
   <> string.inspect(test_error.shrink_steps)
+  <> "; error: "
+  <> test_error.error_msg
   <> ";]"
 }
 
@@ -42,8 +55,14 @@ pub fn new_string_repr(
   original_value orig: a,
   shrunk_value shrunk: a,
   shrink_steps steps: Int,
+  error_msg error_msg: String,
 ) -> TestErrorDisplay {
-  new(original_value: orig, shrunk_value: shrunk, shrink_steps: steps)
+  new(
+    original_value: orig,
+    shrunk_value: shrunk,
+    shrink_steps: steps,
+    error_msg: error_msg,
+  )
   |> to_string
   |> TestErrorDisplay
 }
@@ -66,11 +85,13 @@ pub fn failwith(
   original_value original_value: a,
   shrunk_value shrunk_value: a,
   shrink_steps shrink_steps: Int,
+  error_msg error_msg: String,
 ) -> b {
   new(
     original_value: original_value,
     shrunk_value: shrunk_value,
     shrink_steps: shrink_steps,
+    error_msg: error_msg,
   )
   |> display
   |> fail
