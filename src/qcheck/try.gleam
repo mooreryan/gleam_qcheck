@@ -1,3 +1,5 @@
+//// Internal module for catching panics within property tests.
+
 import exception
 
 pub type Try(a) {

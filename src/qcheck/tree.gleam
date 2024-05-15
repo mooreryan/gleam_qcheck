@@ -1,7 +1,11 @@
 //// This module provides a tree data structure used to represent a 
 //// pseudo-randomly generated value an its shrunk values.  This "integrated
 //// shrinking" is convenient as most generators get shrinking "for free" that 
-//// that shrinking does not break invaraints. 
+//// does not break invaraints. 
+//// 
+//// Many of these functions will likely become internal at some point.
+////
+//// 
 
 import gleam/function
 import gleam/iterator.{type Iterator}

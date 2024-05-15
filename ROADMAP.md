@@ -34,5 +34,8 @@
   - Also, when appropriate, function arguments should be validated and good errors should be returned.
 - Tests counts in `qtest/config` that are too high can cause timeouts.
 - Include more info (other than just the shrunk value) in counter-examples.
+  - (`v0.0.3`) Now includes the original failing example as well as shrink steps.
 - Don't leak the `prng` types.
+- Consider a reorg of the modules.
+- Finalize which functions are part of the public API.
 

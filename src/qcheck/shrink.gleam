@@ -1,6 +1,10 @@
 //// This module provides helpers for shrinking values.  
 //// 
-//// You likely won't be interacting with this module directly.
+//// You likely won't be interacting with this module directly.  
+//// 
+//// Many of these functions will likely become internal at some point.
+//// 
+//// 
 
 import gleam/iterator.{type Iterator}
 import gleam/option.{type Option, None, Some}
