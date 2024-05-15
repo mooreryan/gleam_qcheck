@@ -11,6 +11,10 @@ NA
 
 ## [0.0.3] - 2024-05-15
 
+### Added
+
+- `qtest.given` and `qtest.given_result` functions for running property tests with the default configuration.
+
 ### Changed
 
 - `qtest.run` and `qtest.run_result` now both return `Nil` on property success, and panic on property failure.
