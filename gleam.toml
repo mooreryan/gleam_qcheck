@@ -3,6 +3,7 @@ version = "0.0.2"
 
 internal_modules = [
   "qcheck/utils",
+  "qcheck/try",
   "qcheck/qtest/test_error",
   "qcheck/qtest/test_error_message",
 ]
