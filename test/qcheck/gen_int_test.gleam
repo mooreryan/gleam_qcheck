@@ -11,21 +11,15 @@ import qcheck/qtest/test_error_message as err
 // 
 
 pub fn small_positive_or_zero_int__test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.small_positive_or_zero_int(),
-    property: fn(n) { n + 1 == 1 + n },
-  )
+  use n <- qtest.given(generator.small_positive_or_zero_int())
+  n + 1 == 1 + n
 }
 
 pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
   let assert Error(msg) = {
     use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
-      generator: generator.small_positive_or_zero_int(),
-      property: fn(n) { n + 1 != 1 + n },
-    )
+    use n <- qtest.given(generator.small_positive_or_zero_int())
+    n + 1 != 1 + n
   }
 
   err.shrunk_value(msg)

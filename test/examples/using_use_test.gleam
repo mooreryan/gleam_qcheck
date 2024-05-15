@@ -11,7 +11,7 @@ pub fn using_use__test() {
     n + 10
   }
 
-  use n <- qtest.given(generator: generator)
+  use n <- qtest.given(generator)
   n >= 10
 }
 
