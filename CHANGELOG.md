@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+NA
+
+## [0.0.3] - 2024-05-15
+
+### Changed
+
+- `qtest.run` and `qtest.run_result` now both return `Nil` on property success, and panic on property failure.
+  - Panics inside property functions are treated as property failures and are handled, which allows shrinking to occur.
+    - This allows users to use assertions to bail out of a test at any time when it is more convenient to do so.
+    - Also, it removes the need to check that `run` and `run_result` return `Ok(Nil)` to signal a successful property.  Rather, no further action needs to be taken on success, as failures will panic, which should be handled by the testing framework.
+  - Property success/failure
+    - `qtest.run` now fails ether if the property returns `False` or if there is a panic in the property.
+    - `qtest.run_result` now fails ether if the property returns `Error` or if there is a panic in the property.
+- Shrinking functions return the number of shrink steps along with the shrunk value.
+- Counter-example info now includes original value, shrunk value, shrink steps, and the relevant error message.
+
+
+## [0.0.2] - 2024-05-06
+
 ### Added
 
 - Add `float_uniform_inclusive` generator
@@ -21,5 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release!
 
 
-[unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.1...HEAD
+[unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.3
+[0.0.2]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.2
 [0.0.1]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.1
