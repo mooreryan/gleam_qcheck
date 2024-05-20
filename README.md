@@ -32,8 +32,8 @@ pub fn small_positive_or_zero_int__test() {
 }
 
 pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
-    use n <- qtest.given(generator.small_positive_or_zero_int())
-    n + 1 != 1 + n
+  use n <- qtest.given(generator.small_positive_or_zero_int())
+  n + 1 != 1 + n
 }
 ```
 
