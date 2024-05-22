@@ -9,6 +9,8 @@ While there are a ton of great articles introducing quickcheck or property-based
 - [An introduction to property based testing](https://fsharpforfunandprofit.com/pbt/)
 - [What is Property Based Testing?](https://hypothesis.works/articles/what-is-property-based-testing/)
 
+You might also be interested in checking out [this project](https://github.com/mooreryan/gleam_stdlib_testing) that uses qcheck to test Gleam's stdlib.
+
 ## Usage
 
 The main modules that you will be interacting with are `qcheck/qtest` and `qcheck/generator`.
