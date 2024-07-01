@@ -303,11 +303,11 @@ pub fn small_positive_or_zero_int() -> Generator(Int) {
   make_primitive(
     random_generator: random.float(0.0, 1.0)
       |> random.then(fn(x) {
-      case x <. 0.75 {
-        True -> random.int(0, 10)
-        False -> random.int(0, 100)
-      }
-    }),
+        case x <. 0.75 {
+          True -> random.int(0, 10)
+          False -> random.int(0, 100)
+        }
+      }),
     make_tree: fn(n) {
       tree.make_primitive(root: n, shrink: shrink.int_towards_zero())
     },

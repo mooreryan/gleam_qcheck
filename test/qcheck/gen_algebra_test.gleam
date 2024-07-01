@@ -287,18 +287,18 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
       config: qtest_config.default(),
       generator: generator.int_uniform()
         |> generator.bind(fn(n) {
-        // n >= 0 here will set the shrinker starting on the `First` case, as that
-        // is what 0 will become.
-        case n >= 0 {
-          True ->
-            generator.int_uniform_inclusive(10, 19)
-            |> generator.map(First)
-          False ->
-            generator.int_uniform_inclusive(90, 99)
-            |> generator.map(int.to_float)
-            |> generator.map(Second)
-        }
-      }),
+          // n >= 0 here will set the shrinker starting on the `First` case, as that
+          // is what 0 will become.
+          case n >= 0 {
+            True ->
+              generator.int_uniform_inclusive(10, 19)
+              |> generator.map(First)
+            False ->
+              generator.int_uniform_inclusive(90, 99)
+              |> generator.map(int.to_float)
+              |> generator.map(Second)
+          }
+        }),
       property: fn(either) {
         // Adding the two extra failing cases for First and Second to test the 
         // shrinking.
@@ -324,18 +324,18 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
       config: qtest_config.default(),
       generator: generator.int_uniform()
         |> generator.bind(fn(n) {
-        // n > 0 here will set the shrinker starting on the `Second` case, as that
-        // is what 0 will become.
-        case n > 0 {
-          True ->
-            generator.int_uniform_inclusive(10, 19)
-            |> generator.map(First)
-          False ->
-            generator.int_uniform_inclusive(90, 99)
-            |> generator.map(int.to_float)
-            |> generator.map(Second)
-        }
-      }),
+          // n > 0 here will set the shrinker starting on the `Second` case, as that
+          // is what 0 will become.
+          case n > 0 {
+            True ->
+              generator.int_uniform_inclusive(10, 19)
+              |> generator.map(First)
+            False ->
+              generator.int_uniform_inclusive(90, 99)
+              |> generator.map(int.to_float)
+              |> generator.map(Second)
+          }
+        }),
       property: fn(either) {
         case either {
           First(15) -> False
@@ -360,16 +360,16 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
       config: qtest_config.default(),
       generator: generator.int_uniform()
         |> generator.bind(fn(n) {
-        case n > 0 {
-          True ->
-            generator.int_uniform_inclusive(10, 19)
-            |> generator.map(First)
-          False ->
-            generator.int_uniform_inclusive(90, 99)
-            |> generator.map(int.to_float)
-            |> generator.map(Second)
-        }
-      }),
+          case n > 0 {
+            True ->
+              generator.int_uniform_inclusive(10, 19)
+              |> generator.map(First)
+            False ->
+              generator.int_uniform_inclusive(90, 99)
+              |> generator.map(int.to_float)
+              |> generator.map(Second)
+          }
+        }),
       // None of the `Second` shrinks will trigger a failure.
       property: fn(either) {
         case either {
