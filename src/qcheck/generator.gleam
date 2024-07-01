@@ -826,6 +826,6 @@ pub fn dict_generic(
   max_length max_length: Int,
 ) -> Generator(Dict(key, value)) {
   tuple2(key_generator, value_generator)
-  |> list_generic(1, max_length)
+  |> list_generic(0, max_length)
   |> map(dict.from_list)
 }

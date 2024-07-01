@@ -53,10 +53,19 @@ pub fn dict_generators_shrink_on_size_then_on_elements__test() {
         value_generator: generator.int_uniform_inclusive(10, 12),
         max_length: 3,
       ),
-      seed.new(2),
+      seed.new(12),
     )
 
   tree
   |> tree.to_string(int_int_dict_to_string)
   |> birdie.snap("dict_generators_shrink_on_size_then_on_elements__test")
+}
+
+pub fn dict_generic__allows_empty_dict__test() {
+  use _ <- qtest.given(generator.dict_generic(
+    generator.int_uniform_inclusive(0, 2),
+    generator.int_uniform_inclusive(10, 12),
+    0,
+  ))
+  True
 }
