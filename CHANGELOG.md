@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-NA
+### Changed
+
+- `dict_generic` uses a minimum size of `0` rather than `1`.
 
 ## [0.0.3] - 2024-05-15
 
