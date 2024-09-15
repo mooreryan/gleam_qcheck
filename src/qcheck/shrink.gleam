@@ -181,7 +181,7 @@ pub fn shrink(
   do_shrink(tree, property, run_property_max_retries, 0)
 }
 
-pub fn do_shrink(
+fn do_shrink(
   tree: Tree(a),
   property: fn(a) -> Bool,
   run_property_max_retries run_property_max_retries: Int,
@@ -218,7 +218,7 @@ pub fn shrink_result(
   do_shrink_result(tree, property, run_property_max_retries, 0)
 }
 
-pub fn do_shrink_result(
+fn do_shrink_result(
   tree: Tree(a),
   property: fn(a) -> Result(b, error),
   run_property_max_retries run_property_max_retries: Int,
