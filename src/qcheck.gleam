@@ -1,5 +1,11 @@
 //// Docs
 //// 
+//// ## Notes
+//// 
+//// - If something is marked as being “unspecified”, do not depend on it, as it
+////   may change at any time without a major version bump. This mainly applies 
+////   to the various `*_to_string` functions.
+//// 
 //// ## Tree
 //// 
 //// This module provides a tree data structure used to represent a 
@@ -297,6 +303,8 @@ pub fn map2_tree(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
   |> apply_tree(b)
 }
 
+/// `sequence_list(list_of_trees)` sequsences a list of trees into a tree of lists.
+/// 
 pub fn sequence_list(l: List(Tree(a))) -> Tree(List(a)) {
   case l {
     [] -> return_tree([])
@@ -322,6 +330,10 @@ pub fn option_tree(tree: Tree(a)) -> Tree(Option(a)) {
 
 // Debugging trees
 
+/// `tree_to_string(tree, element_to_string)` converts a tree into an unspecified string representation.
+/// 
+/// - `element_to_string`: a function that converts individual elements of the tree to strings.
+/// 
 pub fn tree_to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
   do_tree_to_string(tree, a_to_string, level: 0, max_level: 99_999_999, acc: [])
 }
