@@ -237,6 +237,40 @@ fn do_run_result(
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MARK: test config 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/// Configuration for the property-based testing.
+/// 
+/// - `test_count`: The number of tests to run for each property.
+/// - `max_retries`: The number of times to retry the tested property while 
+///   shrinking.
+/// - `random_seed`: The seed for the random generator.
+pub type Config {
+  Config(test_count: Int, max_retries: Int, random_seed: Seed)
+}
+
+/// `default()` returns the default configuration for the property-based testing.
+pub fn default_config() -> Config {
+  Config(test_count: 10_000, max_retries: 1, random_seed: seed.random())
+}
+
+/// `with_test_count()` returns a new configuration with the given test count.
+pub fn with_test_count(config, test_count) {
+  Config(..config, test_count: test_count)
+}
+
+/// `with_max_retries()` returns a new configuration with the given max retries.
+pub fn with_max_retries(config, max_retries) {
+  Config(..config, max_retries: max_retries)
+}
+
+/// `with_random_seed()` returns a new configuration with the given random seed.
+pub fn with_random_seed(config, random_seed) {
+  Config(..config, random_seed: random_seed)
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: trees
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -381,7 +415,7 @@ fn do_tree_to_string(
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: shrink
+// MARK: shrinking
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 fn float_half_difference(x: Float, y: Float) -> Float {
@@ -609,12 +643,14 @@ pub fn shrink_atomic() -> fn(a) -> Iterator(a) {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: generator 
+// MARK: generators 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /// `Generator(a)` is a random generator for values of type `a`.
 /// 
-/// *Note:* It is likely that this type will become opaque in the future.
+/// *Note:* Because it exposes the prng `Seed` type, it is likely that this type 
+/// will become opaque in the future.
+/// 
 pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
 }
@@ -622,6 +658,7 @@ pub type Generator(a) {
 /// `generate(gen, seed)` generates a value of type `a` and its shrinks using the generator `gen`.
 /// 
 /// You should not use this function directly. It is for internal use only.
+/// 
 pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
   let Generator(generate) = generator
 
@@ -644,12 +681,14 @@ fn make_primitive_generator(
 //
 
 /// `return(a)` creates a generator that always returns `a` and does not shrink.
+/// 
 pub fn return(a) {
   Generator(fn(seed) { #(return_tree(a), seed) })
 }
 
 /// `map(generator, f)` transforms the generator `generator` by applying `f` to 
 /// each generated value.  Shrinks as `generator` shrinks, but with `f` applied.
+/// 
 pub fn map(generator generator: Generator(a), f f: fn(a) -> b) -> Generator(b) {
   let Generator(generate) = generator
 
@@ -664,6 +703,7 @@ pub fn map(generator generator: Generator(a), f f: fn(a) -> b) -> Generator(b) {
 
 /// `bind(generator, f)` generates a value of type `a` with `generator`, then 
 /// passes that value to `f`, which uses it to generate values of type `b`.
+/// 
 pub fn bind(
   generator generator: Generator(a),
   f f: fn(a) -> Generator(b),
@@ -686,6 +726,7 @@ pub fn bind(
 
 /// `apply(f, x)` applies a function generator, `f`, and an argument generator, 
 /// `x`, into a result generator.
+/// 
 pub fn apply(
   f f: Generator(fn(a) -> b),
   generator x: Generator(a),
@@ -704,6 +745,7 @@ pub fn apply(
 
 /// `map2(f, g1, g2)` transforms two generators, `g1` and `g2`, by applying `f` 
 /// to each pair of generated values.
+/// 
 pub fn map2(
   f f: fn(t1, t2) -> t3,
   g1 g1: Generator(t1),
@@ -718,6 +760,7 @@ pub fn map2(
 
 /// `map3(f, g1, g2, g3)` transforms three generators, `g1`, `g2`, and `g3`, by
 /// applying `f` to each triple of generated values.
+/// 
 pub fn map3(
   f f: fn(t1, t2, t3) -> t4,
   g1 g1: Generator(t1),
@@ -734,6 +777,7 @@ pub fn map3(
 
 /// `map4(f, g1, g2, g3, g4)` transforms four generators, `g1`, `g2`, `g3`, and
 /// `g4`, by applying `f` to each quadruple of generated values.
+/// 
 pub fn map4(
   f f: fn(t1, t2, t3, t4) -> t5,
   g1 g1: Generator(t1),
@@ -752,6 +796,7 @@ pub fn map4(
 
 /// `map5(f, g1, g2, g3, g4, g5)` transforms five generators, `g1`, `g2`, `g3`,
 /// `g4`, and `g5`, by applying `f` to each quintuple of generated values.
+/// 
 pub fn map5(
   f f: fn(t1, t2, t3, t4, t5) -> t6,
   g1 g1: Generator(t1),
@@ -772,6 +817,7 @@ pub fn map5(
 
 /// `map6(f, g1, g2, g3, g4, g5, g6)` transforms six generators, `g1`, `g2`, `g3`,
 /// `g4`, `g5`, and `g6`, by applying `f` to each sextuple of generated values.
+/// 
 pub fn map6(
   f f: fn(t1, t2, t3, t4, t5, t6) -> t7,
   g1 g1: Generator(t1),
@@ -794,6 +840,7 @@ pub fn map6(
 
 /// `tuple2(g1, g2)` generates a tuple of two values, one each from generators 
 /// `g1` and `g2`.
+/// 
 pub fn tuple2(g1: Generator(t1), g2: Generator(t2)) -> Generator(#(t1, t2)) {
   fn(t1, t2) { #(t1, t2) }
   |> map2(g1, g2)
@@ -801,6 +848,7 @@ pub fn tuple2(g1: Generator(t1), g2: Generator(t2)) -> Generator(#(t1, t2)) {
 
 /// `tuple3(g1, g2, g3)` generates a tuple of three values, one each from
 /// generators `g1`, `g2`, and `g3`.
+/// 
 pub fn tuple3(
   g1: Generator(t1),
   g2: Generator(t2),
@@ -812,6 +860,7 @@ pub fn tuple3(
 
 /// `tuple4(g1, g2, g3, g4)` generates a tuple of four values, one each from
 /// generators `g1`, `g2`, `g3`, and `g4`.
+/// 
 pub fn tuple4(
   g1: Generator(t1),
   g2: Generator(t2),
@@ -824,6 +873,7 @@ pub fn tuple4(
 
 /// `tuple5(g1, g2, g3, g4, g5)` generates a tuple of five values, one each from
 /// generators `g1`, `g2`, `g3`, `g4`, and `g5`.
+/// 
 pub fn tuple5(
   g1: Generator(t1),
   g2: Generator(t2),
@@ -837,6 +887,7 @@ pub fn tuple5(
 
 /// `tuple6(g1, g2, g3, g4, g5, g6)` generates a tuple of six values, one each 
 /// from generators `g1`, `g2`, `g3`, `g4`, `g5`, and `g6`.
+/// 
 pub fn tuple6(
   g1: Generator(t1),
   g2: Generator(t2),
@@ -851,6 +902,7 @@ pub fn tuple6(
 
 /// `from_generators(generators)` chooses a generator from a list of generators 
 /// weighted uniformly, then chooses a value from that generator.
+/// 
 pub fn from_generators(generators: List(Generator(a))) -> Generator(a) {
   // TODO: better error message on empty list
   let assert [generator, ..generators] = generators
@@ -866,6 +918,7 @@ pub fn from_generators(generators: List(Generator(a))) -> Generator(a) {
 
 /// `from_generators(generators)` chooses a generator from a list of generators
 /// weighted by the given weigths, then chooses a value from that generator.
+/// 
 pub fn from_weighted_generators(
   generators: List(#(Float, Generator(a))),
 ) -> Generator(a) {
@@ -892,6 +945,7 @@ pub fn from_weighted_generators(
 /// Smaller numbers are more likely than larger numbers.
 /// 
 /// Shrinks towards `0`.
+/// 
 pub fn small_positive_or_zero_int() -> Generator(Int) {
   make_primitive_generator(
     random_generator: random.float(0.0, 1.0)
@@ -909,6 +963,7 @@ pub fn small_positive_or_zero_int() -> Generator(Int) {
 
 /// `small_strictly_positive_int()` generates small integers strictly greater
 /// than `0`.
+/// 
 pub fn small_strictly_positive_int() -> Generator(Int) {
   small_positive_or_zero_int()
   |> map(int.add(_, 1))
@@ -945,6 +1000,7 @@ pub fn int_uniform_inclusive(low low: Int, high high: Int) -> Generator(Int) {
 /// range and shrinks towards `0`.
 /// 
 /// Note: this generator does not hit interesting or corner cases very often.
+/// 
 pub fn int_uniform() -> Generator(Int) {
   int_uniform_inclusive(random.min_int, random.max_int)
 }
@@ -959,7 +1015,8 @@ fn generate_option() -> random.Generator(GenerateOption) {
 }
 
 /// `option(gen)` is an `Option` generator that uses `gen` to generate `Some` 
-/// values.  Shrinks towards `None` then towards shrinks of `gen`. 
+/// values.  Shrinks towards `None` then towards shrinks of `gen`.
+/// 
 pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
   let Generator(generate) = generator
 
@@ -1004,6 +1061,7 @@ const char_max_value: Int = 255
 /// generators.
 /// 
 /// Shrinks towards `a` when possible, but won't go outside of the range.
+/// 
 pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String) {
   let a = 97
   let origin = pick_origin_within_range(low, high, goal: a)
@@ -1023,6 +1081,7 @@ pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String)
 }
 
 /// `char_uppercase()` generates uppercase (ASCII) letters.
+/// 
 pub fn char_uppercase() -> Generator(String) {
   let a = char_to_int("A")
   let z = char_to_int("Z")
@@ -1031,6 +1090,7 @@ pub fn char_uppercase() -> Generator(String) {
 }
 
 /// `char_lowercase()` generates lowercase (ASCII) letters.
+/// 
 pub fn char_lowercase() -> Generator(String) {
   let a = char_to_int("a")
   let z = char_to_int("z")
@@ -1039,6 +1099,7 @@ pub fn char_lowercase() -> Generator(String) {
 }
 
 /// `char_digit()` generates digits from `0` to `9`, inclusive.
+/// 
 pub fn char_digit() -> Generator(String) {
   let zero = char_to_int("0")
   let nine = char_to_int("9")
@@ -1050,6 +1111,7 @@ pub fn char_digit() -> Generator(String) {
 // Note: the shrink target for this will be `"a"`.
 //
 /// `char_print_uniform()` generates printable ASCII characters.
+/// 
 pub fn char_print_uniform() -> Generator(String) {
   let space = char_to_int(" ")
   let tilde = char_to_int("~")
@@ -1059,17 +1121,20 @@ pub fn char_print_uniform() -> Generator(String) {
 
 /// `char_uniform()` generates characters uniformly distributed across the 
 /// default range.
+/// 
 pub fn char_uniform() -> Generator(String) {
   char_uniform_inclusive(char_min_value, char_max_value)
 }
 
 /// `char_alpha()` generates alphabetic (ASCII) characters.
+/// 
 pub fn char_alpha() -> Generator(String) {
   [char_uppercase(), char_lowercase()]
   |> from_generators
 }
 
 /// `char_alpha_numeric()` generates alphanumeric (ASCII) characters.
+/// 
 pub fn char_alpha_numeric() -> Generator(String) {
   [#(26.0, char_uppercase()), #(26.0, char_lowercase()), #(10.0, char_digit())]
   |> from_weighted_generators
@@ -1077,6 +1142,7 @@ pub fn char_alpha_numeric() -> Generator(String) {
 
 /// `char_from_list(chars)` generates characters from the given list of
 /// characters.
+/// 
 pub fn char_from_list(chars: List(String)) -> Generator(String) {
   let ints = list.map(chars, char_to_int)
   // TODO: assert that they are all single length chars
@@ -1123,6 +1189,7 @@ fn char_is_whitespace(c) {
 }
 
 /// `char_whitespace()` generates whitespace (ASCII) characters.
+/// 
 pub fn char_whitespace() -> Generator(String) {
   all_char_list()
   |> list.filter(char_is_whitespace)
@@ -1132,6 +1199,7 @@ pub fn char_whitespace() -> Generator(String) {
 
 /// `char_print()` generates printable ASCII characters, with a bias towards
 /// alphanumeric characters.
+/// 
 pub fn char_print() -> Generator(String) {
   // Numbers indicate percent chance of picking the generator.
   from_weighted_generators([
@@ -1144,6 +1212,7 @@ pub fn char_print() -> Generator(String) {
 
 /// `char()` generates characters with a bias towards printable ASCII 
 /// characters, while still hitting some edge cases.
+/// 
 pub fn char() {
   // Numbers indicate percent chance of picking the generator.
   from_weighted_generators([
@@ -1194,6 +1263,7 @@ fn do_gen_string(
 //
 /// `string_with_length_from(gen, length)` generates strings of the given 
 /// `length` from the given generator.
+/// 
 pub fn string_with_length_from(
   generator: Generator(String),
   length,
@@ -1224,6 +1294,7 @@ pub fn string_with_length_from(
 
 /// `string_generic(char_generator, length_generator)` generates strings with 
 /// characters from `char_generator` and lengths from `length_generator`.
+/// 
 pub fn string_generic(
   char_generator: Generator(String),
   length_generator: Generator(Int),
@@ -1234,6 +1305,7 @@ pub fn string_generic(
 
 /// `string() generates strings with the default character generator and the 
 /// default length generator.
+/// 
 pub fn string() -> Generator(String) {
   bind(small_positive_or_zero_int(), fn(length) {
     string_with_length_from(char(), length)
@@ -1242,6 +1314,7 @@ pub fn string() -> Generator(String) {
 
 /// `string_non_empty()` generates non-empty strings with the default character 
 /// generator and the default length generator.
+/// 
 pub fn string_non_empty() -> Generator(String) {
   bind(small_strictly_positive_int(), fn(length) {
     string_with_length_from(char(), length)
@@ -1250,12 +1323,14 @@ pub fn string_non_empty() -> Generator(String) {
 
 /// `string_with_length(length)` generates strings of the given `length` with the 
 /// default character generator.
+/// 
 pub fn string_with_length(length: Int) -> Generator(String) {
   string_with_length_from(char(), length)
 }
 
 /// `string_from(char_generator)` generates strings from the given character generator 
 /// using the default length generator.
+/// 
 pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
   bind(small_positive_or_zero_int(), fn(length) {
     string_with_length_from(char_generator, length)
@@ -1264,6 +1339,7 @@ pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
 
 /// `string_non_empty_from(char_generator)` generates non-empty strings from the given 
 /// character generator using the default length generator.
+/// 
 pub fn string_non_empty_from(
   char_generator: Generator(String),
 ) -> Generator(String) {
@@ -1277,6 +1353,7 @@ pub fn string_non_empty_from(
 //
 
 /// `nil()` is the `Nil` generator. It always returns `Nil` and does not shrink.
+/// 
 pub fn nil() -> Generator(Nil) {
   Generator(fn(seed) { #(return_tree(Nil), seed) })
 }
@@ -1286,6 +1363,7 @@ pub fn nil() -> Generator(Nil) {
 //
 
 /// `bool()` generates booleans and shrinks towards `False`.
+/// 
 pub fn bool() -> Generator(Bool) {
   Generator(fn(seed) {
     let #(bool, seed) =
@@ -1315,6 +1393,7 @@ fn exp(x: Float) -> Float {
 //
 /// `float()` generates floats with a bias towards smaller values and shrinks 
 /// towards `0.0`.
+/// 
 pub fn float() -> Generator(Float) {
   Generator(fn(seed) {
     let #(x, seed) =
@@ -1385,6 +1464,7 @@ fn list_generic_loop(
 /// `max_len`, inclusive.
 ///  
 /// Shrinks first on the number of elements, then on the elements themselves.
+/// 
 pub fn list_generic(
   element_generator: Generator(a),
   min_length min_len: Int,
@@ -1406,6 +1486,7 @@ pub fn list_generic(
 /// `element_generator`.
 /// 
 /// Shrinks first on the number of elements, then on the elements themselves.
+/// 
 pub fn set_generic(element_generator: Generator(a), max_length max_len: Int) {
   list_generic(element_generator, 0, max_len)
   |> map(set.from_list)
@@ -1419,6 +1500,7 @@ pub fn set_generic(element_generator: Generator(a), max_length max_len: Int) {
 /// from `key_generator` and values from `value_generator` with lengths up to `max_len`.
 /// 
 /// Shrinks on size then on elements.
+/// 
 pub fn dict_generic(
   key_generator key_generator: Generator(key),
   value_generator value_generator: Generator(value),
@@ -1427,142 +1509,6 @@ pub fn dict_generic(
   tuple2(key_generator, value_generator)
   |> list_generic(0, max_length)
   |> map(dict.from_list)
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: try
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-pub type Try(a) {
-  NoPanic(a)
-  Panic(exception.Exception)
-}
-
-pub fn try(f: fn() -> a) -> Try(a) {
-  case exception.rescue(fn() { f() }) {
-    Ok(y) -> NoPanic(y)
-    Error(exn) -> Panic(exn)
-  }
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: utils 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-pub fn list_return(a) {
-  [a]
-}
-
-pub fn ok_exn(result) {
-  let assert Ok(x) = result
-
-  x
-}
-
-pub fn list_cons(x, xs) {
-  [x, ..xs]
-}
-
-pub fn utf_codepoint_exn(n) {
-  let assert Ok(cp) = string.utf_codepoint(n)
-
-  cp
-}
-
-// TODO: Could this be simplified?
-pub fn int_to_char(n: Int) -> String {
-  n
-  |> string.utf_codepoint
-  |> ok_exn
-  |> list_return
-  |> string.from_utf_codepoints
-}
-
-pub fn char_to_int(c: String) -> Int {
-  string.to_utf_codepoints(c)
-  |> list.first
-  |> ok_exn
-  |> string.utf_codepoint_to_int
-}
-
-// Assumes that the args are properly ordered.
-pub fn pick_origin_within_range(low: Int, high: Int, goal goal: Int) {
-  case low > goal {
-    True -> low
-    False ->
-      case high < goal {
-        True -> high
-        False -> goal
-      }
-  }
-}
-
-// Assumes that the args are properly ordered.
-pub fn pick_origin_within_range_float(low: Float, high: Float, goal goal: Float) {
-  case low >. goal {
-    True -> low
-    False ->
-      case high <. goal {
-        True -> high
-        False -> goal
-      }
-  }
-}
-
-fn do_filter_map(
-  it: iterator.Iterator(a),
-  f: fn(a) -> Option(b),
-) -> iterator.Step(b, iterator.Iterator(a)) {
-  case iterator.step(it) {
-    iterator.Done -> iterator.Done
-    iterator.Next(x, it) -> {
-      case f(x) {
-        None -> do_filter_map(it, f)
-        Some(y) -> iterator.Next(y, it)
-      }
-    }
-  }
-}
-
-fn filter_map(
-  it: iterator.Iterator(a),
-  f: fn(a) -> Option(b),
-) -> iterator.Iterator(b) {
-  iterator.unfold(it, do_filter_map(_, f))
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: config 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-/// Configuration for the property-based testing.
-/// 
-/// - `test_count`: The number of tests to run for each property.
-/// - `max_retries`: The number of times to retry the tested property while 
-///   shrinking.
-/// - `random_seed`: The seed for the random generator.
-pub type Config {
-  Config(test_count: Int, max_retries: Int, random_seed: Seed)
-}
-
-/// `default()` returns the default configuration for the property-based testing.
-pub fn default_config() -> Config {
-  Config(test_count: 10_000, max_retries: 1, random_seed: seed.random())
-}
-
-/// `with_test_count()` returns a new configuration with the given test count.
-pub fn with_test_count(config, test_count) {
-  Config(..config, test_count: test_count)
-}
-
-/// `with_max_retries()` returns a new configuration with the given max retries.
-pub fn with_max_retries(config, max_retries) {
-  Config(..config, max_retries: max_retries)
-}
-
-/// `with_random_seed()` returns a new configuration with the given random seed.
-pub fn with_random_seed(config, random_seed) {
-  Config(..config, random_seed: random_seed)
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1775,3 +1721,99 @@ pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
 @external(erlang, "qcheck_ffi", "rescue_error")
 @external(javascript, "../../qcheck_ffi.mjs", "rescue_error")
 pub fn rescue_error(f: fn() -> a) -> Result(a, String)
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MARK: try
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+pub type Try(a) {
+  NoPanic(a)
+  Panic(exception.Exception)
+}
+
+pub fn try(f: fn() -> a) -> Try(a) {
+  case exception.rescue(fn() { f() }) {
+    Ok(y) -> NoPanic(y)
+    Error(exn) -> Panic(exn)
+  }
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MARK: utils 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+fn list_return(a) {
+  [a]
+}
+
+fn ok_exn(result) {
+  let assert Ok(x) = result
+
+  x
+}
+
+fn list_cons(x, xs) {
+  [x, ..xs]
+}
+
+// TODO: Could this be simplified?
+fn int_to_char(n: Int) -> String {
+  n
+  |> string.utf_codepoint
+  |> ok_exn
+  |> list_return
+  |> string.from_utf_codepoints
+}
+
+fn char_to_int(c: String) -> Int {
+  string.to_utf_codepoints(c)
+  |> list.first
+  |> ok_exn
+  |> string.utf_codepoint_to_int
+}
+
+// Assumes that the args are properly ordered.
+fn pick_origin_within_range(low: Int, high: Int, goal goal: Int) {
+  case low > goal {
+    True -> low
+    False ->
+      case high < goal {
+        True -> high
+        False -> goal
+      }
+  }
+}
+
+// Assumes that the args are properly ordered.
+fn pick_origin_within_range_float(low: Float, high: Float, goal goal: Float) {
+  case low >. goal {
+    True -> low
+    False ->
+      case high <. goal {
+        True -> high
+        False -> goal
+      }
+  }
+}
+
+fn do_filter_map(
+  it: iterator.Iterator(a),
+  f: fn(a) -> Option(b),
+) -> iterator.Step(b, iterator.Iterator(a)) {
+  case iterator.step(it) {
+    iterator.Done -> iterator.Done
+    iterator.Next(x, it) -> {
+      case f(x) {
+        None -> do_filter_map(it, f)
+        Some(y) -> iterator.Next(y, it)
+      }
+    }
+  }
+}
+
+fn filter_map(
+  it: iterator.Iterator(a),
+  f: fn(a) -> Option(b),
+) -> iterator.Iterator(b) {
+  iterator.unfold(it, do_filter_map(_, f))
+}
