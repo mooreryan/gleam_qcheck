@@ -297,11 +297,11 @@ pub fn map2_tree(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
   |> apply_tree(b)
 }
 
-pub fn iterator_list_tree(l: List(Tree(a))) -> Tree(List(a)) {
+pub fn sequence_list(l: List(Tree(a))) -> Tree(List(a)) {
   case l {
     [] -> return_tree([])
     [hd, ..tl] -> {
-      map2_tree(list_cons, hd, iterator_list_tree(tl))
+      map2_tree(list_cons, hd, sequence_list(tl))
     }
   }
 }
@@ -1194,7 +1194,7 @@ pub fn string_with_length_from(
     // TODO: Ideally this whole thing would be delayed until needed.
     let shrink = fn() {
       let char_trees: List(Tree(String)) = list.reverse(char_trees_rev)
-      let char_list_tree: Tree(List(String)) = iterator_list_tree(char_trees)
+      let char_list_tree: Tree(List(String)) = sequence_list(char_trees)
 
       // Technically `Tree(_root, children)` is the whole tree, but we create it
       // eagerly above.
