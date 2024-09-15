@@ -465,7 +465,6 @@ pub fn shrink_float_towards_zero() -> fn(Float) -> iterator.Iterator(Float) {
   shrink_float_towards(destination: 0.0)
 }
 
-// Custom type for readibility.
 type RunPropertyResult {
   RunPropertyOk
   RunPropertyFail
@@ -524,7 +523,7 @@ fn run_property_result(
   do_run_property_result(property, value, max_retries, 0)
 }
 
-pub fn shrink(
+fn shrink(
   tree: Tree(a),
   property: fn(a) -> Bool,
   run_property_max_retries run_property_max_retries: Int,
@@ -561,7 +560,7 @@ fn do_shrink(
   }
 }
 
-pub fn shrink_result(
+fn shrink_result(
   tree: Tree(a),
   property: fn(a) -> Result(b, error),
   run_property_max_retries run_property_max_retries: Int,
