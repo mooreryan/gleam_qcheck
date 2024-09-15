@@ -7,9 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Top-level `qcheck` module
+  - All public functionality now lives in this module.
+  - Any other modules should be considered internal or private.
+
 ### Changed
 
 - `dict_generic` uses a minimum size of `0` rather than `1`.
+- Some functions were renamed to fit into the new single-module API. Here are a few of the more important ones:
+  - `qcheck/qtest/config.default` -> `qcheck.default_config`
+  - `qcheck/generator.make_primitive` -> `qcheck.make_primitive_generator`
+  - `qcheck/shrink` functions are now prefixed with `shrink_`, e.g., `qcheck.shrink_int_towards_zero`.
+  - `qcheck/tree`
+    - `apply` -> `qcheck.apply_tree`
+    - `bind` -> `qcheck.bind_tree`
+    - `iterator_list` -> `qcheck.iterator_list_tree`
+    - `make_primitive` -> `qcheck.make_primitive`
+    - `map` -> `qcheck.map_tree`
+    - `map2` -> `qcheck.map2_tree`
+    - `option` -> `qcheck.option_tree`
+    - `return` -> `qcheck.return_tree`
+    - `to_string` -> `qcheck.tree_to_string`
 
 ## [0.0.3] - 2024-05-15
 
@@ -22,13 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `qtest.run` and `qtest.run_result` now both return `Nil` on property success, and panic on property failure.
   - Panics inside property functions are treated as property failures and are handled, which allows shrinking to occur.
     - This allows users to use assertions to bail out of a test at any time when it is more convenient to do so.
-    - Also, it removes the need to check that `run` and `run_result` return `Ok(Nil)` to signal a successful property.  Rather, no further action needs to be taken on success, as failures will panic, which should be handled by the testing framework.
+    - Also, it removes the need to check that `run` and `run_result` return `Ok(Nil)` to signal a successful property. Rather, no further action needs to be taken on success, as failures will panic, which should be handled by the testing framework.
   - Property success/failure
     - `qtest.run` now fails ether if the property returns `False` or if there is a panic in the property.
     - `qtest.run_result` now fails ether if the property returns `Error` or if there is a panic in the property.
 - Shrinking functions return the number of shrink steps along with the shrunk value.
 - Counter-example info now includes original value, shrunk value, shrink steps, and the relevant error message.
-
 
 ## [0.0.2] - 2024-05-06
 
@@ -44,7 +63,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.1] - 2024-04-28
 
 - Initial release!
-
 
 [unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.3...HEAD
 [0.0.3]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.3
