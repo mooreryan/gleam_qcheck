@@ -4,13 +4,10 @@ import gleam/regex
 import gleam/result
 import gleam/string
 import gleeunit/should
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
-import qcheck/qtest/test_error_message as err
+import qcheck
 
 // TODO: a lot of the shrink tests could probably be simplified by inspecting
-//   the output of `generator.generate_tree` instead.
+//   the output of `qcheck.generate_tree` instead.
 
 // map
 // 
@@ -18,16 +15,15 @@ import qcheck/qtest/test_error_message as err
 
 pub fn map__test() {
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
-      generator: generator.small_positive_or_zero_int()
-        |> generator.map(int.to_float),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
+      generator: qcheck.small_positive_or_zero_int() |> qcheck.map(int.to_float),
       property: fn(n) { n == 0.0 || n >. 1.0 },
     )
   }
 
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("1.0")
 }
 
@@ -41,11 +37,11 @@ pub fn map2__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.map2(fn(a, b) { #(a, b) }, gen_int, gen_int),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map2(fn(a, b) { #(a, b) }, gen_int, gen_int),
     property: fn(tup2) {
       let #(a, b) = tup2
 
@@ -60,11 +56,11 @@ pub fn map3__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.map3(
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map3(
       fn(a, b, c) { #(a, b, c) },
       gen_int,
       gen_int,
@@ -84,11 +80,11 @@ pub fn map4__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.map4(
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map4(
       fn(a, b, c, d) { #(a, b, c, d) },
       gen_int,
       gen_int,
@@ -109,11 +105,11 @@ pub fn map5__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.map5(
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map5(
       fn(a, b, c, d, e) { #(a, b, c, d, e) },
       gen_int,
       gen_int,
@@ -135,11 +131,11 @@ pub fn map6__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.map6(
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map6(
       fn(a, b, c, d, e, f) { #(a, b, c, d, e, f) },
       gen_int,
       gen_int,
@@ -167,11 +163,11 @@ pub fn tuple2__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.tuple2(gen_int, gen_int),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.tuple2(gen_int, gen_int),
     property: fn(tup2) {
       let #(a, b) = tup2
 
@@ -186,11 +182,11 @@ pub fn tuple3__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.tuple3(gen_int, gen_int, gen_int),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.tuple3(gen_int, gen_int, gen_int),
     property: fn(tup3) {
       let #(a, b, c) = tup3
 
@@ -205,11 +201,11 @@ pub fn tuple4__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.tuple4(gen_int, gen_int, gen_int, gen_int),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.tuple4(gen_int, gen_int, gen_int, gen_int),
     property: fn(tup4) {
       let #(a, b, c, d) = tup4
 
@@ -224,11 +220,11 @@ pub fn tuple5__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.tuple5(gen_int, gen_int, gen_int, gen_int, gen_int),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.tuple5(gen_int, gen_int, gen_int, gen_int, gen_int),
     property: fn(tup5) {
       let #(a, b, c, d, e) = tup5
 
@@ -243,11 +239,11 @@ pub fn tuple6__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = generator.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
 
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.tuple6(
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.tuple6(
       gen_int,
       gen_int,
       gen_int,
@@ -282,21 +278,21 @@ type Either(a, b) {
 
 pub fn shrinking_works_with_bind_and_custom_types_test() {
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
-      generator: generator.int_uniform()
-        |> generator.bind(fn(n) {
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
+      generator: qcheck.int_uniform()
+        |> qcheck.bind(fn(n) {
           // n >= 0 here will set the shrinker starting on the `First` case, as that
           // is what 0 will become.
           case n >= 0 {
             True ->
-              generator.int_uniform_inclusive(10, 19)
-              |> generator.map(First)
+              qcheck.int_uniform_inclusive(10, 19)
+              |> qcheck.map(First)
             False ->
-              generator.int_uniform_inclusive(90, 99)
-              |> generator.map(int.to_float)
-              |> generator.map(Second)
+              qcheck.int_uniform_inclusive(90, 99)
+              |> qcheck.map(int.to_float)
+              |> qcheck.map(Second)
           }
         }),
       property: fn(either) {
@@ -313,27 +309,27 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("First(14)")
 }
 
 pub fn shrinking_works_with_bind_and_custom_types_2_test() {
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
-      generator: generator.int_uniform()
-        |> generator.bind(fn(n) {
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
+      generator: qcheck.int_uniform()
+        |> qcheck.bind(fn(n) {
           // n > 0 here will set the shrinker starting on the `Second` case, as that
           // is what 0 will become.
           case n > 0 {
             True ->
-              generator.int_uniform_inclusive(10, 19)
-              |> generator.map(First)
+              qcheck.int_uniform_inclusive(10, 19)
+              |> qcheck.map(First)
             False ->
-              generator.int_uniform_inclusive(90, 99)
-              |> generator.map(int.to_float)
-              |> generator.map(Second)
+              qcheck.int_uniform_inclusive(90, 99)
+              |> qcheck.map(int.to_float)
+              |> qcheck.map(Second)
           }
         }),
       property: fn(either) {
@@ -349,25 +345,25 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
     )
   }
 
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("Second(94.0)")
 }
 
 pub fn shrinking_works_with_bind_and_custom_types_3_test() {
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
-      generator: generator.int_uniform()
-        |> generator.bind(fn(n) {
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
+      generator: qcheck.int_uniform()
+        |> qcheck.bind(fn(n) {
           case n > 0 {
             True ->
-              generator.int_uniform_inclusive(10, 19)
-              |> generator.map(First)
+              qcheck.int_uniform_inclusive(10, 19)
+              |> qcheck.map(First)
             False ->
-              generator.int_uniform_inclusive(90, 99)
-              |> generator.map(int.to_float)
-              |> generator.map(Second)
+              qcheck.int_uniform_inclusive(90, 99)
+              |> qcheck.map(int.to_float)
+              |> qcheck.map(Second)
           }
         }),
       // None of the `Second` shrinks will trigger a failure.
@@ -381,7 +377,7 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
     )
   }
 
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("First(14)")
 }
 
@@ -400,13 +396,13 @@ pub fn apply__test() {
 
   let generator =
     tuple3
-    |> generator.return
-    |> generator.apply(generator.int_uniform_inclusive(-5, 5))
-    |> generator.apply(generator.int_uniform_inclusive(-10, 10))
-    |> generator.apply(generator.int_uniform_inclusive(-100, 100))
+    |> qcheck.return
+    |> qcheck.apply(qcheck.int_uniform_inclusive(-5, 5))
+    |> qcheck.apply(qcheck.int_uniform_inclusive(-10, 10))
+    |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
 
-  qtest.run(
-    config: qtest_config.default(),
+  qcheck.run(
+    config: qcheck.default_config(),
     generator: generator,
     property: fn(ns) {
       let #(a, b, c) = ns
@@ -427,16 +423,16 @@ pub fn shrinking_works_with_apply__test() {
 
   let generator =
     tuple3
-    |> generator.return
-    |> generator.apply(generator.int_uniform_inclusive(-5, 5))
-    |> generator.apply(generator.int_uniform_inclusive(-10, 10))
-    |> generator.apply(generator.int_uniform_inclusive(-100, 100))
+    |> qcheck.return
+    |> qcheck.apply(qcheck.int_uniform_inclusive(-5, 5))
+    |> qcheck.apply(qcheck.int_uniform_inclusive(-10, 10))
+    |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
 
   let assert Error(msg) = {
-    use <- err.rescue
+    use <- qcheck.rescue
 
-    qtest.run(
-      config: qtest_config.default(),
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -448,13 +444,13 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("#(4, 0, 0)")
 
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -466,13 +462,13 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("#(-4, 0, 0)")
 
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -484,13 +480,13 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 6, 0)")
 
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -502,13 +498,13 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, -6, 0)")
 
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -520,13 +516,13 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 0, 51)")
 
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -538,13 +534,13 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 0, -51)")
 
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -556,13 +552,13 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal("#(4, 6, 51)")
 
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
       generator: generator,
       property: fn(ns) {
         let #(a, b, c) = ns
@@ -616,7 +612,7 @@ pub fn shrinking_works_with_apply__test() {
   }
 
   let assert Ok(numbers) =
-    err.shrunk_value(msg)
+    qcheck.test_error_message_shrunk_value(msg)
     |> parse_numbers
 
   numbers

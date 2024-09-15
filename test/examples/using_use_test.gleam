@@ -1,17 +1,15 @@
 import gleam/string
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
+import qcheck
 
 const test_count: Int = 2500
 
 pub fn using_use__test() {
   let generator = {
-    use n <- generator.map(generator.small_positive_or_zero_int())
+    use n <- qcheck.map(qcheck.small_positive_or_zero_int())
     n + 10
   }
 
-  use n <- qtest.given(generator)
+  use n <- qcheck.given(generator)
   n >= 10
 }
 
@@ -38,17 +36,16 @@ fn make_person(name, age) {
 }
 
 fn valid_name_and_age_generator() {
-  let name_generator = generator.string_non_empty()
-  let age_generator = generator.int_uniform_inclusive(low: 0, high: 129)
+  let name_generator = qcheck.string_non_empty()
+  let age_generator = qcheck.int_uniform_inclusive(low: 0, high: 129)
 
-  use name, age <- generator.map2(g1: name_generator, g2: age_generator)
+  use name, age <- qcheck.map2(g1: name_generator, g2: age_generator)
   #(name, age)
 }
 
 pub fn person__test() {
-  use #(name, age) <- qtest.run_result(
-    config: qtest_config.default()
-      |> qtest_config.with_test_count(test_count),
+  use #(name, age) <- qcheck.run_result(
+    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
     generator: valid_name_and_age_generator(),
   )
 
@@ -57,23 +54,22 @@ pub fn person__test() {
 
 pub fn bind_with_use__test() {
   let generator = {
-    use bool <- generator.bind(generator.bool())
+    use bool <- qcheck.bind(qcheck.bool())
 
     case bool {
       True -> {
-        use n <- generator.map(generator.small_positive_or_zero_int())
+        use n <- qcheck.map(qcheck.small_positive_or_zero_int())
         Ok(n)
       }
       False -> {
-        use s <- generator.map(generator.string_non_empty())
+        use s <- qcheck.map(qcheck.string_non_empty())
         Error(s)
       }
     }
   }
 
-  use generated_value <- qtest.run(
-    config: qtest_config.default()
-      |> qtest_config.with_test_count(test_count),
+  use generated_value <- qcheck.run(
+    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
     generator: generator,
   )
 

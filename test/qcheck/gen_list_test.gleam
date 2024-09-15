@@ -3,16 +3,13 @@ import gleam/int
 import gleam/list
 import gleam/string
 import prng/seed
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
-import qcheck/tree
+import qcheck
 
 pub fn list_generic__generates_valid_values__test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.list_generic(
-      generator.int_uniform_inclusive(-5, 5),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.list_generic(
+      qcheck.int_uniform_inclusive(-5, 5),
       min_length: 2,
       max_length: 5,
     ),
@@ -34,9 +31,9 @@ fn int_list_to_string(l) {
 
 pub fn list_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
-    generator.generate_tree(
-      generator.list_generic(
-        generator.int_uniform_inclusive(-1, 2),
+    qcheck.generate_tree(
+      qcheck.list_generic(
+        qcheck.int_uniform_inclusive(-1, 2),
         min_length: 0,
         max_length: 3,
       ),
@@ -44,6 +41,6 @@ pub fn list_generators_shrink_on_size_then_on_elements__test() {
     )
 
   tree
-  |> tree.to_string(int_list_to_string)
+  |> qcheck.tree_to_string(int_list_to_string)
   |> birdie.snap("list_generators_shrink_on_size_then_on_elements__test")
 }

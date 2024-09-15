@@ -3,8 +3,7 @@ import gleam/option.{Some}
 import gleam/regex.{Match}
 import gleam/result
 import gleam/string
-import qcheck/generator.{type Generator}
-import qcheck/qtest
+import qcheck.{type Generator}
 
 type Point {
   Point(Int, Int)
@@ -15,7 +14,7 @@ fn make_point(x: Int, y: Int) -> Point {
 }
 
 fn point_generator() -> Generator(Point) {
-  generator.map2(make_point, generator.int_uniform(), generator.int_uniform())
+  qcheck.map2(make_point, qcheck.int_uniform(), qcheck.int_uniform())
 }
 
 fn point_equal(p1: Point, p2: Point) -> Bool {
@@ -60,7 +59,7 @@ fn point_of_string(string: String) -> Result(Point, String) {
 }
 
 pub fn point_serialization_roundtripping__test() {
-  use generated_point <- qtest.given(point_generator())
+  use generated_point <- qcheck.given(point_generator())
 
   let assert Ok(parsed_point) =
     generated_point

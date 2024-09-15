@@ -3,17 +3,14 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import prng/seed
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
-import qcheck/tree
+import qcheck
 
 pub fn dict_generic__generates_valid_values__test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.dict_generic(
-      generator.int_uniform_inclusive(0, 2),
-      generator.int_uniform_inclusive(10, 12),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.dict_generic(
+      qcheck.int_uniform_inclusive(0, 2),
+      qcheck.int_uniform_inclusive(10, 12),
       max_length: 5,
     ),
     property: fn(d) {
@@ -47,24 +44,24 @@ fn int_int_dict_to_string(d: dict.Dict(Int, Int)) -> String {
 
 pub fn dict_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
-    generator.generate_tree(
-      generator.dict_generic(
-        key_generator: generator.int_uniform_inclusive(0, 2),
-        value_generator: generator.int_uniform_inclusive(10, 12),
+    qcheck.generate_tree(
+      qcheck.dict_generic(
+        key_generator: qcheck.int_uniform_inclusive(0, 2),
+        value_generator: qcheck.int_uniform_inclusive(10, 12),
         max_length: 3,
       ),
       seed.new(12),
     )
 
   tree
-  |> tree.to_string(int_int_dict_to_string)
+  |> qcheck.tree_to_string(int_int_dict_to_string)
   |> birdie.snap("dict_generators_shrink_on_size_then_on_elements__test")
 }
 
 pub fn dict_generic__allows_empty_dict__test() {
-  use _ <- qtest.given(generator.dict_generic(
-    generator.int_uniform_inclusive(0, 2),
-    generator.int_uniform_inclusive(10, 12),
+  use _ <- qcheck.given(qcheck.dict_generic(
+    qcheck.int_uniform_inclusive(0, 2),
+    qcheck.int_uniform_inclusive(10, 12),
     0,
   ))
   True

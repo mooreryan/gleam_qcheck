@@ -4,16 +4,13 @@ import gleam/list
 import gleam/set
 import gleam/string
 import prng/seed
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
-import qcheck/tree
+import qcheck
 
 pub fn set_generic__generates_valid_values__test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.set_generic(
-      generator.int_uniform_inclusive(-5, 5),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.set_generic(
+      qcheck.int_uniform_inclusive(-5, 5),
       max_length: 5,
     ),
     property: fn(s) {
@@ -40,15 +37,12 @@ fn int_set_to_string(s) {
 // test because sets cannot have duplicates as the lists can.
 pub fn set_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
-    generator.generate_tree(
-      generator.set_generic(
-        generator.int_uniform_inclusive(-1, 2),
-        max_length: 3,
-      ),
+    qcheck.generate_tree(
+      qcheck.set_generic(qcheck.int_uniform_inclusive(-1, 2), max_length: 3),
       seed.new(10_003),
     )
 
   tree
-  |> tree.to_string(int_set_to_string)
+  |> qcheck.tree_to_string(int_set_to_string)
   |> birdie.snap("set_generators_shrink_on_size_then_on_elements__test")
 }

@@ -1,15 +1,12 @@
 import gleam/int
 import gleam/string
 import gleeunit/should
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
-import qcheck/qtest/test_error_message as err
+import qcheck
 
 pub fn run_result__propery_ok_means_pass__test() {
-  qtest.run_result(
-    config: qtest_config.default(),
-    generator: generator.int_uniform(),
+  qcheck.run_result(
+    config: qcheck.default_config(),
+    generator: qcheck.int_uniform(),
     property: fn(n) {
       // Integer->String->Integer round tripping.
       n
@@ -21,13 +18,13 @@ pub fn run_result__propery_ok_means_pass__test() {
 
 pub fn run_result__property_error_means_fail__test() {
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run_result(
-      config: qtest_config.default(),
-      generator: generator.small_positive_or_zero_int(),
+    use <- qcheck.rescue
+    qcheck.run_result(
+      config: qcheck.default_config(),
+      generator: qcheck.small_positive_or_zero_int(),
       property: int.divide(1, _),
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(0))
 }

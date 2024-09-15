@@ -1,11 +1,9 @@
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
+import qcheck
 
 pub fn nil_only_generates_nil__test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.nil(),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.nil(),
     property: fn(nil) {
       case nil {
         Nil -> True

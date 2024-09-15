@@ -1,15 +1,11 @@
 import gleam/string
 import gleeunit/should
-import qcheck/generator
-import qcheck/qtest
-import qcheck/qtest/config as qtest_config
-import qcheck/qtest/test_error_message as err
+import qcheck
 
 pub fn custom_type_passing_test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.small_positive_or_zero_int()
-      |> generator.map(MyInt),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.small_positive_or_zero_int() |> qcheck.map(MyInt),
     property: fn(my_int) {
       let MyInt(n) = my_int
       n == my_int_to_int(my_int)
@@ -19,18 +15,17 @@ pub fn custom_type_passing_test() {
 
 pub fn custom_type_failing_test() {
   let assert Error(msg) = {
-    use <- err.rescue
-    qtest.run(
-      config: qtest_config.default(),
-      generator: generator.small_positive_or_zero_int()
-        |> generator.map(MyInt),
+    use <- qcheck.rescue
+    qcheck.run(
+      config: qcheck.default_config(),
+      generator: qcheck.small_positive_or_zero_int() |> qcheck.map(MyInt),
       property: fn(my_int) {
         let MyInt(n) = my_int
         n < 10
       },
     )
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(MyInt(10)))
 }
 
@@ -47,10 +42,9 @@ fn even_odd(n: Int) -> Either(Int, Int) {
 }
 
 pub fn either_passing_test() {
-  qtest.run(
-    config: qtest_config.default(),
-    generator: generator.small_positive_or_zero_int()
-      |> generator.map(even_odd),
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.small_positive_or_zero_int() |> qcheck.map(even_odd),
     property: fn(v) {
       case v {
         First(n) -> n % 2 == 0
@@ -62,16 +56,15 @@ pub fn either_passing_test() {
 
 pub fn either_failing_test() {
   let run = fn(property) {
-    qtest.run(
-      config: qtest_config.default(),
-      generator: generator.small_positive_or_zero_int()
-        |> generator.map(even_odd),
+    qcheck.run(
+      config: qcheck.default_config(),
+      generator: qcheck.small_positive_or_zero_int() |> qcheck.map(even_odd),
       property: property,
     )
   }
 
   let assert Error(msg) = {
-    use <- err.rescue
+    use <- qcheck.rescue
     run(fn(v) {
       case v {
         First(n) -> n % 2 == 1
@@ -79,13 +72,13 @@ pub fn either_failing_test() {
       }
     })
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(First(0)))
 
   // The n == 0 will prevent the First(0) from being a shrink that fails
   // the property.
   let assert Error(msg) = {
-    use <- err.rescue
+    use <- qcheck.rescue
     run(fn(v) {
       case v {
         First(n) -> n == 0 || n % 2 == 1
@@ -93,13 +86,13 @@ pub fn either_failing_test() {
       }
     })
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(Second(1)))
 
   // The n == 1 will prevent the Second(1) from being a shrink that
   // fails the property.
   let assert Error(msg) = {
-    use <- err.rescue
+    use <- qcheck.rescue
     run(fn(v) {
       case v {
         First(n) -> n == 0 || n % 2 == 1
@@ -107,7 +100,7 @@ pub fn either_failing_test() {
       }
     })
   }
-  err.shrunk_value(msg)
+  qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(First(2)))
 }
 
