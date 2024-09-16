@@ -158,7 +158,6 @@
 import exception
 import gleam/dict.{type Dict}
 import gleam/float
-import gleam/function
 import gleam/int
 import gleam/iterator.{type Iterator}
 import gleam/list
@@ -423,7 +422,7 @@ pub fn return_tree(x: a) -> Tree(a) {
 
 pub fn map2_tree(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
   f
-  |> function.curry2
+  |> curry2
   |> return_tree
   |> apply_tree(a)
   |> apply_tree(b)
@@ -846,7 +845,7 @@ pub fn map2(
   g2 g2: Generator(t2),
 ) -> Generator(t3) {
   f
-  |> function.curry2
+  |> curry2
   |> return
   |> apply(g1)
   |> apply(g2)
@@ -862,7 +861,7 @@ pub fn map3(
   g3 g3: Generator(t3),
 ) -> Generator(t4) {
   f
-  |> function.curry3
+  |> curry3
   |> return
   |> apply(g1)
   |> apply(g2)
@@ -880,7 +879,7 @@ pub fn map4(
   g4 g4: Generator(t4),
 ) -> Generator(t5) {
   f
-  |> function.curry4
+  |> curry4
   |> return
   |> apply(g1)
   |> apply(g2)
@@ -900,7 +899,7 @@ pub fn map5(
   g5 g5: Generator(t5),
 ) -> Generator(t6) {
   f
-  |> function.curry5
+  |> curry5
   |> return
   |> apply(g1)
   |> apply(g2)
@@ -922,7 +921,7 @@ pub fn map6(
   g6 g6: Generator(t6),
 ) -> Generator(t7) {
   f
-  |> function.curry6
+  |> curry6
   |> return
   |> apply(g1)
   |> apply(g2)
@@ -1880,4 +1879,37 @@ fn filter_map(
   f: fn(a) -> Option(b),
 ) -> iterator.Iterator(b) {
   iterator.unfold(it, do_filter_map(_, f))
+}
+
+// The curry functions from the stdlib are now deprecated, so we use these
+// instead.
+
+fn curry2(f: fn(x1, x2) -> y) -> fn(x1) -> fn(x2) -> y {
+  fn(x1) { fn(x2) { f(x1, x2) } }
+}
+
+fn curry3(f: fn(x1, x2, x3) -> y) -> fn(x1) -> fn(x2) -> fn(x3) -> y {
+  fn(x1) { fn(x2) { fn(x3) { f(x1, x2, x3) } } }
+}
+
+fn curry4(
+  f: fn(x1, x2, x3, x4) -> y,
+) -> fn(x1) -> fn(x2) -> fn(x3) -> fn(x4) -> y {
+  fn(x1) { fn(x2) { fn(x3) { fn(x4) { f(x1, x2, x3, x4) } } } }
+}
+
+fn curry5(
+  f: fn(x1, x2, x3, x4, x5) -> y,
+) -> fn(x1) -> fn(x2) -> fn(x3) -> fn(x4) -> fn(x5) -> y {
+  fn(x1) { fn(x2) { fn(x3) { fn(x4) { fn(x5) { f(x1, x2, x3, x4, x5) } } } } }
+}
+
+fn curry6(
+  f: fn(x1, x2, x3, x4, x5, x6) -> y,
+) -> fn(x1) -> fn(x2) -> fn(x3) -> fn(x4) -> fn(x5) -> fn(x6) -> y {
+  fn(x1) {
+    fn(x2) {
+      fn(x3) { fn(x4) { fn(x5) { fn(x6) { f(x1, x2, x3, x4, x5, x6) } } } }
+    }
+  }
 }
