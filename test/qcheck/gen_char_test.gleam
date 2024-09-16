@@ -23,8 +23,8 @@ pub fn char_uniform_inclusive__test() {
 pub fn char_uniform_inclusive__failures_shink_ok__test() {
   let expected =
     500
-    |> qcheck.utf_codepoint_exn
-    |> qcheck.list_return
+    |> utf_codepoint_exn
+    |> list_return
     |> string.from_utf_codepoints
     |> string.inspect
 
@@ -404,7 +404,10 @@ pub fn char__failures_shrink_ok__test() {
 // 
 
 fn int(c) {
-  qcheck.char_to_int(c)
+  string.to_utf_codepoints(c)
+  |> list.first
+  |> ok_exn
+  |> string.utf_codepoint_to_int
 }
 
 fn should_be_one_of(x, strings) {
@@ -414,4 +417,20 @@ fn should_be_one_of(x, strings) {
     |> list.find(one_that: fn(el) { el == x })
 
   Nil
+}
+
+fn utf_codepoint_exn(n) {
+  let assert Ok(cp) = string.utf_codepoint(n)
+
+  cp
+}
+
+fn list_return(a) {
+  [a]
+}
+
+fn ok_exn(result) {
+  let assert Ok(x) = result
+
+  x
 }
