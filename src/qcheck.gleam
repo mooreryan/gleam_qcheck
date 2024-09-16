@@ -1524,10 +1524,6 @@ pub opaque type TestError(a) {
   )
 }
 
-pub opaque type TestErrorDisplay {
-  TestErrorDisplay(String)
-}
-
 pub fn new_test_error(
   original_value orig: a,
   shrunk_value shrunk: a,
@@ -1554,38 +1550,12 @@ fn test_error_to_string(test_error: TestError(a)) -> String {
   <> ";]"
 }
 
-fn display_test_error(test_error: TestError(a)) -> TestErrorDisplay {
-  test_error
-  |> test_error_to_string
-  |> TestErrorDisplay
-}
-
-/// Use the output of this function for `panic`s inside of the property and
-/// shrink runners.
-pub fn new_test_error_string_repr(
-  original_value orig: a,
-  shrunk_value shrunk: a,
-  shrink_steps steps: Int,
-  error_msg error_msg: String,
-) -> TestErrorDisplay {
-  new_test_error(
-    original_value: orig,
-    shrunk_value: shrunk,
-    shrink_steps: steps,
-    error_msg: error_msg,
-  )
-  |> test_error_to_string
-  |> TestErrorDisplay
-}
-
 @external(erlang, "qcheck_ffi", "fail")
 @external(javascript, "../../qcheck_ffi.mjs", "fail")
 fn do_fail(msg: String) -> a
 
-fn fail(test_error_display: TestErrorDisplay) -> a {
-  let TestErrorDisplay(msg) = test_error_display
-
-  do_fail(msg)
+fn fail(test_error_display: String) -> a {
+  do_fail(test_error_display)
 }
 
 // If this returned an opaque Exn type then you couldn't mess up the
@@ -1604,7 +1574,7 @@ pub fn failwith(
     shrink_steps: shrink_steps,
     error_msg: error_msg,
   )
-  |> display_test_error
+  |> test_error_to_string
   |> fail
 }
 
