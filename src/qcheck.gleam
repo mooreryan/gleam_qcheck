@@ -1,67 +1,159 @@
-//// Docs
+//// QuickCheck-inspired property-based testing with integrated shrinking
+//// 
+//// 
+//// ## Overview
+//// 
+//// Rather than specifying test cases manually, you describe the invariants
+//// that values of a given type must satisfy ("properties"). Then, generators
+//// generate lots of values (test cases) on which the properties are checked.
+//// Finally, if a value is found for which a given property does not hold, that
+//// value is "shrunk" in order to find an nice, informative counter-example 
+//// that is presented to you.
+//// 
+//// This module has functions for running and configuring property tests as
+//// well as generating random values (with shrinking) to drive those tests.
+////
+//// For usage examples, see the project README.
+//// 
+//// 
+//// ## Running tests
+//// 
+//// - [given](#given)
+//// - [given_result](#given_result)
+//// - [run](#run)
+//// - [run_result](#run_result)
+//// 
+//// 
+//// ## Configuring test runs
+//// 
+//// - The [Config](#Config) type
+//// - [default_config](#default_config)
+//// - [with_test_count](#with_test_count)
+//// - [with_max_retries](#with_max_retries)
+//// - [with_random_seed](#with_random_seed)
+//// 
+//// 
+//// ## Generators
+//// 
+//// - The [Generator](#Generator) type
+//// 
+//// Here is a list of generator functions grouped by category.
+//// 
+//// ### Combinators
+//// 
+//// - [return](#return)
+//// - [map](#map)
+//// - [bind](#bind)
+//// - [apply](#apply)
+//// - [map2](#map2)
+//// - [map3](#map3)
+//// - [map4](#map4)
+//// - [map5](#map5)
+//// - [map6](#map6)
+//// - [tuple2](#tuple2)
+//// - [tuple3](#tuple3)
+//// - [tuple4](#tuple4)
+//// - [tuple5](#tuple5)
+//// - [tuple6](#tuple6)
+//// - [from_generators](#from_generators)
+//// - [from_weighted_generators](#from_weighted_generators)
+//// 
+//// ### Ints
+//// 
+////  - [int_uniform](#int_uniform)
+////  - [int_uniform_inclusive](#int_uniform_inclusive)
+////  - [small_positive_or_zero_int](#small_positive_or_zero_int)
+////  - [small_strictly_positive_int](#small_strictly_positive_int)
+//// 
+//// ### Floats
+//// 
+////  - [float](#float)
+////  - [float_uniform_inclusive](#float_uniform_inclusive)
+//// 
+//// ### Characters
+//// 
+////  - [char](#char)
+////  - [char_uniform_inclusive](#char_uniform_inclusive)
+////  - [char_uppercase](#char_uppercase)
+////  - [char_lowercase](#char_lowercase)
+////  - [char_digit](#char_digit)
+////  - [char_print_uniform](#char_print_uniform)
+////  - [char_uniform](#char_uniform)
+////  - [char_alpha](#char_alpha)
+////  - [char_alpha_numeric](#char_alpha_numeric)
+////  - [char_from_list](#char_from_list)
+////  - [char_whitespace](#char_whitespace)
+////  - [char_print](#char_print)
+//// 
+//// ### Strings
+//// 
+////  - [string](#string)
+////  - [string_from](#string_from)
+////  - [string_non_empty](#string_non_empty)
+////  - [string_with_length](#string_with_length)
+////  - [string_with_length_from](#string_with_length_from)
+////  - [string_non_empty_from](#string_non_empty_from)
+////  - [string_generic](#string_generic)
+//// 
+//// ### Lists
+//// 
+////  - [list_generic](#list_generic)
+//// 
+//// ### Dicts
+//// 
+//// - [dict_generic](#dict_generic)
+////
+//// ### Sets
+//// 
+////  - [set_generic](#set_generic)
+////
+//// ### Other
+//// 
+//// - [bool](#bool)
+//// - [nil](#nil)
+//// - [option](#option)
+//// 
+//// ## Trees
+//// 
+//// There are functions for dealing with the [Tree](#Tree) type directly, but 
+//// they are low-level and you should not need to use them much. 
+//// 
+//// - The [Tree](#Tree) type
+//// - [make_primitive_tree](#make_primitive_tree)
+//// - [return_tree](#return_tree)
+//// - [map_tree](#map_tree)
+//// - [map2_tree](#map2_tree)
+//// - [bind_tree](#bind_tree)
+//// - [apply_tree](#apply_tree)
+//// - [sequence_list](#sequence_list)
+//// - [option_tree](#option_tree)
+//// - [tree_to_string](#tree_to_string)
+//// - [tree_to_string_](#tree_to_string_)
+//// 
+//// ## Shrinking
+//// 
+//// There are some public functions for dealing with shrinks and shrinking.
+//// Similar to the Tree functions, you often won't need to use these directly.
+////
+//// - [shrink_atomic](#shrink_atomic)
+//// - [shrink_int_towards](#shrink_int_towards)
+//// - [shrink_int_towards_zero](#shrink_int_towards_zero)
+//// - [shrink_float_towards](#shrink_float_towards)
+//// - [shrink_float_towards_zero](#shrink_float_towards_zero)
+////
 //// 
 //// ## Notes
 //// 
 //// - If something is marked as being “unspecified”, do not depend on it, as it
 ////   may change at any time without a major version bump. This mainly applies 
 ////   to the various `*_to_string` functions.
-//// 
-//// ## Tree
-//// 
-//// This module provides a tree data structure used to represent a 
-//// pseudo-randomly generated value an its shrunk values.  This "integrated
-//// shrinking" is convenient as most generators get shrinking "for free" that 
-//// does not break invaraints. 
-//// 
-//// Many of these functions will likely become internal at some point.
-////
-//// 
-//// ## qtest
-//// This module provides functions for running property-based tests.
-//// 
-//// ## Example
-//// 
-//// Here is a basic example to get you started.  It assumes you are using 
-//// gleeunit to run the tests.
-//// 
-//// ```gleam
-//// import qcheck/generator
-//// import qcheck/qtest
-////
-//// pub fn small_positive_or_zero_int__test() {
-////   use n <- qtest.given(generator.small_positive_or_zero_int())
-////   n + 1 == 1 + n
-//// }
-//// 
-//// pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
-////   use n <- qtest.given(generator.small_positive_or_zero_int())
-////   n + 1 != 1 + n
-//// }
-//// ```
-//// 
-//// The first test will pass, but the second will fail with an error that may
-//// look something like this if you are using the Erlang target:
-//// 
-//// ```
-////  Failures:
-//// 
-////    1) qcheck/gen_int_test.small_positive_or_zero_int__failures_shrink_to_zero__test
-////       Failure: <<"TestError[original_value: 10; shrunk_value: 0; shrink_steps: 1;]">>
-////       stacktrace:
-////         qcheck_ffi.fail
-////       output: 
-//// ```
-//// 
-//// # Shrink
-//// 
-//// This module provides helpers for shrinking values.  
-//// 
-//// You likely won't be interacting with this module directly.  
-//// 
-//// Many of these functions will likely become internal at some point.
+//// - `TestError`, `TestErrorMessage`, and association functions will likely 
+////   become private as they are mainly internal machinery for displaying 
+////   errors.
+//// - `failwith`, `try`, and `rescue` will also likely become private as they 
+////   deal with internal property test running machinery.
 //// 
 //// 
-//// Internal module for catching panics within property tests.
 
 import exception
 import gleam/dict.{type Dict}
@@ -372,6 +464,8 @@ pub fn tree_to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
   do_tree_to_string(tree, a_to_string, level: 0, max_level: 99_999_999, acc: [])
 }
 
+/// Like `tree_to_string` but with a configurable `max_depth`.
+/// 
 pub fn tree_to_string_(
   tree: Tree(a),
   a_to_string: fn(a) -> String,
