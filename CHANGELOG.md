@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.4] - 2024-09-16
+
 ### Added
 
 - Top-level `qcheck` module
@@ -16,20 +18,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `dict_generic` uses a minimum size of `0` rather than `1`.
-- Some functions were renamed to fit into the new single-module API. Here are a few of the more important ones:
+- Though most functions moved into the `qcheck` module with their original name, some were renamed. Here are a few of the important ones.
   - `qcheck/qtest/config.default` -> `qcheck.default_config`
   - `qcheck/generator.make_primitive` -> `qcheck.make_primitive_generator`
   - `qcheck/shrink` functions are now prefixed with `shrink_`, e.g., `qcheck.shrink_int_towards_zero`.
   - `qcheck/tree`
     - `apply` -> `qcheck.apply_tree`
     - `bind` -> `qcheck.bind_tree`
-    - `iterator_list` -> `qcheck.iterator_list_tree`
+    - `iterator_list` -> `qcheck.sequence_list`
     - `make_primitive` -> `qcheck.make_primitive`
     - `map` -> `qcheck.map_tree`
     - `map2` -> `qcheck.map2_tree`
     - `option` -> `qcheck.option_tree`
     - `return` -> `qcheck.return_tree`
     - `to_string` -> `qcheck.tree_to_string`
+- Some public types and functions were made private
+  - All public functions that were in `qcheck/utils`
+  - `qcheck/shrink`
+    - `do_shrink`
+    - `do_shrink_result`
+    - `shrink`
+    - `do_shrink`
+
+### Removed
+
+These public functions and types were removed.
+
+- `qcheck/qtest/test_error.new_string_repr`
+- `qcheck/qtest/test_error.TestErrorDisplay`
 
 ## [0.0.3] - 2024-05-15
 
@@ -64,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release!
 
-[unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.3...HEAD
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.4
 [0.0.3]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.3
 [0.0.2]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.2
 [0.0.1]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.1
