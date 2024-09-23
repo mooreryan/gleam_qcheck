@@ -2,6 +2,8 @@
 
 _Note to self: don't forget to plug in my laptop for comparitive timing based tests, as it affects the timings._
 
+- The full benchmark uses 10,000 test runs.
+
 ## Running fprof and erlgrind
 
 Note that this can take a while, so keep the values reasonable.
@@ -75,3 +77,7 @@ Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/be
   - commit msg: "Replace `random.weighted` with internal implementation"
 
 Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/bench_full__*txt.gz`
+
+## General notes
+
+- The `normalize` function in `prng_random.weighted` takes a non-trivial amount of time. I could remove it, but it would have to come with a note mentioning passing negative weights is undefined or something like that.
