@@ -169,6 +169,7 @@ import gleam/string
 import gleam/string_builder.{type StringBuilder}
 import prng/random
 import prng/seed.{type Seed}
+import qcheck/prng_random
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: Running tests 
@@ -1114,8 +1115,8 @@ fn exp(x: Float) -> Float {
 pub fn float() -> Generator(Float) {
   Generator(fn(seed) {
     let #(x, seed) = random.float(0.0, 15.0) |> random.step(seed)
-    let #(y, seed) = random.choose(1.0, -1.0) |> random.step(seed)
-    let #(z, seed) = random.choose(1.0, -1.0) |> random.step(seed)
+    let #(y, seed) = prng_random.choose(1.0, -1.0) |> random.step(seed)
+    let #(z, seed) = prng_random.choose(1.0, -1.0) |> random.step(seed)
 
     // The QCheck2.Gen.float code has this double multiply in it. Actually not
     // sure about that.
@@ -1565,9 +1566,7 @@ pub fn nil() -> Generator(Nil) {
 /// 
 pub fn bool() -> Generator(Bool) {
   Generator(fn(seed) {
-    let #(bool, seed) =
-      random.choose(True, False)
-      |> random.step(seed)
+    let #(bool, seed) = prng_random.choose(True, False) |> random.step(seed)
 
     let tree = case bool {
       True -> Tree(True, iterator.once(fn() { return_tree(False) }))
