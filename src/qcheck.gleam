@@ -1378,7 +1378,7 @@ fn do_gen_string(
 /// 
 pub fn string_with_length_from(
   generator: Generator(String),
-  length,
+  length: Int,
 ) -> Generator(String) {
   Generator(fn(seed) {
     let #(generated_string, char_trees_rev, seed) =
