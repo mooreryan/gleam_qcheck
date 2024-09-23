@@ -2,8 +2,3 @@
 *.ez
 /build
 erl_crash.dump
-
-_*
-
-/*.trace
-/*.fprof

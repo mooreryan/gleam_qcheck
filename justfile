@@ -18,3 +18,11 @@ test_review:
 
 find_todos:
   rg -g '!build' -g '!justfile' -i todo
+
+bench_full:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  cd bench 
+
+  gleam run -m full_benchmark -- bench_out
