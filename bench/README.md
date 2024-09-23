@@ -38,8 +38,8 @@ Some specific speedups have accopanying charts or stats. For reference, some of 
   - `019217B1-4B6E-7F85-9551-FC663C27CC93`
 - after
   - `01921829-EEA0-7D88-B98B-2EC7EC86ABDC`
-  - commit: "Speed up `small_positive_or_zero_int`"
-  - cimmit hash: `72c4f1d5f624d0d3d4453248f5d27ea762eae7ed`
+  - commit hash: `72c4f1d5f624d0d3d4453248f5d27ea762eae7ed`
+  - commit msg: "Speed up `small_positive_or_zero_int`"
 
 ### Replace `random.choose` with `prng_random.choose`
 
@@ -47,5 +47,7 @@ Some specific speedups have accopanying charts or stats. For reference, some of 
   - `01921829-EEA0-7D88-B98B-2EC7EC86ABDC`
 - after
   - `01922088-7FB3-7455-949B-6DE73D00A84B`
+  - commit hash: `592b50caab2b85aeb257651c73000b6500082182`
+  - commit msg: "Replace `random.choose` with internal implementation"
 
 This affects bool and float generation.

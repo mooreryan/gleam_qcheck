@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Changed the implementation of `small_positive_or_zero_int`, which results in a >2x speed up of many of the string generators.
+- Replace `prng/random.choose` with an internal implementation, which speeds up the float and bool generation.
+
 ## [0.0.4] - 2024-09-16
 
 ### Added
