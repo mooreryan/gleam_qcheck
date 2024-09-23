@@ -1039,9 +1039,9 @@ pub fn from_weighted_generators(
 /// 
 pub fn small_positive_or_zero_int() -> Generator(Int) {
   make_primitive_generator(
-    random_generator: random.float(0.0, 1.0)
+    random_generator: random.int(0, 1)
       |> random.then(fn(x) {
-        case x <. 0.75 {
+        case x < 75 {
           True -> random.int(0, 10)
           False -> random.int(0, 100)
         }
