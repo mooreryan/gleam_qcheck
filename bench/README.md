@@ -70,8 +70,8 @@ Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/be
 - before
   - `019220A8-C09F-72D9-9DA3-27D8306F6067`
 - after
-  - `019220BD-140E-7766-B84B-CF0C697D2767`
-  - commit hash: `TODO`
+  - `019220CC-E9A0-7A47-BD4A-5B0226B154A1`
+  - commit hash: `263c52749a27ba0e029f6ef3edf72f3178543b6e`
   - commit msg: "Replace `random.weighted` with internal implementation"
 
 Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/bench_full__*txt.gz`

@@ -53,7 +53,7 @@ draw_plot <- function(dat) {
           str_wrap(width = 15)
       }
     ) +
-    scale_fill_brewer(palette = "Set1") +
+    scale_fill_viridis_d(begin = 0.1, end = 0.9) +
     scale_x_continuous(labels = comma) +
     ylab("Function") +
     xlab("Time (ms)") +
@@ -71,7 +71,7 @@ ggsave(
 
 
 plt <- dat |>
-  filter(category %in% c("Bools", "Floats")) |>
+  filter(category %in% c("Characters", "Collections", "Strings")) |>
   draw_plot()
 
 ggsave(
