@@ -1113,16 +1113,9 @@ fn exp(x: Float) -> Float {
 /// 
 pub fn float() -> Generator(Float) {
   Generator(fn(seed) {
-    let #(x, seed) =
-      random.float(0.0, 15.0)
-      |> random.step(seed)
-
-    let #(y, seed) =
-      random.choose(1.0, -1.0)
-      |> random.step(seed)
-    let #(z, seed) =
-      random.choose(1.0, -1.0)
-      |> random.step(seed)
+    let #(x, seed) = random.float(0.0, 15.0) |> random.step(seed)
+    let #(y, seed) = random.choose(1.0, -1.0) |> random.step(seed)
+    let #(z, seed) = random.choose(1.0, -1.0) |> random.step(seed)
 
     // The QCheck2.Gen.float code has this double multiply in it. Actually not
     // sure about that.
@@ -1360,8 +1353,7 @@ fn do_gen_string(
 
       do_gen_string(
         i - 1,
-        string_builder
-          |> string_builder.append(root),
+        string_builder |> string_builder.append(root),
         char_gen,
         [char_tree, ..char_trees_rev],
         seed,
