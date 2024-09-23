@@ -1,6 +1,8 @@
 name = "qcheck"
 version = "0.0.4"
 
+internal_modules = ["qcheck/prng_random"]
+
 description = "QuickCheck-inspired property testing with integrated shrinking"
 licences = ["Apache-2.0", "MIT"]
 repository = { type = "github", user = "mooreryan", repo = "gleam_qcheck" }
