@@ -58,9 +58,20 @@ This affects bool and float generation.
   - `01922088-7FB3-7455-949B-6DE73D00A84B`
 - after
   - `019220A8-C09F-72D9-9DA3-27D8306F6067`
-  - commit hash: `TODO`
-  - commit msg: "TODO"
+  - commit hash: `b82dc64aaab80b0edaeb780a3306db273cfbf567`
+  - commit msg: "Replace `random.uniform` with internal implementation"
 
 This affects `char_from_list` and `from_generators`.
 
-Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/bench_full__0192*txt.gz`
+Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/bench_full__*txt.gz`
+
+### Replace `random.weighted` with `prng_random.weighted`
+
+- before
+  - `019220A8-C09F-72D9-9DA3-27D8306F6067`
+- after
+  - `019220BD-140E-7766-B84B-CF0C697D2767`
+  - commit hash: `TODO`
+  - commit msg: "Replace `random.weighted` with internal implementation"
+
+Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/bench_full__*txt.gz`

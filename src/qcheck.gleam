@@ -57,6 +57,7 @@
 //// - [tuple6](#tuple6)
 //// - [from_generators](#from_generators)
 //// - [from_weighted_generators](#from_weighted_generators)
+//// - [from_float_weighted_generators](#from_weighted_generators)
 //// 
 //// ### Ints
 //// 
@@ -1009,10 +1010,12 @@ pub fn from_generators(generators: List(Generator(a))) -> Generator(a) {
   })
 }
 
-/// `from_generators(generators)` chooses a generator from a list of generators
-/// weighted by the given weigths, then chooses a value from that generator.
+/// `from_float_weighted_generators(generators)` chooses a generator from a list of generators
+/// weighted by the given float weights, then chooses a value from that generator.
 /// 
-pub fn from_weighted_generators(
+/// You should generally prefer `from_weighted_generators` as it is much faster.
+/// 
+pub fn from_float_weighted_generators(
   generators: List(#(Float, Generator(a))),
 ) -> Generator(a) {
   // TODO: better error message on empty list
@@ -1020,8 +1023,27 @@ pub fn from_weighted_generators(
 
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
-      random.weighted(generator, generators)
-      |> random.step(seed)
+      random.weighted(generator, generators) |> random.step(seed)
+
+    generator(seed)
+  })
+}
+
+/// `from_float_generators(generators)` chooses a generator from a list of generators
+/// weighted by the given integer weights, then chooses a value from that generator.
+/// 
+/// You should generally prefer this function over 
+/// `from_float_weighted_generators` as this function is faster.
+/// 
+pub fn from_weighted_generators(
+  generators: List(#(Int, Generator(a))),
+) -> Generator(a) {
+  // TODO: better error message on empty list
+  let assert [generator, ..generators] = generators
+
+  Generator(fn(seed) {
+    let #(Generator(generator), seed) =
+      prng_random.weighted(generator, generators) |> random.step(seed)
 
     generator(seed)
   })
@@ -1243,7 +1265,7 @@ pub fn char_alpha() -> Generator(String) {
 /// `char_alpha_numeric()` generates alphanumeric (ASCII) characters.
 /// 
 pub fn char_alpha_numeric() -> Generator(String) {
-  [#(26.0, char_uppercase()), #(26.0, char_lowercase()), #(10.0, char_digit())]
+  [#(26, char_uppercase()), #(26, char_lowercase()), #(10, char_digit())]
   |> from_weighted_generators
 }
 
@@ -1308,10 +1330,10 @@ pub fn char_whitespace() -> Generator(String) {
 pub fn char_print() -> Generator(String) {
   // Numbers indicate percent chance of picking the generator.
   from_weighted_generators([
-    #(38.1, char_uppercase()),
-    #(38.1, char_lowercase()),
-    #(14.7, char_digit()),
-    #(9.1, char_print_uniform()),
+    #(381, char_uppercase()),
+    #(381, char_lowercase()),
+    #(147, char_digit()),
+    #(91, char_print_uniform()),
   ])
 }
 
@@ -1321,13 +1343,13 @@ pub fn char_print() -> Generator(String) {
 pub fn char() {
   // Numbers indicate percent chance of picking the generator.
   from_weighted_generators([
-    #(34.0, char_uppercase()),
-    #(34.0, char_lowercase()),
-    #(13.1, char_digit()),
-    #(8.1, char_print_uniform()),
-    #(8.9, char_uniform()),
-    #(0.9, return(int_to_char(char_min_value))),
-    #(0.9, return(int_to_char(char_max_value))),
+    #(340, char_uppercase()),
+    #(340, char_lowercase()),
+    #(131, char_digit()),
+    #(81, char_print_uniform()),
+    #(89, char_uniform()),
+    #(09, return(int_to_char(char_min_value))),
+    #(09, return(int_to_char(char_max_value))),
   ])
 }
 
@@ -1530,7 +1552,7 @@ type GenerateOption {
 }
 
 fn generate_option() -> random.Generator(GenerateOption) {
-  random.weighted(#(0.15, GenerateNone), [#(0.85, GenerateSome)])
+  prng_random.weighted(#(15, GenerateNone), [#(85, GenerateSome)])
 }
 
 /// `option(gen)` is an `Option` generator that uses `gen` to generate `Some` 
