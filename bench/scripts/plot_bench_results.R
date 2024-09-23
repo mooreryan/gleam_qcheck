@@ -61,13 +61,21 @@ draw_plot <- function(dat) {
     guides(fill = guide_legend(title = "Implementation"))
 }
 
-dat |> draw_plot()
+plt <- dat |> draw_plot()
 
-ggsave("bench/bench_out/bench_full__XYZ__charts.svg", width = 18, heigh = 9)
+ggsave(
+  "bench/bench_out/bench_full__XYZ__charts.svg",
+  plt,
+  width = 18, heigh = 9
+)
 
 
-dat |>
+plt <- dat |>
   filter(category %in% c("Bools", "Floats")) |>
   draw_plot()
 
-ggsave("bench/bench_out/bench_full__XYZ__charts_subset.svg", width = 18, heigh = 9)
+ggsave(
+  "bench/bench_out/bench_full__XYZ__charts_subset.svg",
+  plt,
+  width = 18, heigh = 9
+)

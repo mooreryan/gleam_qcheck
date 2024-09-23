@@ -51,3 +51,16 @@ Some specific speedups have accopanying charts or stats. For reference, some of 
   - commit msg: "Replace `random.choose` with internal implementation"
 
 This affects bool and float generation.
+
+### Replace `random.uniform` with `prng_random.uniform`
+
+- before
+  - `01922088-7FB3-7455-949B-6DE73D00A84B`
+- after
+  - `019220A8-C09F-72D9-9DA3-27D8306F6067`
+  - commit hash: `TODO`
+  - commit msg: "TODO"
+
+This affects `char_from_list` and `from_generators`.
+
+Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/bench_full__0192*txt.gz`

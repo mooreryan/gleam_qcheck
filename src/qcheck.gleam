@@ -1003,8 +1003,7 @@ pub fn from_generators(generators: List(Generator(a))) -> Generator(a) {
 
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
-      random.uniform(generator, generators)
-      |> random.step(seed)
+      prng_random.uniform(generator, generators) |> random.step(seed)
 
     generator(seed)
   })
@@ -1260,9 +1259,7 @@ pub fn char_from_list(chars: List(String)) -> Generator(String) {
   let shrink_target = list.fold(tl, hd, int.min)
 
   Generator(fn(seed) {
-    let #(n, seed) =
-      random.uniform(hd, tl)
-      |> random.step(seed)
+    let #(n, seed) = prng_random.uniform(hd, tl) |> random.step(seed)
 
     let tree =
       make_primitive_tree(n, shrink_int_towards(shrink_target))
