@@ -347,7 +347,7 @@ pub type Config {
 
 /// `default()` returns the default configuration for the property-based testing.
 pub fn default_config() -> Config {
-  Config(test_count: 10_000, max_retries: 1, random_seed: seed.random())
+  Config(test_count: 1000, max_retries: 1, random_seed: seed.random())
 }
 
 /// `with_test_count()` returns a new configuration with the given test count.
