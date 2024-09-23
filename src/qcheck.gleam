@@ -1636,7 +1636,7 @@ fn test_error_to_string(test_error: TestError(a)) -> String {
 }
 
 @external(erlang, "qcheck_ffi", "fail")
-@external(javascript, "../../qcheck_ffi.mjs", "fail")
+@external(javascript, "./qcheck_ffi.mjs", "fail")
 fn do_fail(msg: String) -> a
 
 fn fail(test_error_display: String) -> a {
@@ -1774,7 +1774,7 @@ pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
 }
 
 @external(erlang, "qcheck_ffi", "rescue_error")
-@external(javascript, "../../qcheck_ffi.mjs", "rescue_error")
+@external(javascript, "./qcheck_ffi.mjs", "rescue_error")
 pub fn rescue_error(f: fn() -> a) -> Result(a, String)
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

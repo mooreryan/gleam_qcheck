@@ -53,3 +53,4 @@
   - Also, when appropriate, function arguments should be validated and good errors should be returned.
 - Tests counts in the `config` that are too high can cause timeouts in Gleeunit if you aren't using helpers from [qcheck_gleeunit_utils](https://github.com/mooreryan/qcheck_gleeunit_utils)
 - Don't leak the `prng` types.
+- Some of the tests fail on JS target.
