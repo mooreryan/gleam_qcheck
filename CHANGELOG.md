@@ -7,11 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `qcheck.from_float_weighted_generators`
+  - This function was previously called `qcheck.from_weighted_generators`.
+
 ### Changed
 
 - Changed the implementation of `small_positive_or_zero_int`, which results in a >2x speed up of many of the string generators.
-- Replace `prng/random.choose` with an internal implementation, which speeds up the float and bool generation.
-- Replace `prng/random.uniform` with an internal implementation, which speeds up the generators that depend on `from_generators` or `char_from_list`.
+- Replace some of the `prng` random functions with internal implementations based on integer generation, which speeds up generators that depend on them.
+  - Replace `prng/random.choose`, which speeds up the float and bool generation.
+  - Replace `prng/random.uniform`, which speeds up the generators that depend on `from_generators` or `char_from_list`.
+  - Replace `prng/random.weighted`.
+- `qcheck.from_weighted_generators` now takes integer weights rather than float weights.
+- The default test count for `qcheck.default_config` is 1000 now rather than 10,000.
 
 ## [0.0.4] - 2024-09-16
 
