@@ -229,6 +229,14 @@ While `qcheck` has a lot of features needed to get started with property-based t
 
 Very heavily inspired by the [qcheck](https://github.com/c-cube/qcheck) and [base_quickcheck](https://github.com/janestreet/base_quickcheck) OCaml packages, and of course, the Haskell libraries from which they take inspiration.
 
+## Contributing
+
+Thank you for your interest in the project!
+
+- Bug reports, feature requests, suggestions and ideas are welcomed. Please open an [issue](https://github.com/mooreryan/gleam_qcheck/issues/new/choose) to start a discussion.
+- Small pull requests for bug fixes, typos, or other changes with limited scope may also be accepted.
+- External contributions will generally not be accepted without prior discussion. If you have an idea, please open an issue for discussion.
+
 ## License
 
 [![license MIT or Apache
