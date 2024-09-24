@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2024-09-23
+
 ### Added
 
 - `qcheck.from_float_weighted_generators`
@@ -21,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replace `prng/random.weighted`.
 - `qcheck.from_weighted_generators` now takes integer weights rather than float weights.
 - The default test count for `qcheck.default_config` is 1000 now rather than 10,000.
+
+### Fixed
+
+- Fixed a bug in the calling of JS FFI.
 
 ## [0.0.4] - 2024-09-16
 
@@ -95,7 +101,8 @@ These public functions and types were removed.
 
 - Initial release!
 
-[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.5
 [0.0.4]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.4
 [0.0.3]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.3
 [0.0.2]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.2

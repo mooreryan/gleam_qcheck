@@ -1,5 +1,5 @@
 name = "qcheck"
-version = "0.0.4"
+version = "0.0.5"
 
 internal_modules = ["qcheck/prng_random"]
 

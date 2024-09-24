@@ -28,7 +28,7 @@
 ### Char and String generators
 
 - Speed up the `String` generators. (These are currently quite slow!)
-  - (This has gotten better in `v0.0.2`.)
+  - (This has gotten better in `v0.0.2` and `v0.0.5`.)
 - "Char" generators
   - Figure out better defaults for the "char" generators. Right now they are focused on ascii characters mainly.
   - Having "char" generators is a little weird in a language without a `Char` type, but they are currently needed for generating and shrinking strings.
