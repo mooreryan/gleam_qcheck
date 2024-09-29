@@ -425,8 +425,11 @@ pub fn return_tree(x: a) -> Tree(a) {
 }
 
 pub fn map2_tree(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
-  f
-  |> curry2
+  {
+    use x1 <- parameter
+    use x2 <- parameter
+    f(x1, x2)
+  }
   |> return_tree
   |> apply_tree(a)
   |> apply_tree(b)
@@ -846,9 +849,11 @@ pub fn map2(
   g1 g1: Generator(t1),
   g2 g2: Generator(t2),
 ) -> Generator(t3) {
-  f
-  |> curry2
-  |> return
+  return({
+    use x1 <- parameter
+    use x2 <- parameter
+    f(x1, x2)
+  })
   |> apply(g1)
   |> apply(g2)
 }
@@ -862,75 +867,15 @@ pub fn map3(
   g2 g2: Generator(t2),
   g3 g3: Generator(t3),
 ) -> Generator(t4) {
-  f
-  |> curry3
-  |> return
+  return({
+    use x1 <- parameter
+    use x2 <- parameter
+    use x3 <- parameter
+    f(x1, x2, x3)
+  })
   |> apply(g1)
   |> apply(g2)
   |> apply(g3)
-}
-
-/// `map4(f, g1, g2, g3, g4)` transforms four generators, `g1`, `g2`, `g3`, and
-/// `g4`, by applying `f` to each quadruple of generated values.
-/// 
-pub fn map4(
-  f f: fn(t1, t2, t3, t4) -> t5,
-  g1 g1: Generator(t1),
-  g2 g2: Generator(t2),
-  g3 g3: Generator(t3),
-  g4 g4: Generator(t4),
-) -> Generator(t5) {
-  f
-  |> curry4
-  |> return
-  |> apply(g1)
-  |> apply(g2)
-  |> apply(g3)
-  |> apply(g4)
-}
-
-/// `map5(f, g1, g2, g3, g4, g5)` transforms five generators, `g1`, `g2`, `g3`,
-/// `g4`, and `g5`, by applying `f` to each quintuple of generated values.
-/// 
-pub fn map5(
-  f f: fn(t1, t2, t3, t4, t5) -> t6,
-  g1 g1: Generator(t1),
-  g2 g2: Generator(t2),
-  g3 g3: Generator(t3),
-  g4 g4: Generator(t4),
-  g5 g5: Generator(t5),
-) -> Generator(t6) {
-  f
-  |> curry5
-  |> return
-  |> apply(g1)
-  |> apply(g2)
-  |> apply(g3)
-  |> apply(g4)
-  |> apply(g5)
-}
-
-/// `map6(f, g1, g2, g3, g4, g5, g6)` transforms six generators, `g1`, `g2`, `g3`,
-/// `g4`, `g5`, and `g6`, by applying `f` to each sextuple of generated values.
-/// 
-pub fn map6(
-  f f: fn(t1, t2, t3, t4, t5, t6) -> t7,
-  g1 g1: Generator(t1),
-  g2 g2: Generator(t2),
-  g3 g3: Generator(t3),
-  g4 g4: Generator(t4),
-  g5 g5: Generator(t5),
-  g6 g6: Generator(t6),
-) -> Generator(t7) {
-  f
-  |> curry6
-  |> return
-  |> apply(g1)
-  |> apply(g2)
-  |> apply(g3)
-  |> apply(g4)
-  |> apply(g5)
-  |> apply(g6)
 }
 
 /// `tuple2(g1, g2)` generates a tuple of two values, one each from generators 
@@ -962,8 +907,17 @@ pub fn tuple4(
   g3: Generator(t3),
   g4: Generator(t4),
 ) -> Generator(#(t1, t2, t3, t4)) {
-  fn(t1, t2, t3, t4) { #(t1, t2, t3, t4) }
-  |> map4(g1, g2, g3, g4)
+  return({
+    use x1 <- parameter
+    use x2 <- parameter
+    use x3 <- parameter
+    use x4 <- parameter
+    #(x1, x2, x3, x4)
+  })
+  |> apply(g1)
+  |> apply(g2)
+  |> apply(g3)
+  |> apply(g4)
 }
 
 /// `tuple5(g1, g2, g3, g4, g5)` generates a tuple of five values, one each from
@@ -976,8 +930,19 @@ pub fn tuple5(
   g4: Generator(t4),
   g5: Generator(t5),
 ) -> Generator(#(t1, t2, t3, t4, t5)) {
-  fn(t1, t2, t3, t4, t5) { #(t1, t2, t3, t4, t5) }
-  |> map5(g1, g2, g3, g4, g5)
+  return({
+    use x1 <- parameter
+    use x2 <- parameter
+    use x3 <- parameter
+    use x4 <- parameter
+    use x5 <- parameter
+    #(x1, x2, x3, x4, x5)
+  })
+  |> apply(g1)
+  |> apply(g2)
+  |> apply(g3)
+  |> apply(g4)
+  |> apply(g5)
 }
 
 /// `tuple6(g1, g2, g3, g4, g5, g6)` generates a tuple of six values, one each 
@@ -991,8 +956,21 @@ pub fn tuple6(
   g5: Generator(t5),
   g6: Generator(t6),
 ) -> Generator(#(t1, t2, t3, t4, t5, t6)) {
-  fn(t1, t2, t3, t4, t5, t6) { #(t1, t2, t3, t4, t5, t6) }
-  |> map6(g1, g2, g3, g4, g5, g6)
+  return({
+    use x1 <- parameter
+    use x2 <- parameter
+    use x3 <- parameter
+    use x4 <- parameter
+    use x5 <- parameter
+    use x6 <- parameter
+    #(x1, x2, x3, x4, x5, x6)
+  })
+  |> apply(g1)
+  |> apply(g2)
+  |> apply(g3)
+  |> apply(g4)
+  |> apply(g5)
+  |> apply(g6)
 }
 
 /// `from_generators(generators)` chooses a generator from a list of generators 
@@ -1873,35 +1851,9 @@ fn filter_map(
   iterator.unfold(it, do_filter_map(_, f))
 }
 
-// The curry functions from the stdlib are now deprecated, so we use these
-// instead.
-
-fn curry2(f: fn(x1, x2) -> y) -> fn(x1) -> fn(x2) -> y {
-  fn(x1) { fn(x2) { f(x1, x2) } }
-}
-
-fn curry3(f: fn(x1, x2, x3) -> y) -> fn(x1) -> fn(x2) -> fn(x3) -> y {
-  fn(x1) { fn(x2) { fn(x3) { f(x1, x2, x3) } } }
-}
-
-fn curry4(
-  f: fn(x1, x2, x3, x4) -> y,
-) -> fn(x1) -> fn(x2) -> fn(x3) -> fn(x4) -> y {
-  fn(x1) { fn(x2) { fn(x3) { fn(x4) { f(x1, x2, x3, x4) } } } }
-}
-
-fn curry5(
-  f: fn(x1, x2, x3, x4, x5) -> y,
-) -> fn(x1) -> fn(x2) -> fn(x3) -> fn(x4) -> fn(x5) -> y {
-  fn(x1) { fn(x2) { fn(x3) { fn(x4) { fn(x5) { f(x1, x2, x3, x4, x5) } } } } }
-}
-
-fn curry6(
-  f: fn(x1, x2, x3, x4, x5, x6) -> y,
-) -> fn(x1) -> fn(x2) -> fn(x3) -> fn(x4) -> fn(x5) -> fn(x6) -> y {
-  fn(x1) {
-    fn(x2) {
-      fn(x3) { fn(x4) { fn(x5) { fn(x6) { f(x1, x2, x3, x4, x5, x6) } } } }
-    }
-  }
+/// For use in building curried functions for the applicative style of 
+/// constructing generators.
+/// 
+pub fn parameter(f: fn(x) -> y) -> fn(x) -> y {
+  f
 }

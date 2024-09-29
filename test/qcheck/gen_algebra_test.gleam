@@ -82,77 +82,26 @@ pub fn map4__test() {
 
   let gen_int = qcheck.int_uniform_inclusive(min, max)
 
+  let generator =
+    qcheck.return({
+      use a <- qcheck.parameter
+      use b <- qcheck.parameter
+      use c <- qcheck.parameter
+      use d <- qcheck.parameter
+      #(a, b, c, d)
+    })
+    |> qcheck.apply(gen_int)
+    |> qcheck.apply(gen_int)
+    |> qcheck.apply(gen_int)
+    |> qcheck.apply(gen_int)
+
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.map4(
-      fn(a, b, c, d) { #(a, b, c, d) },
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-    ),
+    generator: generator,
     property: fn(tup4) {
       let #(a, b, c, d) = tup4
 
       in_range(a) && in_range(b) && in_range(c) && in_range(d)
-    },
-  )
-}
-
-pub fn map5__test() {
-  let min = -100
-  let max = 100
-
-  let in_range = in_range(min, max)
-
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
-
-  qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.map5(
-      fn(a, b, c, d, e) { #(a, b, c, d, e) },
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-    ),
-    property: fn(tup5) {
-      let #(a, b, c, d, e) = tup5
-
-      in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e)
-    },
-  )
-}
-
-pub fn map6__test() {
-  let min = -100
-  let max = 100
-
-  let in_range = in_range(min, max)
-
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
-
-  qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.map6(
-      fn(a, b, c, d, e, f) { #(a, b, c, d, e, f) },
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-    ),
-    property: fn(tup6) {
-      let #(a, b, c, d, e, f) = tup6
-
-      in_range(a)
-      && in_range(b)
-      && in_range(c)
-      && in_range(d)
-      && in_range(e)
-      && in_range(f)
     },
   )
 }
