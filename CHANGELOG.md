@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2024-09-30
+
 ### Added
 
 - `qcheck.parameter` to simplify the creation of curried function for the applicative style of building generators.
