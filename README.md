@@ -211,6 +211,38 @@ You could imagine combining a property test like the one above, with a few well 
 
 (The full code for this example can be found in `test/examples/parsing_example_test.gleam`.)
 
+### Applicative sytle
+
+The applicative style provides a nice interface for creating generators for custom types.
+
+```gleam
+import qcheck
+
+/// A simple Box type with position (x, y) and dimensions (width, height).
+type Box {
+  Box(x: Int, y: Int, w: Int, h: Int)
+}
+
+fn box_generator() {
+  // Lift the Box creating function into the Generator structure.
+  qcheck.return({
+    use x <- qcheck.parameter
+    use y <- qcheck.parameter
+    use w <- qcheck.parameter
+    use h <- qcheck.parameter
+    Box(x:, y:, w:, h:)
+  })
+  // Set the `x` generator.
+  |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+  // Set the `y` generator.
+  |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+  // Set the `width` generator.
+  |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+  // Set the `height` generator.
+  |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+}
+```
+
 ### More examples
 
 The [test](https://github.com/mooreryan/gleam_qcheck/tree/main/test) directory of this repository has many examples of setting up tests, using the built-in generators, and creating new generators. Until more dedicated documentation is written, the tests can provide some good info, as they exercise most of the available behavior. However, be aware that the tests will often use `use <- qcheck.rescue`. This is _not_ needed in your tests--it provides a way to test the `qcheck` internals.
