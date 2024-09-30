@@ -173,6 +173,22 @@ import prng/random
 import prng/seed.{type Seed}
 import qcheck/prng_random
 
+const ascii_a_lowercase: Int = 97
+
+const ascii_a_uppercase: Int = 65
+
+const ascii_nine: Int = 57
+
+const ascii_space: Int = 32
+
+const ascii_tilde: Int = 126
+
+const ascii_z_lowercase: Int = 122
+
+const ascii_z_uppercase: Int = 90
+
+const ascii_zero: Int = 48
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: Running tests 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1171,8 +1187,7 @@ const char_max_value: Int = 255
 /// Shrinks towards `a` when possible, but won't go outside of the range.
 /// 
 pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String) {
-  let a = 97
-  let origin = pick_origin_within_range(low, high, goal: a)
+  let origin = pick_origin_within_range(low, high, goal: ascii_a_lowercase)
   let shrink = shrink_int_towards(origin)
 
   Generator(fn(seed) {
@@ -1182,7 +1197,7 @@ pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String)
 
     let tree =
       make_primitive_tree(n, shrink)
-      |> map_tree(int_to_char)
+      |> map_tree(unsafe_int_to_char)
 
     #(tree, seed)
   })
@@ -1191,28 +1206,19 @@ pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String)
 /// `char_uppercase()` generates uppercase (ASCII) letters.
 /// 
 pub fn char_uppercase() -> Generator(String) {
-  let a = char_to_int("A")
-  let z = char_to_int("Z")
-
-  char_uniform_inclusive(a, z)
+  char_uniform_inclusive(ascii_a_uppercase, ascii_z_uppercase)
 }
 
 /// `char_lowercase()` generates lowercase (ASCII) letters.
 /// 
 pub fn char_lowercase() -> Generator(String) {
-  let a = char_to_int("a")
-  let z = char_to_int("z")
-
-  char_uniform_inclusive(a, z)
+  char_uniform_inclusive(ascii_a_lowercase, ascii_z_lowercase)
 }
 
 /// `char_digit()` generates digits from `0` to `9`, inclusive.
 /// 
 pub fn char_digit() -> Generator(String) {
-  let zero = char_to_int("0")
-  let nine = char_to_int("9")
-
-  char_uniform_inclusive(zero, nine)
+  char_uniform_inclusive(ascii_zero, ascii_nine)
 }
 
 // TODO: name char_printable_uniform?
@@ -1221,10 +1227,7 @@ pub fn char_digit() -> Generator(String) {
 /// `char_print_uniform()` generates printable ASCII characters.
 /// 
 pub fn char_print_uniform() -> Generator(String) {
-  let space = char_to_int(" ")
-  let tilde = char_to_int("~")
-
-  char_uniform_inclusive(space, tilde)
+  char_uniform_inclusive(ascii_space, ascii_tilde)
 }
 
 /// `char_uniform()` generates characters uniformly distributed across the 
@@ -1252,7 +1255,7 @@ pub fn char_alpha_numeric() -> Generator(String) {
 /// characters.
 /// 
 pub fn char_from_list(chars: List(String)) -> Generator(String) {
-  let ints = list.map(chars, char_to_int)
+  let ints = list.map(chars, unsafe_char_to_int)
   // TODO: assert that they are all single length chars
   let assert [hd, ..tl] = ints
 
@@ -1264,7 +1267,7 @@ pub fn char_from_list(chars: List(String)) -> Generator(String) {
 
     let tree =
       make_primitive_tree(n, shrink_int_towards(shrink_target))
-      |> map_tree(int_to_char)
+      |> map_tree(unsafe_int_to_char)
 
     #(tree, seed)
   })
@@ -1299,7 +1302,7 @@ fn char_is_whitespace(c) {
 pub fn char_whitespace() -> Generator(String) {
   all_char_list()
   |> list.filter(char_is_whitespace)
-  |> list.map(int_to_char)
+  |> list.map(unsafe_int_to_char)
   |> char_from_list
 }
 
@@ -1327,8 +1330,8 @@ pub fn char() {
     #(131, char_digit()),
     #(81, char_print_uniform()),
     #(89, char_uniform()),
-    #(09, return(int_to_char(char_min_value))),
-    #(09, return(int_to_char(char_max_value))),
+    #(09, return(unsafe_int_to_char(char_min_value))),
+    #(09, return(unsafe_int_to_char(char_max_value))),
   ])
 }
 
@@ -1790,22 +1793,6 @@ fn list_cons(x, xs) {
   [x, ..xs]
 }
 
-// TODO: Could this be simplified?
-fn int_to_char(n: Int) -> String {
-  n
-  |> string.utf_codepoint
-  |> ok_exn
-  |> list_return
-  |> string.from_utf_codepoints
-}
-
-fn char_to_int(c: String) -> Int {
-  string.to_utf_codepoints(c)
-  |> list.first
-  |> ok_exn
-  |> string.utf_codepoint_to_int
-}
-
 // Assumes that the args are properly ordered.
 fn pick_origin_within_range(low: Int, high: Int, goal goal: Int) {
   case low > goal {
@@ -1890,4 +1877,19 @@ fn filter_map(
 /// 
 pub fn parameter(f: fn(x) -> y) -> fn(x) -> y {
   f
+}
+
+fn unsafe_int_to_char(n: Int) -> String {
+  n
+  |> string.utf_codepoint
+  |> ok_exn
+  |> list_return
+  |> string.from_utf_codepoints
+}
+
+fn unsafe_char_to_int(c: String) -> Int {
+  string.to_utf_codepoints(c)
+  |> list.first
+  |> ok_exn
+  |> string.utf_codepoint_to_int
 }
