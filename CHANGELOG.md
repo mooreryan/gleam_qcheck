@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `qcheck.parameter` to simplify the creation of curried function for the applicative style of building generators.
 
+### Changed
+
+- All occurrences of `prng/seed.Seed` type have been replaced with `qcheck.Seed`.
+
 ### Removed
 
 - Removed `map4`, `map5`, and `map6` from the `qcheck` module. (It is better to use the applicative style with `qcheck.parameter` and `use`.)

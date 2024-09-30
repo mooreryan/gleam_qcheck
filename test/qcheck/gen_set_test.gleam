@@ -3,7 +3,6 @@ import gleam/int
 import gleam/list
 import gleam/set
 import gleam/string
-import prng/seed
 import qcheck
 
 pub fn set_generic__generates_valid_values__test() {
@@ -39,7 +38,7 @@ pub fn set_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.set_generic(qcheck.int_uniform_inclusive(-1, 2), max_length: 3),
-      seed.new(10_003),
+      qcheck.seed_new(10_003),
     )
 
   tree

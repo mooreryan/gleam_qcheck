@@ -2,7 +2,6 @@ import birdie
 import gleam/dict
 import gleam/int
 import gleam/list
-import prng/seed
 import qcheck
 
 pub fn dict_generic__generates_valid_values__test() {
@@ -50,7 +49,7 @@ pub fn dict_generators_shrink_on_size_then_on_elements__test() {
         value_generator: qcheck.int_uniform_inclusive(10, 12),
         max_length: 3,
       ),
-      seed.new(12),
+      qcheck.seed_new(12),
     )
 
   tree

@@ -2,7 +2,6 @@ import birdie
 import gleam/int
 import gleam/list
 import gleam/string
-import prng/seed
 import qcheck
 
 pub fn list_generic__generates_valid_values__test() {
@@ -37,7 +36,7 @@ pub fn list_generators_shrink_on_size_then_on_elements__test() {
         min_length: 0,
         max_length: 3,
       ),
-      seed.new(10_003),
+      qcheck.seed_new(10_003),
     )
 
   tree

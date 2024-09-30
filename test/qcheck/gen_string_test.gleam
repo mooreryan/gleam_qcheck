@@ -5,7 +5,6 @@ import gleam/list
 import gleam/regex
 import gleam/string
 import gleeunit/should
-import prng/seed
 import qcheck.{type Tree, Tree}
 
 const test_count: Int = 5000
@@ -121,7 +120,7 @@ pub fn string_generators_shrink_on_size_then_on_characters__test() {
         qcheck.char_uniform_inclusive(97, 99),
         qcheck.int_uniform_inclusive(2, 5),
       ),
-      seed.new(3),
+      qcheck.seed_new(3),
     )
 
   tree
@@ -163,7 +162,7 @@ pub fn string_generators_with_specific_length_dont_shrink_on_length__test() {
         length,
       ),
       // Use a random seed here so it tests a new tree each run.
-      seed.random(),
+      qcheck.seed_random(),
     )
 
   tree
