@@ -5,7 +5,6 @@ import filepath
 import gleam/int
 import gleam/io
 import gleam/string
-import prng/seed
 import qcheck
 import simplifile
 import youid/uuid
@@ -305,7 +304,7 @@ fn run_bench(
       qcheck.run(
         config: qcheck.default_config()
           |> qcheck.with_test_count(test_count)
-          |> qcheck.with_random_seed(seed.new(1_234_132)),
+          |> qcheck.with_random_seed(qcheck.seed_new(1_234_132)),
         generator: generator,
         property: fn(_) { True },
       )

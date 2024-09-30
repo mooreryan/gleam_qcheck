@@ -78,6 +78,17 @@ Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/be
 
 Charts: `Rscript --vanilla bench/scripts/plot_bench_results.R bench/bench_out/bench_full__*txt.gz`
 
+### Replace `char_to_int` with constants and wrap `Seed`
+
+These changes weren't necessarily about performance, but they did affect it slightly, so here is the benchmark so that the next performance optimization has a good starting point.
+
+- before
+  - `019220CC-E9A0-7A47-BD4A-5B0226B154A1`
+- after
+  - `019244D4-71C4-73B5-8702-E636080FB7CD`
+  - commit hash: `e5e9aac31a9851efd6e364ac46f6b77c30090dd2`
+  - commit msg: "Replace `prng/seed.Seed` with `qcheck.Seed`"
+
 ## General notes
 
 - The `normalize` function in `prng_random.weighted` takes a non-trivial amount of time. I could remove it, but it would have to come with a note mentioning passing negative weights is undefined or something like that.
