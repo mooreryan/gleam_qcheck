@@ -2,7 +2,7 @@ import birdie
 import gleam/function
 import gleam/iterator
 import gleam/list
-import gleam/regex
+import gleam/regexp
 import gleam/string
 import gleeunit/should
 import qcheck.{type Tree, Tree}
@@ -11,12 +11,12 @@ const test_count: Int = 5000
 
 pub fn string_generic__test() {
   let assert Ok(all_letters) =
-    regex.compile(
+    regexp.compile(
       "^[a-z]+$",
-      regex.Options(case_insensitive: False, multi_line: False),
+      regexp.Options(case_insensitive: False, multi_line: False),
     )
 
-  let has_only_a_through_z = fn(s) { regex.check(all_letters, s) }
+  let has_only_a_through_z = fn(s) { regexp.check(all_letters, s) }
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -199,9 +199,9 @@ pub fn string_with_length__generates_length_n_strings__test() {
 
 pub fn string_from__generates_correct_values__test() {
   let assert Ok(all_ascii_lowercase) =
-    regex.compile(
+    regexp.compile(
       "^[a-z]+$",
-      regex.Options(case_insensitive: False, multi_line: False),
+      regexp.Options(case_insensitive: False, multi_line: False),
     )
 
   qcheck.run(
@@ -209,22 +209,22 @@ pub fn string_from__generates_correct_values__test() {
       |> qcheck.with_test_count(test_count),
     generator: qcheck.string_from(qcheck.char_lowercase()),
     property: fn(s) {
-      string.is_empty(s) || regex.check(all_ascii_lowercase, s)
+      string.is_empty(s) || regexp.check(all_ascii_lowercase, s)
     },
   )
 }
 
 pub fn string_non_empty_from__generates_correct_values__test() {
   let assert Ok(all_ascii_lowercase) =
-    regex.compile(
+    regexp.compile(
       "^[a-z]+$",
-      regex.Options(case_insensitive: False, multi_line: False),
+      regexp.Options(case_insensitive: False, multi_line: False),
     )
 
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(test_count),
     generator: qcheck.string_non_empty_from(qcheck.char_lowercase()),
-    property: fn(s) { regex.check(all_ascii_lowercase, s) },
+    property: fn(s) { regexp.check(all_ascii_lowercase, s) },
   )
 }
 

@@ -170,7 +170,7 @@ import gleam/int
 import gleam/iterator.{type Iterator}
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/regex
+import gleam/regexp
 import gleam/result
 import gleam/set
 import gleam/string
@@ -1751,15 +1751,15 @@ fn new_test_error_message(
   )
 }
 
-fn regex_first_submatch(
+fn regexp_first_submatch(
   pattern pattern: String,
   in value: String,
 ) -> Result(String, String) {
-  regex.from_string(pattern)
-  // Convert regex.CompileError to a String
+  regexp.from_string(pattern)
+  // Convert regexp.CompileError to a String
   |> result.map_error(string.inspect)
   // Apply the regular expression
-  |> result.map(regex.scan(_, value))
+  |> result.map(regexp.scan(_, value))
   // We should see only a single match
   |> result.then(fn(matches) {
     case matches {
@@ -1769,7 +1769,7 @@ fn regex_first_submatch(
   })
   // We should see only a single successful submatch
   |> result.then(fn(match) {
-    let regex.Match(_content, submatches) = match
+    let regexp.Match(_content, submatches) = match
 
     case submatches {
       [Some(submatch)] -> Ok(submatch)
@@ -1782,21 +1782,21 @@ fn regex_first_submatch(
 fn test_error_message_get_original_value(
   test_error_str: String,
 ) -> Result(String, String) {
-  regex_first_submatch(pattern: "original_value: (.+?);", in: test_error_str)
+  regexp_first_submatch(pattern: "original_value: (.+?);", in: test_error_str)
 }
 
 /// Mainly for asserting values in qcheck internal tests.
 fn test_error_message_get_shrunk_value(
   test_error_str: String,
 ) -> Result(String, String) {
-  regex_first_submatch(pattern: "shrunk_value: (.+?);", in: test_error_str)
+  regexp_first_submatch(pattern: "shrunk_value: (.+?);", in: test_error_str)
 }
 
 /// Mainly for asserting values in qcheck internal tests.
 fn test_error_message_get_shrink_steps(
   test_error_str: String,
 ) -> Result(String, String) {
-  regex_first_submatch(pattern: "shrink_steps: (.+?);", in: test_error_str)
+  regexp_first_submatch(pattern: "shrink_steps: (.+?);", in: test_error_str)
 }
 
 /// This function should only be called to rescue a function that my call

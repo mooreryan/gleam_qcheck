@@ -1,6 +1,6 @@
 import gleam/int
 import gleam/option.{Some}
-import gleam/regex.{Match}
+import gleam/regexp.{Match}
 import gleam/result
 import gleam/string
 import qcheck.{type Generator}
@@ -32,13 +32,13 @@ fn point_to_string(point: Point) -> String {
 fn point_of_string(string: String) -> Result(Point, String) {
   use re <- result.try(
     // This is the one that is intentionally broken:
-    // regex.from_string("\\((\\d+) (\\d+)\\)")
+    // regexp.from_string("\\((\\d+) (\\d+)\\)")
     // And this is the one that is fixed to be okay with negative integers.
-    regex.from_string("\\((-?\\d+) (-?\\d+)\\)")
+    regexp.from_string("\\((-?\\d+) (-?\\d+)\\)")
     |> result.map_error(string.inspect),
   )
 
-  use submatches <- result.try(case regex.scan(re, string) {
+  use submatches <- result.try(case regexp.scan(re, string) {
     [Match(_content, submatches)] -> Ok(submatches)
     _ -> Error("expected a single match")
   })
