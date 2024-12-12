@@ -14,8 +14,11 @@
   - `Dict` generators
   - `Float` generators
   - `List` generators
+    - `list_with_length_from`: this one will never shrink on length
   - `Set` generators
 - Add generators for `bit_array`
+- Combinators
+  - `bind2`
 - State-machine testing as in [qcstm](https://github.com/jmid/qcstm)
 - Handle recursive data types. See:
   - [QCheck2.Gen.Fix](https://ocaml.org/p/qcheck-core/latest/doc/QCheck2/Gen/index.html#recursive-data-structures)
@@ -33,6 +36,12 @@
   - Figure out better defaults for the "char" generators. Right now they are focused on ascii characters mainly.
   - Having "char" generators is a little weird in a language without a `Char` type, but they are currently needed for generating and shrinking strings.
   - Some of the char generators take integers representing codepoints, but this is kind of awkward to work with.
+
+### Shrinking
+
+- Need to make it easier to turn off shrinking at certain points.
+  - Either by swapping in the `atomic` shrinker, or
+  - Making a `config` option to turn shrinking off for a particular `run` or `given` callback.
 
 ## Project structure
 
