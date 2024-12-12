@@ -174,7 +174,7 @@ import gleam/regex
 import gleam/result
 import gleam/set
 import gleam/string
-import gleam/string_builder.{type StringBuilder}
+import gleam/string_tree.{type StringTree}
 import prng/random
 import prng/seed as prng_seed
 import qcheck/prng_random
@@ -1403,7 +1403,7 @@ pub fn char() {
 
 fn do_gen_string(
   i: Int,
-  string_builder: StringBuilder,
+  string_tree: StringTree,
   char_gen: Generator(String),
   char_trees_rev: List(Tree(String)),
   seed: Seed,
@@ -1414,13 +1414,13 @@ fn do_gen_string(
   // char_tree |> tree_to_string_(fn(x) { x }, 3) |> io.println
 
   case i <= 0 {
-    True -> #(string_builder.to_string(string_builder), char_trees_rev, seed)
+    True -> #(string_tree.to_string(string_tree), char_trees_rev, seed)
     False -> {
       let Tree(root, _) = char_tree
 
       do_gen_string(
         i - 1,
-        string_builder |> string_builder.append(root),
+        string_tree |> string_tree.append(root),
         char_gen,
         [char_tree, ..char_trees_rev],
         seed,
@@ -1441,7 +1441,7 @@ pub fn string_with_length_from(
 ) -> Generator(String) {
   Generator(fn(seed) {
     let #(generated_string, char_trees_rev, seed) =
-      do_gen_string(length, string_builder.new(), generator, [], seed)
+      do_gen_string(length, string_tree.new(), generator, [], seed)
 
     // TODO: Ideally this whole thing would be delayed until needed.
     let shrink = fn() {

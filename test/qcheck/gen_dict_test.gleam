@@ -28,17 +28,17 @@ pub fn dict_generic__generates_valid_values__test() {
   )
 }
 
-import gleam/string_builder
+import gleam/string_tree
 
 fn int_int_dict_to_string(d: dict.Dict(Int, Int)) -> String {
-  dict.fold(d, string_builder.from_string("{ "), fn(sb, k, v) {
-    string_builder.append(
+  dict.fold(d, string_tree.from_string("{ "), fn(sb, k, v) {
+    string_tree.append(
       sb,
       int.to_string(k) <> " => " <> int.to_string(v) <> ", ",
     )
   })
-  |> string_builder.append(" }")
-  |> string_builder.to_string()
+  |> string_tree.append(" }")
+  |> string_tree.to_string()
 }
 
 pub fn dict_generators_shrink_on_size_then_on_elements__test() {
