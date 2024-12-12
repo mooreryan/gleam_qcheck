@@ -167,7 +167,6 @@ import exception
 import gleam/dict.{type Dict}
 import gleam/float
 import gleam/int
-import gleam/iterator.{type Iterator}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/regexp
@@ -175,6 +174,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 import gleam/string_tree.{type StringTree}
+import gleam/yielder.{type Yielder}
 import prng/random
 import prng/seed as prng_seed
 import qcheck/prng_random
@@ -445,17 +445,17 @@ pub fn with_random_seed(config, random_seed) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 pub type Tree(a) {
-  Tree(a, Iterator(Tree(a)))
+  Tree(a, Yielder(Tree(a)))
 }
 
 // `shrink` should probably be `shrink_steps` or `make_shrink_steps`
 pub fn make_primitive_tree(
   root x: a,
-  shrink shrink: fn(a) -> Iterator(a),
+  shrink shrink: fn(a) -> Yielder(a),
 ) -> Tree(a) {
   let shrink_trees =
     shrink(x)
-    |> iterator.map(make_primitive_tree(_, shrink))
+    |> yielder.map(make_primitive_tree(_, shrink))
 
   Tree(x, shrink_trees)
 }
@@ -463,7 +463,7 @@ pub fn make_primitive_tree(
 pub fn map_tree(tree: Tree(a), f: fn(a) -> b) -> Tree(b) {
   let Tree(x, xs) = tree
   let y = f(x)
-  let ys = iterator.map(xs, fn(smaller_x) { map_tree(smaller_x, f) })
+  let ys = yielder.map(xs, fn(smaller_x) { map_tree(smaller_x, f) })
 
   Tree(y, ys)
 }
@@ -473,9 +473,9 @@ pub fn bind_tree(tree: Tree(a), f: fn(a) -> Tree(b)) -> Tree(b) {
 
   let Tree(y, ys_of_x) = f(x)
 
-  let ys_of_xs = iterator.map(xs, fn(smaller_x) { bind_tree(smaller_x, f) })
+  let ys_of_xs = yielder.map(xs, fn(smaller_x) { bind_tree(smaller_x, f) })
 
-  let ys = iterator.append(ys_of_xs, ys_of_x)
+  let ys = yielder.append(ys_of_xs, ys_of_x)
 
   Tree(y, ys)
 }
@@ -487,16 +487,16 @@ pub fn apply_tree(f: Tree(fn(a) -> b), x: Tree(a)) -> Tree(b) {
   let y = f0(x0)
 
   let ys =
-    iterator.append(
-      iterator.map(fs, fn(f_) { apply_tree(f_, x) }),
-      iterator.map(xs, fn(x_) { apply_tree(f, x_) }),
+    yielder.append(
+      yielder.map(fs, fn(f_) { apply_tree(f_, x) }),
+      yielder.map(xs, fn(x_) { apply_tree(f, x_) }),
     )
 
   Tree(y, ys)
 }
 
 pub fn return_tree(x: a) -> Tree(a) {
-  Tree(x, iterator.empty())
+  Tree(x, yielder.empty())
 }
 
 pub fn map2_tree(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
@@ -521,8 +521,8 @@ pub fn sequence_list(l: List(Tree(a))) -> Tree(List(a)) {
   }
 }
 
-fn iterator_cons(element: a, iterator: fn() -> Iterator(a)) -> Iterator(a) {
-  iterator.yield(element, iterator)
+fn yielder_cons(element: a, yielder: fn() -> Yielder(a)) -> Yielder(a) {
+  yielder.yield(element, yielder)
 }
 
 pub fn option_tree(tree: Tree(a)) -> Tree(Option(a)) {
@@ -530,7 +530,7 @@ pub fn option_tree(tree: Tree(a)) -> Tree(Option(a)) {
 
   // Shrink trees will all have None as a value.
   let shrinks =
-    iterator_cons(return_tree(None), fn() { iterator.map(xs, option_tree) })
+    yielder_cons(return_tree(None), fn() { yielder.map(xs, option_tree) })
 
   Tree(Some(x), shrinks)
 }
@@ -569,16 +569,16 @@ fn do_tree_to_string(
       let children = case level > max_level {
         False ->
           children
-          |> iterator.map(fn(tree) {
+          |> yielder.map(fn(tree) {
             do_tree_to_string(tree, a_to_string, level + 1, max_level, acc)
           })
-          |> iterator.to_list
+          |> yielder.to_list
           |> string.join("")
 
         True ->
           children
-          |> iterator.map(fn(_) { "" })
-          |> iterator.to_list
+          |> yielder.map(fn(_) { "" })
+          |> yielder.to_list
           |> string.join("")
       }
 
@@ -604,18 +604,18 @@ fn int_half_difference(x: Int, y: Int) -> Int {
 fn int_shrink_step(
   x x: Int,
   current_shrink current_shrink: Int,
-) -> iterator.Step(Int, Int) {
+) -> yielder.Step(Int, Int) {
   case x == current_shrink {
-    True -> iterator.Done
+    True -> yielder.Done
     False -> {
       let half_difference = int_half_difference(x, current_shrink)
 
       case half_difference == 0 {
         True -> {
-          iterator.Next(current_shrink, x)
+          yielder.Next(current_shrink, x)
         }
         False -> {
-          iterator.Next(current_shrink, current_shrink + half_difference)
+          yielder.Next(current_shrink, current_shrink + half_difference)
         }
       }
     }
@@ -625,18 +625,18 @@ fn int_shrink_step(
 fn float_shrink_step(
   x x: Float,
   current_shrink current_shrink: Float,
-) -> iterator.Step(Float, Float) {
+) -> yielder.Step(Float, Float) {
   case x == current_shrink {
-    True -> iterator.Done
+    True -> yielder.Done
     False -> {
       let half_difference = float_half_difference(x, current_shrink)
 
       case half_difference == 0.0 {
         True -> {
-          iterator.Next(current_shrink, x)
+          yielder.Next(current_shrink, x)
         }
         False -> {
-          iterator.Next(current_shrink, current_shrink +. half_difference)
+          yielder.Next(current_shrink, current_shrink +. half_difference)
         }
       }
     }
@@ -645,9 +645,9 @@ fn float_shrink_step(
 
 pub fn shrink_int_towards(
   destination destination: Int,
-) -> fn(Int) -> iterator.Iterator(Int) {
+) -> fn(Int) -> yielder.Yielder(Int) {
   fn(x) {
-    iterator.unfold(destination, fn(current_shrink) {
+    yielder.unfold(destination, fn(current_shrink) {
       int_shrink_step(x: x, current_shrink: current_shrink)
     })
   }
@@ -655,22 +655,22 @@ pub fn shrink_int_towards(
 
 pub fn shrink_float_towards(
   destination destination: Float,
-) -> fn(Float) -> iterator.Iterator(Float) {
+) -> fn(Float) -> yielder.Yielder(Float) {
   fn(x) {
-    iterator.unfold(destination, fn(current_shrink) {
+    yielder.unfold(destination, fn(current_shrink) {
       float_shrink_step(x: x, current_shrink: current_shrink)
     })
     // (Arbitrarily) Limit to the first 15 elements as dividing a `Float` by 2
     // doesn't converge quickly towards the destination.
-    |> iterator.take(15)
+    |> yielder.take(15)
   }
 }
 
-pub fn shrink_int_towards_zero() -> fn(Int) -> iterator.Iterator(Int) {
+pub fn shrink_int_towards_zero() -> fn(Int) -> yielder.Yielder(Int) {
   shrink_int_towards(destination: 0)
 }
 
-pub fn shrink_float_towards_zero() -> fn(Float) -> iterator.Iterator(Float) {
+pub fn shrink_float_towards_zero() -> fn(Float) -> yielder.Yielder(Float) {
   shrink_float_towards(destination: 0.0)
 }
 
@@ -758,7 +758,7 @@ fn do_shrink(
         RunPropertyFail -> Some(tree)
       }
     })
-    |> iterator.first
+    |> yielder.first
 
   case result {
     // Error means no head here.
@@ -795,7 +795,7 @@ fn do_shrink_result(
         RunPropertyFail -> Some(tree)
       }
     })
-    |> iterator.first
+    |> yielder.first
 
   case result {
     // Error means no head here.
@@ -813,8 +813,8 @@ fn do_shrink_result(
 
 /// The `atomic` shrinker treats types as atomic, and never attempts to produce
 /// smaller values.
-pub fn shrink_atomic() -> fn(a) -> Iterator(a) {
-  fn(_) { iterator.empty() }
+pub fn shrink_atomic() -> fn(a) -> Yielder(a) {
+  fn(_) { yielder.empty() }
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1640,7 +1640,7 @@ pub fn bool() -> Generator(Bool) {
       prng_random.choose(True, False) |> random.step(seed |> seed_to_prng_seed)
 
     let tree = case bool {
-      True -> Tree(True, iterator.once(fn() { return_tree(False) }))
+      True -> Tree(True, yielder.once(fn() { return_tree(False) }))
       False -> return_tree(False)
     }
 
@@ -1888,25 +1888,25 @@ fn pick_origin_within_range_float(low: Float, high: Float, goal goal: Float) {
 }
 
 fn do_filter_map(
-  it: iterator.Iterator(a),
+  it: yielder.Yielder(a),
   f: fn(a) -> Option(b),
-) -> iterator.Step(b, iterator.Iterator(a)) {
-  case iterator.step(it) {
-    iterator.Done -> iterator.Done
-    iterator.Next(x, it) -> {
+) -> yielder.Step(b, yielder.Yielder(a)) {
+  case yielder.step(it) {
+    yielder.Done -> yielder.Done
+    yielder.Next(x, it) -> {
       case f(x) {
         None -> do_filter_map(it, f)
-        Some(y) -> iterator.Next(y, it)
+        Some(y) -> yielder.Next(y, it)
       }
     }
   }
 }
 
 fn filter_map(
-  it: iterator.Iterator(a),
+  it: yielder.Yielder(a),
   f: fn(a) -> Option(b),
-) -> iterator.Iterator(b) {
-  iterator.unfold(it, do_filter_map(_, f))
+) -> yielder.Yielder(b) {
+  yielder.unfold(it, do_filter_map(_, f))
 }
 
 /// `parameter(f)` is used in constructing curried functions for the applicative 

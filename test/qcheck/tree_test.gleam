@@ -1,7 +1,7 @@
 import birdie
 import gleam/int
-import gleam/iterator
 import gleam/option.{None, Some}
+import gleam/yielder
 import gleeunit/should
 import qcheck.{type Tree, Tree}
 
@@ -101,7 +101,7 @@ fn my_int_towards_zero() {
   fn(my_int) {
     let MyInt(n) = my_int
     qcheck.shrink_int_towards_zero()(n)
-    |> iterator.map(MyInt)
+    |> yielder.map(MyInt)
   }
 }
 

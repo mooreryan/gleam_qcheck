@@ -1,9 +1,9 @@
 import birdie
 import gleam/function
-import gleam/iterator
 import gleam/list
 import gleam/regexp
 import gleam/string
+import gleam/yielder
 import gleeunit/should
 import qcheck.{type Tree, Tree}
 
@@ -133,12 +133,12 @@ fn check_tree_nodes(tree: Tree(a), predicate: fn(a) -> Bool) -> Bool {
 
   let all_true = fn(it) {
     it
-    |> iterator.all(function.identity)
+    |> yielder.all(function.identity)
   }
 
   case predicate(root) {
     True ->
-      iterator.map(children, fn(tree: Tree(a)) {
+      yielder.map(children, fn(tree: Tree(a)) {
         check_tree_nodes(tree, predicate)
       })
       |> all_true
