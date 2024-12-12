@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2024-12-11
+
+- Addressed deprecations
+  - `iterator` => `yielder`
+  - `regex` => `regexp`
+  - `string_builder` => `string_tree`
+
+### Changed
+
 ## [0.0.6] - 2024-09-30
 
 ### Added
@@ -115,7 +124,9 @@ These public functions and types were removed.
 
 - Initial release!
 
-[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.7
+[0.0.6]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.6
 [0.0.5]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.5
 [0.0.4]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.4
 [0.0.3]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.3
