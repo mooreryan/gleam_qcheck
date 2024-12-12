@@ -4,11 +4,11 @@
 import gleam/dict.{type Dict}
 import gleam/float
 import gleam/int
-import gleam/iterator
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/order.{type Order}
 import gleam/string
+import gleam/yielder
 import gleeunit/should
 import prng/random
 import prng/seed
@@ -64,11 +64,11 @@ fn do_test(
 ) -> Nil {
   let number_of_samples = 1000
   let samples =
-    random.to_random_iterator(generator)
-    |> iterator.take(number_of_samples)
-    |> iterator.to_list
+    random.to_random_yielder(generator)
+    |> yielder.take(number_of_samples)
+    |> yielder.to_list
 
-  // The iterator should be infinite, so we _must_ always have 1000 samples
+  // The yielder should be infinite, so we _must_ always have 1000 samples
   list.length(samples)
   |> should.equal(number_of_samples)
 
@@ -84,13 +84,13 @@ fn behaves_the_same(gen1: random.Generator(a), gen2: random.Generator(a)) -> Nil
     |> random.random_sample
 
   let samples1 =
-    random.to_iterator(gen1, seed)
-    |> iterator.take(1000)
-    |> iterator.to_list
+    random.to_yielder(gen1, seed)
+    |> yielder.take(1000)
+    |> yielder.to_list
   let samples2 =
-    random.to_iterator(gen2, seed)
-    |> iterator.take(1000)
-    |> iterator.to_list
+    random.to_yielder(gen2, seed)
+    |> yielder.take(1000)
+    |> yielder.to_list
 
   should.equal(samples1, samples2)
 }
@@ -108,13 +108,13 @@ fn assert_similar_distributions(
     |> random.random_sample
 
   let samples1 =
-    random.to_iterator(gen1, seed)
-    |> iterator.take(100_000)
-    |> iterator.to_list
+    random.to_yielder(gen1, seed)
+    |> yielder.take(100_000)
+    |> yielder.to_list
   let samples2 =
-    random.to_iterator(gen2, seed)
-    |> iterator.take(100_000)
-    |> iterator.to_list
+    random.to_yielder(gen2, seed)
+    |> yielder.take(100_000)
+    |> yielder.to_list
 
   let proportions1 = samples1 |> frequencies |> proportions
   let proportions2 = samples2 |> frequencies |> proportions

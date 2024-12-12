@@ -1,6 +1,6 @@
 import gleam/int
 import gleam/option.{Some}
-import gleam/regex
+import gleam/regexp
 import gleam/result
 import gleam/string
 import gleeunit/should
@@ -521,11 +521,11 @@ pub fn shrinking_works_with_apply__test() {
   }
 
   let parse_numbers = fn(str) {
-    regex.from_string("#\\((-?\\d+), (-?\\d+), (-?\\d+)\\)")
-    // Convert regex.CompileError to a String
+    regexp.from_string("#\\((-?\\d+), (-?\\d+), (-?\\d+)\\)")
+    // Convert regexp.CompileError to a String
     |> result.map_error(string.inspect)
     // Apply the regular expression
-    |> result.map(regex.scan(_, str))
+    |> result.map(regexp.scan(_, str))
     // We should see only a single match
     |> result.then(fn(matches) {
       case matches {
@@ -535,7 +535,7 @@ pub fn shrinking_works_with_apply__test() {
     })
     // Get submatches
     |> result.then(fn(match) {
-      let regex.Match(_content, submatches) = match
+      let regexp.Match(_content, submatches) = match
 
       case submatches {
         [Some(a), Some(b), Some(c)] -> Ok(#(a, b, c))
