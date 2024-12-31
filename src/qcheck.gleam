@@ -64,8 +64,8 @@
 //// 
 ////  - [int_uniform](#int_uniform)
 ////  - [int_uniform_inclusive](#int_uniform_inclusive)
-////  - [small_positive_or_zero_int](#small_positive_or_zero_int)
-////  - [small_strictly_positive_int](#small_strictly_positive_int)
+////  - [int_small_positive_or_zero](#int_small_positive_or_zero)
+////  - [int_small_strictly_positive](#int_small_strictly_positive)
 //// 
 //// ### Unicode codepoints (`UtfCodepoint`)
 //// 
@@ -1179,14 +1179,14 @@ pub fn from_weighted_generators(
 // MARK: Ints
 
 // TODO: consider switching to base_quickcheck small int generator
-/// `small_positive_or_zero_int()` generates small integers well suited for 
+/// `int_small_positive_or_zero()` generates small integers well suited for 
 /// modeling the sizes of sized elements like lists or strings.
 /// 
 /// Smaller numbers are more likely than larger numbers.
 /// 
 /// Shrinks towards `0`.
 /// 
-pub fn small_positive_or_zero_int() -> Generator(Int) {
+pub fn int_small_positive_or_zero() -> Generator(Int) {
   make_primitive_generator(
     random_generator: random.int(0, 1)
       |> random.then(fn(x) {
@@ -1201,11 +1201,11 @@ pub fn small_positive_or_zero_int() -> Generator(Int) {
   )
 }
 
-/// `small_strictly_positive_int()` generates small integers strictly greater
+/// `int_small_strictly_positive()` generates small integers strictly greater
 /// than `0`.
 /// 
-pub fn small_strictly_positive_int() -> Generator(Int) {
-  small_positive_or_zero_int()
+pub fn int_small_strictly_positive() -> Generator(Int) {
+  int_small_positive_or_zero()
   |> map(int.add(_, 1))
 }
 
@@ -1553,7 +1553,7 @@ pub fn string_generic(
 /// default length generator.
 /// 
 pub fn string() -> Generator(String) {
-  bind(small_positive_or_zero_int(), fn(length) {
+  bind(int_small_positive_or_zero(), fn(length) {
     string_with_length_from(char(), length)
   })
 }
@@ -1562,7 +1562,7 @@ pub fn string() -> Generator(String) {
 /// generator and the default length generator.
 /// 
 pub fn string_non_empty() -> Generator(String) {
-  bind(small_strictly_positive_int(), fn(length) {
+  bind(int_small_strictly_positive(), fn(length) {
     string_with_length_from(char(), length)
   })
 }
@@ -1578,7 +1578,7 @@ pub fn string_with_length(length: Int) -> Generator(String) {
 /// using the default length generator.
 /// 
 pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
-  bind(small_positive_or_zero_int(), fn(length) {
+  bind(int_small_positive_or_zero(), fn(length) {
     string_with_length_from(char_generator, length)
   })
 }
@@ -1589,7 +1589,7 @@ pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
 pub fn string_non_empty_from(
   char_generator: Generator(String),
 ) -> Generator(String) {
-  bind(small_strictly_positive_int(), fn(length) {
+  bind(int_small_strictly_positive(), fn(length) {
     string_with_length_from(char_generator, length)
   })
 }
@@ -1950,13 +1950,13 @@ fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
 /// `bit_array()` generates `BitArrays`.
 /// 
 pub fn bit_array() -> Generator(BitArray) {
-  bit_array_with_size_from(small_positive_or_zero_int())
+  bit_array_with_size_from(int_small_positive_or_zero())
 }
 
 /// `bit_array()` generates non-empty `BitArrays`.
 /// 
 pub fn bit_array_non_empty() -> Generator(BitArray) {
-  bit_array_with_size_from(small_strictly_positive_int())
+  bit_array_with_size_from(int_small_strictly_positive())
 }
 
 /// `bit_array_with_size_from(size_generator)` generates `BitArrays` of size 
@@ -1981,7 +1981,7 @@ pub fn bit_array_with_size(size: Int) -> Generator(BitArray) {
 /// `bit_array_utf8()` generates `BitArrays` of valid UTF-8 bytes.
 /// 
 pub fn bit_array_utf8() -> Generator(BitArray) {
-  use max_length <- bind(small_strictly_positive_int())
+  use max_length <- bind(int_small_strictly_positive())
   use codepoints <- map(list_generic(utf_codepoint(), 0, max_length))
 
   codepoints
@@ -1993,7 +1993,7 @@ pub fn bit_array_utf8() -> Generator(BitArray) {
 /// bytes.
 /// 
 pub fn bit_array_utf8_non_empty() -> Generator(BitArray) {
-  use max_length <- bind(small_strictly_positive_int())
+  use max_length <- bind(int_small_strictly_positive())
   use codepoints <- map(list_generic(utf_codepoint(), 1, max_length))
 
   codepoints

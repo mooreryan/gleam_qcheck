@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `UtfCodepoint` (unicode codepoint) generator
 - `char_utf_codepoint` which can be used in string generators to generate strings composed of valid unicode codepoints
 
+### Changed
+
+- These functions have been renamed to fit with the `type_modifier` naming scheme:
+  - `small_positive_or_zero_int` -> `int_small_positive_or_zero`
+  - `small_strictly_positive_int` -> `int_small_strictly_positive`
+
 ## [0.0.7] - 2024-12-11
 
 ### Changed

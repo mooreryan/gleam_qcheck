@@ -140,8 +140,8 @@ pub fn main() {
 
   run_bench(
     Strings,
-    "string_generic(char, small_positive_or_zero_int)",
-    qcheck.string_generic(qcheck.char(), qcheck.small_positive_or_zero_int()),
+    "string_generic(char, int_small_positive_or_zero)",
+    qcheck.string_generic(qcheck.char(), qcheck.int_small_positive_or_zero()),
   )
 
   // MARK: Ints
@@ -156,14 +156,14 @@ pub fn main() {
 
   run_bench(
     Ints,
-    "small_positive_or_zero_int",
-    qcheck.small_positive_or_zero_int(),
+    "int_small_positive_or_zero",
+    qcheck.int_small_positive_or_zero(),
   )
 
   run_bench(
     Ints,
-    "small_strictly_positive_int",
-    qcheck.small_strictly_positive_int(),
+    "int_small_strictly_positive",
+    qcheck.int_small_strictly_positive(),
   )
 
   // MARK: Floats

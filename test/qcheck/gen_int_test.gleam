@@ -3,19 +3,19 @@ import gleam/string
 import gleeunit/should
 import qcheck
 
-// small_positive_or_zero_int
+// int_small_positive_or_zero
 // 
 // 
 
-pub fn small_positive_or_zero_int__test() {
-  use n <- qcheck.given(qcheck.small_positive_or_zero_int())
+pub fn int_small_positive_or_zero__test() {
+  use n <- qcheck.given(qcheck.int_small_positive_or_zero())
   n + 1 == 1 + n
 }
 
-pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
+pub fn int_small_positive_or_zero__failures_shrink_to_zero__test() {
   let assert Error(msg) = {
     use <- qcheck.rescue
-    use n <- qcheck.given(qcheck.small_positive_or_zero_int())
+    use n <- qcheck.given(qcheck.int_small_positive_or_zero())
     n + 1 != 1 + n
   }
 
@@ -23,12 +23,12 @@ pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
   |> should.equal(string.inspect(0))
 }
 
-pub fn small_positive_or_zero_int__failures_shrink_to_smaller_values__test() {
+pub fn int_small_positive_or_zero__failures_shrink_to_smaller_values__test() {
   let assert Error(msg) = {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int(),
+      generator: qcheck.int_small_positive_or_zero(),
       property: fn(n) { n == 0 || n > 1 },
     )
   }
@@ -36,24 +36,24 @@ pub fn small_positive_or_zero_int__failures_shrink_to_smaller_values__test() {
   |> should.equal(string.inspect(1))
 }
 
-// small_strictly_positive_int
+// int_small_strictly_positive
 // 
 // 
 
-pub fn small_strictly_positive_int__test() {
+pub fn int_small_strictly_positive__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.small_strictly_positive_int(),
+    generator: qcheck.int_small_strictly_positive(),
     property: fn(n) { n > 0 },
   )
 }
 
-pub fn small_strictly_positive_int__failures_shrink_ok__test() {
+pub fn int_small_strictly_positive__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_strictly_positive_int(),
+      generator: qcheck.int_small_strictly_positive(),
       property: fn(n) { n > 1 },
     )
   }
@@ -64,7 +64,7 @@ pub fn small_strictly_positive_int__failures_shrink_ok__test() {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_strictly_positive_int(),
+      generator: qcheck.int_small_strictly_positive(),
       property: fn(n) { n == 1 || n > 2 },
     )
   }

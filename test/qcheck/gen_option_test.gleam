@@ -6,7 +6,7 @@ import qcheck
 pub fn option__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.small_positive_or_zero_int()
+    generator: qcheck.int_small_positive_or_zero()
       |> qcheck.option,
     property: fn(int_option) {
       case int_option {
@@ -21,7 +21,7 @@ pub fn option__failures_shrink_ok__test() {
   let run = fn(property) {
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int()
+      generator: qcheck.int_small_positive_or_zero()
         |> qcheck.option,
       property: property,
     )
@@ -69,7 +69,7 @@ pub fn option_sometimes_generates_none__test() {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int()
+      generator: qcheck.int_small_positive_or_zero()
         |> qcheck.option,
       // All values are `Some` (False)
       property: option.is_some,

@@ -18,7 +18,7 @@ pub fn map__test() {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int() |> qcheck.map(int.to_float),
+      generator: qcheck.int_small_positive_or_zero() |> qcheck.map(int.to_float),
       property: fn(n) { n == 0.0 || n >. 1.0 },
     )
   }

@@ -21,7 +21,7 @@ pub fn run_result__property_error_means_fail__test() {
     use <- qcheck.rescue
     qcheck.run_result(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int(),
+      generator: qcheck.int_small_positive_or_zero(),
       property: int.divide(1, _),
     )
   }

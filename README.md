@@ -22,13 +22,13 @@ Here is a short example to get you started. It assumes you are using [gleeunit](
 ```gleam
 import qcheck
 
-pub fn small_positive_or_zero_int__test() {
-  use n <- qcheck.given(qcheck.small_positive_or_zero_int())
+pub fn int_small_positive_or_zero__test() {
+  use n <- qcheck.given(qcheck.int_small_positive_or_zero())
   n + 1 == 1 + n
 }
 
-pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
-  use n <- qcheck.given(qcheck.small_positive_or_zero_int())
+pub fn int_small_positive_or_zero__failures_shrink_to_zero__test() {
+  use n <- qcheck.given(qcheck.int_small_positive_or_zero())
   n + 1 != 1 + n
 }
 ```
@@ -38,7 +38,7 @@ That second example will fail with an error that may look something like this if
 ```
  Failures:
 
-  1) examples/basic_example_test.small_positive_or_zero_int__failures_shrink_to_zero__test
+  1) examples/basic_example_test.int_small_positive_or_zero__failures_shrink_to_zero__test
      Failure: <<"TestError[original_value: 3; shrunk_value: 0; shrink_steps: 1; error: property was False;]">>
      stacktrace:
        qcheck_ffi.fail
@@ -47,7 +47,7 @@ That second example will fail with an error that may look something like this if
 - `qcheck.given` sets up the test
   - If a property holds for all generated values, then `qcheck.given` returns `Nil`.
   - If a property does not hold for all generated values, then `qcheck.given` will panic.
-- `qcheck.small_positive_or_zero_int()` generates small integers greater than or equal to zero.
+- `qcheck.int_small_positive_or_zero()` generates small integers greater than or equal to zero.
 - `n + 1 == 1 + n` is the property being tested in the first test.
   - It should be true for all generated values.
   - The return value of `qcheck.given` will be `Nil`, because the property does hold for all generated values.

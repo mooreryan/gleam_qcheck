@@ -5,7 +5,7 @@ import qcheck
 pub fn custom_type_passing_test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.small_positive_or_zero_int() |> qcheck.map(MyInt),
+    generator: qcheck.int_small_positive_or_zero() |> qcheck.map(MyInt),
     property: fn(my_int) {
       let MyInt(n) = my_int
       n == my_int_to_int(my_int)
@@ -18,7 +18,7 @@ pub fn custom_type_failing_test() {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int() |> qcheck.map(MyInt),
+      generator: qcheck.int_small_positive_or_zero() |> qcheck.map(MyInt),
       property: fn(my_int) {
         let MyInt(n) = my_int
         n < 10
@@ -44,7 +44,7 @@ fn even_odd(n: Int) -> Either(Int, Int) {
 pub fn either_passing_test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.small_positive_or_zero_int() |> qcheck.map(even_odd),
+    generator: qcheck.int_small_positive_or_zero() |> qcheck.map(even_odd),
     property: fn(v) {
       case v {
         First(n) -> n % 2 == 0
@@ -58,7 +58,7 @@ pub fn either_failing_test() {
   let run = fn(property) {
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int() |> qcheck.map(even_odd),
+      generator: qcheck.int_small_positive_or_zero() |> qcheck.map(even_odd),
       property: property,
     )
   }
