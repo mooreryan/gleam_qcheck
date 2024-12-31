@@ -138,7 +138,8 @@ These public functions and types were removed.
 
 - Initial release!
 
-[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.8
 [0.0.7]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.7
 [0.0.6]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.6
 [0.0.5]: https://github.com/mooreryan/gleam_qcheck/releases/tag/v0.0.5
