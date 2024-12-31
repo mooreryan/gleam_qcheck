@@ -8,7 +8,7 @@ licences = ["Apache-2.0", "MIT"]
 repository = { type = "github", user = "mooreryan", repo = "gleam_qcheck" }
 
 [dependencies]
-gleam_stdlib = "== 0.48.0"
+gleam_stdlib = ">= 0.44.0"
 prng = ">= 4.0.0 and < 5.0.0"
 exception = ">= 2.0.0 and < 3.0.0"
 gleam_regexp = ">= 1.0.0 and < 2.0.0"
