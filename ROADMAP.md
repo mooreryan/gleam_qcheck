@@ -10,13 +10,13 @@
 
 ### Generation strategies
 
-- More convenience functions for
+- These types all have generators, but could use more convenience functions:
   - `Dict` generators
   - `Float` generators
   - `List` generators
     - `list_with_length_from`: this one will never shrink on length
   - `Set` generators
-- Add generators for `bit_array`
+- [x] Add generators for `bit_array`
 - Combinators
   - `bind2`
 - State-machine testing as in [qcstm](https://github.com/jmid/qcstm)
@@ -33,7 +33,9 @@
 - Speed up the `String` generators. (These are currently quite slow!)
   - (This has gotten better in `v0.0.2` and `v0.0.5`.)
 - "Char" generators
-  - Figure out better defaults for the "char" generators. Right now they are focused on ascii characters mainly.
+  - Figure out better defaults for the "char" generators.
+    - Right now they are focused on ascii characters mainly.
+    - `v0.0.8` introduced `char_utf_codepoint` ... maybe it should be the defualt char generator for strings?
   - Having "char" generators is a little weird in a language without a `Char` type, but they are currently needed for generating and shrinking strings.
   - Some of the char generators take integers representing codepoints, but this is kind of awkward to work with.
 
@@ -45,7 +47,7 @@
 
 ## Project structure
 
-- ~~Consider a reorg of the modules.~~
+- [x] Consider a reorg of the modules.
 - Finalize which functions are part of the public API.
 - Finalize the named arguments.
 
@@ -60,6 +62,9 @@
 
 - There are some places that use `let assert` to check for errors, especially checking for bad arguments. These should be addressed.
   - Also, when appropriate, function arguments should be validated and good errors should be returned.
-- Tests counts in the `config` that are too high can cause timeouts in Gleeunit if you aren't using helpers from [qcheck_gleeunit_utils](https://github.com/mooreryan/qcheck_gleeunit_utils)
-- Don't leak the `prng` types.
+- [x] Tests counts in the `config` that are too high can cause timeouts in Gleeunit if you aren't using helpers from [qcheck_gleeunit_utils](https://github.com/mooreryan/qcheck_gleeunit_utils)
+  - Default test count was dropped to 1000 in `v0.0.5`.
+- [x] Don't leak the `prng` types.
+  - `v0.0.6` addressed this
 - Some of the tests fail on JS target.
+  - Mostly in the order of shrinking, so likely not too serious.

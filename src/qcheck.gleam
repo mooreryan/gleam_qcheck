@@ -67,6 +67,10 @@
 ////  - [small_positive_or_zero_int](#small_positive_or_zero_int)
 ////  - [small_strictly_positive_int](#small_strictly_positive_int)
 //// 
+//// ### Unicode codepoints (`UtfCodepoint`)
+//// 
+//// - [utf_codepoint](#utf_codepoint)
+//// 
 //// ### Floats
 //// 
 ////  - [float](#float)
@@ -76,6 +80,7 @@
 //// 
 ////  - [char](#char)
 ////  - [char_uniform_inclusive](#char_uniform_inclusive)
+////  - [char_utf_codepoint](#char_utf_codepoint)
 ////  - [char_uppercase](#char_uppercase)
 ////  - [char_lowercase](#char_lowercase)
 ////  - [char_digit](#char_digit)
@@ -96,6 +101,27 @@
 ////  - [string_with_length_from](#string_with_length_from)
 ////  - [string_non_empty_from](#string_non_empty_from)
 ////  - [string_generic](#string_generic)
+//// 
+//// ### Bit arrays
+//// 
+//// - [bit_array](#bit_array)
+//// - [bit_array_non_empty](#bit_array_non_empty)
+//// - [bit_array_with_size_from](#bit_array_with_size_from)
+//// - [bit_array_with_size](#bit_array_with_size)
+//// 
+//// #### Bit arrays (UTF-8 encoded)
+//// 
+//// - [bit_array_utf8](#bit_array_utf8)
+//// - [bit_array_utf8_non_empty](#bit_array_utf8_non_empty)
+//// - [bit_array_utf8_with_size](#bit_array_utf8_with_size)
+//// - [bit_array_utf8_with_size_from](#bit_array_utf8_with_size_from)
+//// 
+//// #### Bit arrays (Byte-aligned)
+//// 
+//// - [bit_array_byte_aligned](#bit_array_byte_aligned)
+//// - [bit_array_byte_aligned_non_empty](#bit_array_byte_aligned_non_empty)
+//// - [bit_array_byte_aligned_with_size](#bit_array_byte_aligned_with_size)
+//// - [bit_array_byte_aligned_with_size_from](#bit_array_byte_aligned_with_size_from)
 //// 
 //// ### Lists
 //// 
@@ -163,12 +189,16 @@
 //// 
 //// 
 
+// MARK: Imports
+
 import exception
+import gleam/bit_array
 import gleam/dict.{type Dict}
 import gleam/float
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/order
 import gleam/regexp
 import gleam/result
 import gleam/set
@@ -262,7 +292,7 @@ fn do_run(
       let Tree(value, _shrinks) = tree
 
       case try(fn() { property(value) }) {
-        NoPanic(True) ->
+        NoPanic(True) -> {
           do_run(
             config
               |> with_random_seed(seed),
@@ -270,6 +300,7 @@ fn do_run(
             property,
             i + 1,
           )
+        }
         NoPanic(False) -> {
           let #(shrunk_value, shrink_steps) =
             shrink(tree, property, run_property_max_retries: config.max_retries)
@@ -823,8 +854,7 @@ pub fn shrink_atomic() -> fn(a) -> Yielder(a) {
 
 /// `Generator(a)` is a random generator for values of type `a`.
 /// 
-/// *Note:* Because it exposes the prng `Seed` type, it is likely that this type 
-/// will become opaque in the future.
+/// *Note:* It is likely that this type will become opaque in the future.
 /// 
 pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
@@ -858,6 +888,46 @@ fn make_primitive_generator(
 /// 
 pub fn return(a) {
   Generator(fn(seed) { #(return_tree(a), seed) })
+}
+
+/// `parameter(f)` is used in constructing curried functions for the applicative 
+/// style of building generators.
+/// 
+/// ### Example
+/// 
+/// ```
+/// import qcheck
+/// 
+/// type Box {
+///   Box(x: Int, y: Int, w: Int, h: Int)
+/// }
+/// 
+/// fn box_generator() {
+///   qcheck.return({
+///     use x <- qcheck.parameter
+///     use y <- qcheck.parameter
+///     use w <- qcheck.parameter
+///     use h <- qcheck.parameter
+///     Box(x:, y:, w:, h:)
+///   })
+///   |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+///   |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+///   |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+///   |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+/// }
+/// 
+/// pub fn parameter_example__test() {
+///   use _box <- qcheck.given(box_generator())
+/// 
+///   // Test some interesting property of boxes here.
+/// 
+///   // (This `True` is a standin for your property.)
+///   True
+/// }
+/// ```
+/// 
+pub fn parameter(f: fn(x) -> y) -> fn(x) -> y {
+  f
 }
 
 /// `map(generator, f)` transforms the generator `generator` by applying `f` to 
@@ -1383,6 +1453,11 @@ pub fn char_print() -> Generator(String) {
   ])
 }
 
+pub fn char_utf_codepoint() -> Generator(String) {
+  use codepoint <- map(utf_codepoint())
+  string.from_utf_codepoints([codepoint])
+}
+
 /// `char()` generates characters with a bias towards printable ASCII 
 /// characters, while still hitting some edge cases.
 /// 
@@ -1445,7 +1520,6 @@ pub fn string_with_length_from(
 
     // TODO: Ideally this whole thing would be delayed until needed.
     let shrink = fn() {
-      // io.debug("yo!  string_with_length_from")
       let char_trees: List(Tree(String)) = list.reverse(char_trees_rev)
       let char_list_tree: Tree(List(String)) = sequence_list(char_trees)
 
@@ -1845,6 +1919,163 @@ pub fn try(f: fn() -> a) -> Try(a) {
   }
 }
 
+// MARK: Unicode
+
+/// `utf_codepoint()` generates valid Unicode codepoints.
+/// 
+pub fn utf_codepoint() -> Generator(UtfCodepoint) {
+  use int <- map(int_uniform_inclusive(0x0000, 0x10FFFF))
+  case int {
+    // This is to work around the broken implementation of
+    // `string.utf_codepoint` currently in the stdlib.  Once that fix is
+    // upstreamed, you should remove this branch.
+    n if n == 0xFFFE || n == 0xFFFF -> utf_codepoint_exn(ascii_a_lowercase)
+    // [0, 55295]
+    n if 0 <= n && n <= 0xD7FF -> utf_codepoint_exn(n)
+    // [57344, 1114111], other than 0xFFFE and 0xFFFF.
+    n if 0xE000 <= n && n <= 0x10FFFF -> utf_codepoint_exn(n)
+    _ -> utf_codepoint_exn(ascii_a_lowercase)
+  }
+}
+
+fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
+  case string.utf_codepoint(int) {
+    Ok(cp) -> cp
+    Error(Nil) -> panic as { "ERROR utf_codepoint_exn: " <> int.to_string(int) }
+  }
+}
+
+// MARK: Bit arrays
+
+/// `bit_array()` generates `BitArrays`.
+/// 
+pub fn bit_array() -> Generator(BitArray) {
+  bit_array_with_size_from(small_positive_or_zero_int())
+}
+
+/// `bit_array()` generates non-empty `BitArrays`.
+/// 
+pub fn bit_array_non_empty() -> Generator(BitArray) {
+  bit_array_with_size_from(small_strictly_positive_int())
+}
+
+/// `bit_array_with_size_from(size_generator)` generates `BitArrays` of size 
+/// determined by the given `size_generator`.
+/// 
+pub fn bit_array_with_size_from(
+  size_generator: Generator(Int),
+) -> Generator(BitArray) {
+  bind(size_generator, bit_array_with_size)
+}
+
+/// `bit_array_with_size(size)` generates `BitArrays` of the given `size`.
+/// 
+pub fn bit_array_with_size(size: Int) -> Generator(BitArray) {
+  let max_int = size |> ensure_non_negative |> max_representable_int
+  use n <- map(int_uniform_inclusive(0, max_int))
+  <<n:size(size)>>
+}
+
+// MARK: Bit arrays (UTF-8)
+
+/// `bit_array_utf8()` generates `BitArrays` of valid UTF-8 bytes.
+/// 
+pub fn bit_array_utf8() -> Generator(BitArray) {
+  use max_length <- bind(small_strictly_positive_int())
+  use codepoints <- map(list_generic(utf_codepoint(), 0, max_length))
+
+  codepoints
+  |> string.from_utf_codepoints()
+  |> bit_array.from_string()
+}
+
+/// `bit_array_utf8()` generates non-empty `BitArrays` of valid UTF-8
+/// bytes.
+/// 
+pub fn bit_array_utf8_non_empty() -> Generator(BitArray) {
+  use max_length <- bind(small_strictly_positive_int())
+  use codepoints <- map(list_generic(utf_codepoint(), 1, max_length))
+
+  codepoints
+  |> string.from_utf_codepoints()
+  |> bit_array.from_string()
+}
+
+/// `bit_array_utf8_with_size(num_codepoints)` generates non-empty `BitArrays` 
+/// of valid UTF-8 bytes.  
+/// 
+/// The "size" specified by `num_codepoints` is the number of codepoints 
+/// represented by the generated `BitArray` rather than the number of bits or 
+/// bytes.
+/// 
+pub fn bit_array_utf8_with_size(num_codepoints: Int) -> Generator(BitArray) {
+  let num_codepoints = ensure_non_negative(num_codepoints)
+
+  use codepoints <- map(list_generic(
+    utf_codepoint(),
+    num_codepoints,
+    num_codepoints,
+  ))
+
+  codepoints
+  |> string.from_utf_codepoints()
+  |> bit_array.from_string()
+}
+
+/// `bit_array_utf8_with_size_from(num_codepoints_generator)` generates 
+/// non-empty `BitArrays` of valid UTF-8 bytes.  
+/// 
+/// The "size" distribution is specified by `num_codepoints_generator` and
+/// represents the number of codepoints rather than the number of bits or 
+/// bytes.
+/// 
+pub fn bit_array_utf8_with_size_from(
+  num_codepoints_generator: Generator(Int),
+) -> Generator(BitArray) {
+  use num_codepoints <- bind(num_codepoints_generator)
+  bit_array_utf8_with_size(num_codepoints)
+}
+
+// MARK: Bit arrays (byte-aligned)
+
+/// `bit_array_byte_aligned()` generates byte-aligned `BitArrays`.
+/// 
+pub fn bit_array_byte_aligned() -> Generator(BitArray) {
+  bit_array_with_size_from(byte_aligned_bit_size(0))
+}
+
+/// `bit_array_byte_aligned_non_empty()` generates byte-aligned `BitArrays`.
+/// 
+pub fn bit_array_byte_aligned_non_empty() -> Generator(BitArray) {
+  bit_array_with_size_from(byte_aligned_bit_size(1))
+}
+
+/// `bit_array_byte_aligned_with_size(num_bytes)` generates byte-aligned 
+/// `BitArrays` with the given number of bytes.
+/// 
+pub fn bit_array_byte_aligned_with_size(num_bytes: Int) -> Generator(BitArray) {
+  let num_bits = ensure_non_negative(num_bytes) * 8
+  bit_array_with_size(num_bits)
+}
+
+/// `bit_array_byte_aligned_with_size_from(num_bytes_generator)` generates 
+/// byte-aligned `BitArrays` with number of bytes specified by the given 
+/// generator.
+/// 
+pub fn bit_array_byte_aligned_with_size_from(
+  num_bytes_generator: Generator(Int),
+) -> Generator(BitArray) {
+  use num_bytes <- bind(num_bytes_generator)
+  bit_array_byte_aligned_with_size(num_bytes)
+}
+
+/// Generate a number from `[0, 8, 16, ..., 128]`.
+fn byte_aligned_bit_size(min: Int) -> Generator(Int) {
+  use num_bytes <- map(int_uniform_inclusive(min, 16))
+  let num_bits = 8 * num_bytes
+  num_bits
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: Utils 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1909,46 +2140,6 @@ fn filter_map(
   yielder.unfold(it, do_filter_map(_, f))
 }
 
-/// `parameter(f)` is used in constructing curried functions for the applicative 
-/// style of building generators.
-/// 
-/// ### Example
-/// 
-/// ```
-/// import qcheck
-/// 
-/// type Box {
-///   Box(x: Int, y: Int, w: Int, h: Int)
-/// }
-/// 
-/// fn box_generator() {
-///   qcheck.return({
-///     use x <- qcheck.parameter
-///     use y <- qcheck.parameter
-///     use w <- qcheck.parameter
-///     use h <- qcheck.parameter
-///     Box(x:, y:, w:, h:)
-///   })
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
-/// }
-/// 
-/// pub fn parameter_example__test() {
-///   use _box <- qcheck.given(box_generator())
-/// 
-///   // Test some interesting property of boxes here.
-/// 
-///   // (This `True` is a standin for your property.)
-///   True
-/// }
-/// ```
-/// 
-pub fn parameter(f: fn(x) -> y) -> fn(x) -> y {
-  f
-}
-
 fn unsafe_int_to_char(n: Int) -> String {
   n
   |> string.utf_codepoint
@@ -1962,4 +2153,22 @@ fn unsafe_char_to_int(c: String) -> Int {
   |> list.first
   |> ok_exn
   |> string.utf_codepoint_to_int
+}
+
+/// If `n <= 0` return `0`, else return `n`.
+fn ensure_non_negative(n: Int) -> Int {
+  case int.compare(n, 0) {
+    order.Gt | order.Eq -> n
+    order.Lt -> 0
+  }
+}
+
+/// The max int representable in a given number of bits (`size`) is 
+/// `(2 ** size) - 1`.
+///
+/// Will panic if `2 ** size` is unrepresentable as a `Float`.
+/// 
+fn max_representable_int(size: Int) -> Int {
+  let assert Ok(x) = int.power(2, int.to_float(size))
+  float.round(x) - 1
 }

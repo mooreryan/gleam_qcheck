@@ -7,14 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.8] - 2024-12-31
+
+### Added
+
+- `BitArray` generators
+- `UtfCodepoint` (unicode codepoint) generator
+- `char_utf_codepoint` which can be used in string generators to generate strings composed of valid unicode codepoints
+
 ## [0.0.7] - 2024-12-11
+
+### Changed
 
 - Addressed deprecations
   - `iterator` => `yielder`
   - `regex` => `regexp`
   - `string_builder` => `string_tree`
-
-### Changed
 
 ## [0.0.6] - 2024-09-30
 

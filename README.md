@@ -251,6 +251,8 @@ The [test](https://github.com/mooreryan/gleam_qcheck/tree/main/test) directory o
 
 You don't have to do anything special to integrate `qcheck` with a testing framework like [gleeunit](https://github.com/lpil/gleeunit). The only thing required is that your testing framework of choice be able to handle panics/exceptions.
 
+_Note: [startest](https://github.com/maxdeviant/startest) should be fine._
+
 You may also be interested in [qcheck_gleeunit_utils](https://github.com/mooreryan/qcheck_gleeunit_utils) for running your tests in parallel and controlling test timeouts when using gleeunit and targeting Erlang.
 
 ## Roadmap

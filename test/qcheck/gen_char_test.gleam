@@ -384,6 +384,12 @@ pub fn char_print__failures_shrink_ok__test() {
   |> should_be_one_of(["a", "Z", "9", " "])
 }
 
+pub fn char_utf_codepoint__generates_a_char_with_a_single_codepoint__test() {
+  use char <- qcheck.given(qcheck.char_utf_codepoint())
+  let codepoints = string.to_utf_codepoints(char)
+  list.length(codepoints) == 1
+}
+
 pub fn char__test() {
   qcheck.run(
     config: qcheck.default_config(),
@@ -408,7 +414,7 @@ pub fn char__failures_shrink_ok__test() {
   |> should_be_one_of(["a", "Z", "9", " ", "\u{0000}", "\u{00FF}"])
 }
 
-// utils
+// MARK: utils
 // 
 // 
 
