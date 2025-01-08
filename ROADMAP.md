@@ -66,5 +66,4 @@
   - Default test count was dropped to 1000 in `v0.0.5`.
 - [x] Don't leak the `prng` types.
   - `v0.0.6` addressed this
-- Some of the tests fail on JS target.
-  - Mostly in the order of shrinking, so likely not too serious.
+- [x] Some of the tests fail on JS target.
