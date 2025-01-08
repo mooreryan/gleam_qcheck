@@ -30,10 +30,21 @@ pub fn dict_generic__generates_valid_values__test() {
 
 import gleam/string_tree
 
-fn int_int_dict_to_string(d: dict.Dict(Int, Int)) -> String {
-  dict.fold(d, string_tree.from_string("{ "), fn(sb, k, v) {
+fn int_int_dict_to_string(dict: dict.Dict(Int, Int)) -> String {
+  dict
+  |> dict.to_list
+  // Manually sort because the internal "sorting" is not stable across Erlang
+  // and JavaScript.
+  |> list.sort(fn(kv1, kv2) {
+    let #(key1, _) = kv1
+    let #(key2, _) = kv2
+
+    int.compare(key1, key2)
+  })
+  |> list.fold(string_tree.from_string("{ "), fn(acc, kv) {
+    let #(k, v) = kv
     string_tree.append(
-      sb,
+      acc,
       int.to_string(k) <> " => " <> int.to_string(v) <> ", ",
     )
   })

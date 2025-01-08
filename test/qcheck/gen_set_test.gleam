@@ -26,6 +26,9 @@ fn int_set_to_string(s) {
   "["
   <> {
     set.to_list(s)
+    // Manually sort because the internal "sorting" is not stable across Erlang
+    // and JavaScript.
+    |> list.sort(int.compare)
     |> list.map(int.to_string)
     |> string.join(",")
   }
