@@ -1618,11 +1618,12 @@ fn list_generic_loop(
   }
 }
 
-/// `list_generic(element_generator, min_len, max_len)` generates lists of 
+/// `list_generic(element_generator, min_length, max_length)` generates lists of 
 /// elements from `element_generator` with lengths between `min_len` and 
 /// `max_len`, inclusive.
 ///  
 /// Shrinks first on the number of elements, then on the elements themselves.
+/// Will not generate shrinks outside of the range of [min_length, max_length].
 /// 
 pub fn list_generic(
   element_generator: Generator(a),
