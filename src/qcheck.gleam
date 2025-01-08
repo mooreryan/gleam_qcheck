@@ -104,6 +104,9 @@
 //// 
 //// ### Bit arrays
 //// 
+//// These functions will generate bit arrays that cause runtime crashes when 
+//// targeting JavaScript.
+//// 
 //// - [bit_array](#bit_array)
 //// - [bit_array_non_empty](#bit_array_non_empty)
 //// - [bit_array_with_size_from](#bit_array_with_size_from)
@@ -111,6 +114,9 @@
 //// 
 //// #### Bit arrays (UTF-8 encoded)
 //// 
+//// These functions will not generate bit arrays that cause runtime crashes when 
+//// targeting JavaScript.
+////
 //// - [bit_array_utf8](#bit_array_utf8)
 //// - [bit_array_utf8_non_empty](#bit_array_utf8_non_empty)
 //// - [bit_array_utf8_with_size](#bit_array_utf8_with_size)
@@ -118,6 +124,9 @@
 //// 
 //// #### Bit arrays (Byte-aligned)
 //// 
+//// These functions will not generate bit arrays that cause runtime crashes when 
+//// targeting JavaScript.
+////
 //// - [bit_array_byte_aligned](#bit_array_byte_aligned)
 //// - [bit_array_byte_aligned_non_empty](#bit_array_byte_aligned_non_empty)
 //// - [bit_array_byte_aligned_with_size](#bit_array_byte_aligned_with_size)
@@ -1950,11 +1959,17 @@ fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
 
 /// `bit_array()` generates `BitArrays`.
 /// 
+/// Note: This function will generate bit arrays that cause runtime crashes when 
+/// targeting JavaScript.
+/// 
 pub fn bit_array() -> Generator(BitArray) {
   bit_array_with_size_from(int_small_positive_or_zero())
 }
 
 /// `bit_array()` generates non-empty `BitArrays`.
+/// 
+/// Note: This function will generate bit arrays that cause runtime crashes when 
+/// targeting JavaScript.
 /// 
 pub fn bit_array_non_empty() -> Generator(BitArray) {
   bit_array_with_size_from(int_small_strictly_positive())
@@ -1963,6 +1978,9 @@ pub fn bit_array_non_empty() -> Generator(BitArray) {
 /// `bit_array_with_size_from(size_generator)` generates `BitArrays` of size 
 /// determined by the given `size_generator`.
 /// 
+/// Note: This function will generate bit arrays that cause runtime crashes when 
+/// targeting JavaScript.
+/// 
 pub fn bit_array_with_size_from(
   size_generator: Generator(Int),
 ) -> Generator(BitArray) {
@@ -1970,6 +1988,9 @@ pub fn bit_array_with_size_from(
 }
 
 /// `bit_array_with_size(size)` generates `BitArrays` of the given `size`.
+/// 
+/// Note: This function will generate bit arrays that cause runtime crashes when 
+/// targeting JavaScript.
 /// 
 pub fn bit_array_with_size(size: Int) -> Generator(BitArray) {
   let max_int = size |> ensure_non_negative |> max_representable_int

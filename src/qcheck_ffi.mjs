@@ -1,7 +1,7 @@
 import { Ok, Error as GError } from "./gleam.mjs";
 
 export function fail(msg) {
-  throw new Error(msg)
+  throw new Error(msg);
 }
 
 export function rescue_error(f) {
@@ -16,4 +16,8 @@ export function rescue_error(f) {
       throw e;
     }
   }
+}
+
+export function do_nothing() {
+  return 1;
 }

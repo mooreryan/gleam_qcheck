@@ -6,17 +6,23 @@ import qcheck
 
 // MARK: Bit arrays
 
-pub fn bit_array__smoke_test() {
+// Note: non-byte-aligned bit arrays do not work on the JS target.  So replace
+// these tests with "do nothing" externals.
+
+@external(javascript, "../qcheck_ffi.mjs", "do_nothing")
+pub fn bit_array__smoke_test() -> Nil {
   use bits <- qcheck.given(qcheck.bit_array())
   bit_array.bit_size(bits) >= 0
 }
 
-pub fn bit_array_non_empty__doesnt_generate_empty_arrays__test() {
+@external(javascript, "../qcheck_ffi.mjs", "do_nothing")
+pub fn bit_array_non_empty__doesnt_generate_empty_arrays__test() -> Nil {
   use bits <- qcheck.given(qcheck.bit_array_non_empty())
   bit_array.bit_size(bits) >= 1
 }
 
-pub fn bit_array_with_size_from__makes_arrays_with_valid_size__test() {
+@external(javascript, "../qcheck_ffi.mjs", "do_nothing")
+pub fn bit_array_with_size_from__makes_arrays_with_valid_size__test() -> Nil {
   use bits <- qcheck.given(
     qcheck.bit_array_with_size_from(qcheck.int_uniform_inclusive(2, 5)),
   )
@@ -24,12 +30,14 @@ pub fn bit_array_with_size_from__makes_arrays_with_valid_size__test() {
   2 <= bit_size && bit_size <= 5
 }
 
-pub fn bit_array_with_size__makes_arrays_with_valid_size__test() {
+@external(javascript, "../qcheck_ffi.mjs", "do_nothing")
+pub fn bit_array_with_size__makes_arrays_with_valid_size__test() -> Nil {
   use bits <- qcheck.given(qcheck.bit_array_with_size(5))
   bit_array.bit_size(bits) == 5
 }
 
-pub fn bit_array_shrinking__test() {
+@external(javascript, "../qcheck_ffi.mjs", "do_nothing")
+pub fn bit_array_shrinking__test() -> Nil {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.bit_array_with_size_from(qcheck.int_uniform_inclusive(1, 3)),
