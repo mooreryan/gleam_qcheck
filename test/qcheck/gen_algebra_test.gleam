@@ -23,8 +23,10 @@ pub fn map__test() {
     )
   }
 
-  qcheck.test_error_message_shrunk_value(msg)
-  |> should.equal("1.0")
+  let shrunk_value = qcheck.test_error_message_shrunk_value(msg)
+
+  // Value differs on Erlang and JS targets.
+  should.be_true(shrunk_value == "1.0" || shrunk_value == "1")
 }
 
 fn in_range(min, max) {
@@ -294,8 +296,10 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
     )
   }
 
-  qcheck.test_error_message_shrunk_value(msg)
-  |> should.equal("Second(94.0)")
+  let shrunk_value = qcheck.test_error_message_shrunk_value(msg)
+
+  // Value differs on Erlang and JS targets.
+  should.be_true(shrunk_value == "Second(94.0)" || shrunk_value == "Second(94)")
 }
 
 pub fn shrinking_works_with_bind_and_custom_types_3_test() {
