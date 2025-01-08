@@ -19,7 +19,7 @@ packages = [
   { name = "gleeunit", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "F7A7228925D3EE7D0813C922E062BFD6D7E9310F0BEE585D3A42F3307E3CFD13" },
   { name = "glexer", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glexer", source = "hex", outer_checksum = "25E87F25706749E40C3CDC72D2E52AEA12260B23D14FD9E09A1B524EF393485E" },
   { name = "justin", version = "1.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "justin", source = "hex", outer_checksum = "7FA0C6DB78640C6DC5FBFD59BF3456009F3F8B485BF6825E97E1EB44E9A1E2CD" },
-  { name = "prng", version = "4.0.0", build_tools = ["gleam"], requirements = ["gleam_bitwise", "gleam_stdlib", "gleam_yielder"], otp_app = "prng", source = "hex", outer_checksum = "E452F957D19CCDC1B4BD12AA6E1B33194B1EB9C2BC0B3449D96E3585602EE3AE" },
+  { name = "prng", version = "4.0.1", build_tools = ["gleam"], requirements = ["gleam_bitwise", "gleam_stdlib", "gleam_yielder"], otp_app = "prng", source = "hex", outer_checksum = "695AB70E4BE713042062E901975FC08D1EC725B85B808D4786A14C406ADFBCF1" },
   { name = "qcheck_gleeunit_utils", version = "0.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleeunit"], otp_app = "qcheck_gleeunit_utils", source = "hex", outer_checksum = "0C262D4636DEFC0BE8FA525DC193C2CC1E9D12A3BC26F9CA1F6B7FBB0E20C7B5" },
   { name = "rank", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "rank", source = "hex", outer_checksum = "5660E361F0E49CBB714CC57CC4C89C63415D8986F05B2DA0C719D5642FAD91C9" },
   { name = "simplifile", version = "2.2.0", build_tools = ["gleam"], requirements = ["filepath", "gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "0DFABEF7DC7A9E2FF4BB27B108034E60C81BEBFCB7AB816B9E7E18ED4503ACD8" },
@@ -33,5 +33,5 @@ gleam_regexp = { version = ">= 1.0.0 and < 2.0.0" }
 gleam_stdlib = { version = ">= 0.44.0" }
 gleam_yielder = { version = ">= 1.1.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
-prng = { version = ">= 4.0.0 and < 5.0.0" }
+prng = { version = ">= 4.0.1 and < 5.0.0" }
 qcheck_gleeunit_utils = { version = ">= 0.1.0 and < 0.2.0" }

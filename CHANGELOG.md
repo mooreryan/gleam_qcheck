@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Require `prng` >= 4.0.1 (#7)
+
 ## [0.0.8] - 2024-12-31
 
 ### Added
