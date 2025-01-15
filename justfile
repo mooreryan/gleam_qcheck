@@ -26,3 +26,11 @@ bench_full:
   cd bench 
 
   gleam run -m full_benchmark -- bench_out
+
+qv_dev:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  cd qcheck_viewer
+
+  gleam run -m lustre/dev start

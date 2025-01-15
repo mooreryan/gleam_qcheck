@@ -1,0 +1,19 @@
+{
+  "name": "qcheck_viewer",
+  "version": "1.0.0",
+  "description": "[![Package Version](https://img.shields.io/hexpm/v/qcheck_viewer)](https://hex.pm/packages/qcheck_viewer) [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/qcheck_viewer/)",
+  "main": "./src/qcheck_viewer_ffi.mjs",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vega": "^5.30.0",
+    "vega-embed": "^6.29.0",
+    "vega-lite": "^5.23.0"
+  }
+}
