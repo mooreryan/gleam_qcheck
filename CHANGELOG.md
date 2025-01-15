@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Require `prng` >= 4.0.1 (#7)
 - Fix some tests that were broken on JS target
+- Fix a bug in `int_small_positive_or_zero`
 
 ## [0.0.8] - 2024-12-31
 
