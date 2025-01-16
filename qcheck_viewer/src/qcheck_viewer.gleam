@@ -14,9 +14,9 @@ const default_int_range_low: Int = -100
 
 const default_int_range_high: Int = 100
 
-const max_int: Int = 2_147_483_647
+pub const max_int: Int = 2_147_483_647
 
-const min_int: Int = -2_147_483_648
+pub const min_int: Int = -2_147_483_648
 
 pub const id_error_message = "error-message"
 
@@ -284,9 +284,10 @@ fn maybe_generate_button(error_message) {
 }
 
 // TODO: if user types `-` as if to start a negative number, it will give an
-// error because that doesn't parse.
+// error because that doesn't parse.  It's a bit confusing.
 
-fn parse_int_range_low(new_low, high high) {
+@internal
+pub fn parse_int_range_low(new_low, high high) {
   case int.parse(new_low) {
     Ok(low) if low >= high ->
       UserUpdatedIntRangeLow(Error("bad int range: low >= high"))
@@ -303,7 +304,8 @@ fn parse_int_range_low(new_low, high high) {
   }
 }
 
-fn parse_int_range_high(new_high, low low) {
+@internal
+pub fn parse_int_range_high(new_high, low low) {
   case int.parse(new_high) {
     Ok(high) if high <= low ->
       UserUpdatedIntRangeHigh(Error("bad int range: high <= low"))
