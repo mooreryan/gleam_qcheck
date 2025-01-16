@@ -1,0 +1,17 @@
+{
+  "name": "domino",
+  "version": "1.0.0",
+  "description": "[![Package Version](https://img.shields.io/hexpm/v/domino)](https://hex.pm/packages/domino) [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/domino/)",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}
