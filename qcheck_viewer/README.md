@@ -1,24 +1,15 @@
 # qcheck_viewer
 
-[![Package Version](https://img.shields.io/hexpm/v/qcheck_viewer)](https://hex.pm/packages/qcheck_viewer)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/qcheck_viewer/)
+`cheerio` is needed for the tests.
 
-```sh
-gleam add qcheck_viewer@1
 ```
-```gleam
-import qcheck_viewer
-
-pub fn main() {
-  // TODO: An example of the project in use
-}
+npm install --save-dev cheerio
 ```
 
-Further documentation can be found at <https://hexdocs.pm/qcheck_viewer>.
+You will also need to add
 
-## Development
-
-```sh
-gleam run   # Run the project
-gleam test  # Run the tests
 ```
+  "type": "module"
+```
+
+to the `./node_modules/vega-embed/package.json` if you want to run the tests.

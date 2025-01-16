@@ -19,3 +19,7 @@ export function attr(cheerio_object, attr_name) {
 export function attrs(cheerio_object) {
   return cheerio_object.attr();
 }
+
+export function length(cheerio_object) {
+  return cheerio_object.length;
+}

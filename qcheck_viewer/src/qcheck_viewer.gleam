@@ -17,6 +17,8 @@ const max_int: Int = 2_147_483_647
 
 const min_int: Int = -2_147_483_648
 
+pub const id_error_message = "error-message"
+
 pub fn main() {
   let app = lustre.application(init, update, view)
   let assert Ok(_) = lustre.start(app, "#app", Nil)
@@ -26,7 +28,8 @@ pub fn main() {
 
 // MARK: Model
 
-type Model {
+@internal
+pub type Model {
   Model(
     function: QcheckFunction,
     int_range_low: Int,
@@ -35,7 +38,8 @@ type Model {
   )
 }
 
-fn default_model() -> Model {
+@internal
+pub fn default_model() -> Model {
   Model(
     function: IntUniformInclusive,
     int_range_low: default_int_range_low,
@@ -44,7 +48,8 @@ fn default_model() -> Model {
   )
 }
 
-type QcheckFunction {
+@internal
+pub type QcheckFunction {
   IntUniform
   IntUniformInclusive
   IntSmallPositiveOrZero
@@ -128,7 +133,8 @@ fn init(_flags: _) -> #(Model, effect.Effect(Msg)) {
 
 // MARK: Update
 
-type Msg {
+@internal
+pub type Msg {
   ChangeFunction(String)
   EmbedPlot
   SetErrorMessage(String)
@@ -187,7 +193,8 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
 // MARK: View
 
-fn view(model: Model) -> element.Element(Msg) {
+@internal
+pub fn view(model: Model) -> element.Element(Msg) {
   html.div([], [
     maybe_show_error(model.error_message),
     // Options
@@ -217,6 +224,7 @@ fn maybe_show_error(error_message) {
     option.Some(error_message) -> {
       html.div(
         [
+          attribute.id(id_error_message),
           attribute.style([
             #("background", "#fee2e2"),
             #("padding", "1rem"),
@@ -276,6 +284,9 @@ fn maybe_generate_button(error_message) {
   }
 }
 
+// TODO: if user types `-` as if to start a negative number, it will give an
+// error because that doesn't parse.
+
 fn parse_int_range_low(new_low, high high) {
   case int.parse(new_low) {
     Ok(low) if low >= high ->
@@ -306,7 +317,7 @@ fn parse_int_range_high(new_high, low low) {
   }
 }
 
-// MARK: Vega-Lite
+// MARK: Plots
 
 // This is the vega-lite spec for histogram.
 fn histogram(from entries, of inner_type, bin bin) {

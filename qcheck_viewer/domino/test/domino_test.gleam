@@ -43,3 +43,17 @@ pub fn attrs_test() {
   decode.run(attrs, decoder)
   |> should.equal(Ok(#("first greeting", "color: purple; font-weight: bold")))
 }
+
+pub fn length_test() {
+  domino.from_string("<p>Hello, </p><p>World!</p>")
+  |> domino.select("p")
+  |> domino.length
+  |> should.equal(2)
+}
+
+pub fn length_1_test() {
+  domino.from_string("<p>Hello, </p><p>World!</p>")
+  |> domino.select("div")
+  |> domino.length
+  |> should.equal(0)
+}
