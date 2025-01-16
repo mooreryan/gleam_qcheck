@@ -1,4 +1,5 @@
 import gleam/int
+import gleam/io
 import gleam/json
 import gleam/option
 import lustre
@@ -135,19 +136,17 @@ fn init(_flags: _) -> #(Model, effect.Effect(Msg)) {
 
 @internal
 pub type Msg {
-  ChangeFunction(String)
+  UserChangedFunction(String)
+  UserUpdatedIntRangeLow(Result(Int, String))
+  UserUpdatedIntRangeHigh(Result(Int, String))
   EmbedPlot
   SetErrorMessage(String)
   DismissError
-  UpdateIntRangeLow(Int)
-  UpdateIntRangeLowError(String)
-  UpdateIntRangeHigh(Int)
-  UpdateIntRangeHighError(String)
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
-    ChangeFunction(function) -> {
+    UserChangedFunction(function) -> {
       case qcheck_function_from_string(function) {
         Ok(function) -> #(Model(..model, function:), effect.none())
         Error(message) -> #(
@@ -164,15 +163,15 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       effect.none(),
     )
     DismissError -> #(Model(..model, error_message: option.None), effect.none())
-    UpdateIntRangeLow(int_range_low) -> #(
+    UserUpdatedIntRangeLow(Ok(int_range_low)) -> #(
       Model(..model, int_range_low:),
       effect.none(),
     )
-    UpdateIntRangeHigh(int_range_high) -> #(
+    UserUpdatedIntRangeHigh(Ok(int_range_high)) -> #(
       Model(..model, int_range_high:),
       effect.none(),
     )
-    UpdateIntRangeLowError(error_message) -> #(
+    UserUpdatedIntRangeLow(Error(error_message)) -> #(
       Model(
         ..model,
         int_range_low: default_int_range_low,
@@ -180,7 +179,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       ),
       effect.none(),
     )
-    UpdateIntRangeHighError(error_message) -> #(
+    UserUpdatedIntRangeHigh(Error(error_message)) -> #(
       Model(
         ..model,
         int_range_high: default_int_range_high,
@@ -202,7 +201,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
       html.h2([], [element.text("Options")]),
       // Select function
       html.select(
-        [event.on_input(ChangeFunction)],
+        [event.on_input(UserChangedFunction)],
         qcheck_function_html_options(model.function),
       ),
       html.br([]),
@@ -290,30 +289,34 @@ fn maybe_generate_button(error_message) {
 fn parse_int_range_low(new_low, high high) {
   case int.parse(new_low) {
     Ok(low) if low >= high ->
-      UpdateIntRangeLowError("bad int range: low >= high")
+      UserUpdatedIntRangeLow(Error("bad int range: low >= high"))
     Ok(low) if low < min_int ->
-      UpdateIntRangeLowError("bad int range: low < " <> int.to_string(min_int))
+      UserUpdatedIntRangeLow(Error(
+        "bad int range: low < " <> int.to_string(min_int),
+      ))
     Ok(low) if low > max_int ->
-      UpdateIntRangeLowError("bad int range: low > " <> int.to_string(max_int))
-    Ok(low) -> UpdateIntRangeLow(low)
-    Error(Nil) -> UpdateIntRangeLowError("bad int range low")
+      UserUpdatedIntRangeLow(Error(
+        "bad int range: low > " <> int.to_string(max_int),
+      ))
+    Ok(low) -> UserUpdatedIntRangeLow(Ok(low))
+    Error(Nil) -> UserUpdatedIntRangeLow(Error("bad int range low"))
   }
 }
 
 fn parse_int_range_high(new_high, low low) {
   case int.parse(new_high) {
     Ok(high) if high <= low ->
-      UpdateIntRangeHighError("bad int range: high <= low")
+      UserUpdatedIntRangeHigh(Error("bad int range: high <= low"))
     Ok(high) if high < min_int ->
-      UpdateIntRangeHighError(
+      UserUpdatedIntRangeHigh(Error(
         "bad int range: high < " <> int.to_string(min_int),
-      )
+      ))
     Ok(high) if high > max_int ->
-      UpdateIntRangeHighError(
+      UserUpdatedIntRangeHigh(Error(
         "bad int range: high > " <> int.to_string(max_int),
-      )
-    Ok(high) -> UpdateIntRangeHigh(high)
-    Error(Nil) -> UpdateIntRangeHighError("bad int range high")
+      ))
+    Ok(high) -> UserUpdatedIntRangeHigh(Ok(high))
+    Error(Nil) -> UserUpdatedIntRangeHigh(Error("bad int range high"))
   }
 }
 

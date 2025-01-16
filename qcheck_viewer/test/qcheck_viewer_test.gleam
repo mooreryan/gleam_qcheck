@@ -1,5 +1,4 @@
 import domino
-import gleam/io
 import gleam/option
 import gleam/string
 import gleeunit
