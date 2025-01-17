@@ -264,6 +264,17 @@ pub fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
 pub fn view(model: Model) -> element.Element(Msg) {
   html.div([], [
+    html.h1([], [element.text("qcheck generator viewer")]),
+    html.p([], [
+      element.text(
+        "Select a function name, and set any required options to create a histogram of generated values.",
+      ),
+    ]),
+    html.p([], [
+      element.text("Note that generated values for "),
+      html.code([], [element.text("char_utf_codepoint")]),
+      element.text(" are represented as integers."),
+    ]),
     maybe_show_error(model.error_message),
     // Options
     html.div([], [
