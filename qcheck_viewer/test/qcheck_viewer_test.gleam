@@ -13,7 +13,7 @@ pub fn main() {
   gleeunit.main()
 }
 
-// MARK: error messages
+// MARK: view error messages
 
 pub fn view_shows_error_if_it_is_in_model_test() {
   let error_message = "yo!!!"
@@ -39,7 +39,7 @@ pub fn view_doesnt_show_error_if_it_is_not_in_model_test() {
   |> should.equal(0)
 }
 
-// MARK: function options
+// MARK: view function options
 
 pub fn int_range_high_is_shown_for_correct_functions_test() {
   use function <- qcheck.given(qcheck_function_generator())
@@ -69,6 +69,16 @@ pub fn int_range_low_is_shown_for_correct_functions_test() {
       domino.length(input) == 1
     _ -> domino.length(input) == 0
   }
+}
+
+// MARK: update
+
+pub fn user_changed_function_test() {
+  use function <- qcheck.given(qcheck_function_generator())
+  let model = qv.Model(..qv.default_model(), function:)
+  let msg = qv.UserChangedFunction(qv.qcheck_function_to_string(function))
+  let #(model, _) = qv.update(model, msg)
+  model.function == function && model.error_message == option.None
 }
 
 // MARK: parsing ints
@@ -210,6 +220,17 @@ fn qcheck_function_generator() {
     qcheck.return(qv.Float),
     qcheck.return(qv.FloatUniformInclusive),
     qcheck.return(qv.Char),
+    qcheck.return(qv.CharUniform),
+    qcheck.return(qv.CharUniformInclusive),
+    // qcheck.return(qv.CharUtfCodepoint),
+    qcheck.return(qv.CharUppercase),
+    qcheck.return(qv.CharLowercase),
+    qcheck.return(qv.CharDigit),
+    qcheck.return(qv.CharPrintUniform),
+    qcheck.return(qv.CharAlpha),
+    qcheck.return(qv.CharAlphaNumeric),
+    qcheck.return(qv.CharWhitespace),
+    qcheck.return(qv.CharPrint),
   ])
 }
 

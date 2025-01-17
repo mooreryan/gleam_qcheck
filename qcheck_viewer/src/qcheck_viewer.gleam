@@ -10,6 +10,8 @@ import lustre/element/html
 import lustre/event
 import qcheck
 
+// TODO: char_utf_codepoint crashes the histogram
+
 const default_int_range_low: Int = -100
 
 const default_int_range_high: Int = 100
@@ -29,7 +31,6 @@ pub fn main() {
 
 // MARK: Model
 
-@internal
 pub type Model {
   Model(
     function: QcheckFunction,
@@ -39,7 +40,6 @@ pub type Model {
   )
 }
 
-@internal
 pub fn default_model() -> Model {
   Model(
     function: IntUniform,
@@ -49,7 +49,6 @@ pub fn default_model() -> Model {
   )
 }
 
-@internal
 pub type QcheckFunction {
   IntUniform
   IntUniformInclusive
@@ -58,6 +57,17 @@ pub type QcheckFunction {
   Float
   FloatUniformInclusive
   Char
+  CharUniform
+  CharUniformInclusive
+  // CharUtfCodepoint
+  CharUppercase
+  CharLowercase
+  CharDigit
+  CharPrintUniform
+  CharAlpha
+  CharAlphaNumeric
+  CharWhitespace
+  CharPrint
 }
 
 fn qcheck_function_html_options(
@@ -83,6 +93,41 @@ fn qcheck_function_html_options(
       current_function: model_function,
     ),
     qcheck_function_to_html_option(Char, current_function: model_function),
+    qcheck_function_to_html_option(
+      CharUniform,
+      current_function: model_function,
+    ),
+    qcheck_function_to_html_option(
+      CharUniformInclusive,
+      current_function: model_function,
+    ),
+    // qcheck_function_to_html_option(
+    //   CharUtfCodepoint,
+    //   current_function: model_function,
+    // ),
+    qcheck_function_to_html_option(
+      CharUppercase,
+      current_function: model_function,
+    ),
+    qcheck_function_to_html_option(
+      CharLowercase,
+      current_function: model_function,
+    ),
+    qcheck_function_to_html_option(CharDigit, current_function: model_function),
+    qcheck_function_to_html_option(
+      CharPrintUniform,
+      current_function: model_function,
+    ),
+    qcheck_function_to_html_option(CharAlpha, current_function: model_function),
+    qcheck_function_to_html_option(
+      CharAlphaNumeric,
+      current_function: model_function,
+    ),
+    qcheck_function_to_html_option(
+      CharWhitespace,
+      current_function: model_function,
+    ),
+    qcheck_function_to_html_option(CharPrint, current_function: model_function),
   ]
 }
 
@@ -99,7 +144,7 @@ fn qcheck_function_to_html_option(
   )
 }
 
-fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
+pub fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
   case qcheck_function {
     IntUniform -> "int_uniform"
     IntUniformInclusive -> "int_uniform_inclusive"
@@ -108,6 +153,17 @@ fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
     Float -> "float"
     FloatUniformInclusive -> "float_uniform_inclusive"
     Char -> "char"
+    CharUniform -> "char_uniform"
+    CharUniformInclusive -> "char_uniform_inclusive"
+    // CharUtfCodepoint -> "char_utf_codepoint"
+    CharUppercase -> "char_uppercase"
+    CharLowercase -> "char_lowercase"
+    CharDigit -> "char_digit"
+    CharPrintUniform -> "char_print_uniform"
+    CharAlpha -> "char_alpha"
+    CharAlphaNumeric -> "char_alpha_numeric"
+    CharWhitespace -> "char_whitespace"
+    CharPrint -> "char_print"
   }
 }
 
@@ -128,6 +184,17 @@ fn qcheck_function_from_string(
     "float" -> Ok(Float)
     "float_uniform_inclusive" -> Ok(FloatUniformInclusive)
     "char" -> Ok(Char)
+    "char_uniform" -> Ok(CharUniform)
+    "char_uniform_inclusive" -> Ok(CharUniformInclusive)
+    // "char_utf_codepoint" -> Ok(CharUtfCodepoint)
+    "char_uppercase" -> Ok(CharUppercase)
+    "char_lowercase" -> Ok(CharLowercase)
+    "char_digit" -> Ok(CharDigit)
+    "char_print_uniform" -> Ok(CharPrintUniform)
+    "char_alpha" -> Ok(CharAlpha)
+    "char_alpha_numeric" -> Ok(CharAlphaNumeric)
+    "char_whitespace" -> Ok(CharWhitespace)
+    "char_print" -> Ok(CharPrint)
     _ -> Error("bad function name")
   }
 }
@@ -138,7 +205,6 @@ fn init(_flags: _) -> #(Model, effect.Effect(Msg)) {
 
 // MARK: Update
 
-@internal
 pub type Msg {
   UserChangedFunction(String)
   UserUpdatedIntRangeLow(Result(Int, String))
@@ -148,7 +214,7 @@ pub type Msg {
   DismissError
 }
 
-fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
+pub fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
     UserChangedFunction(function) -> {
       case qcheck_function_from_string(function) {
@@ -196,7 +262,6 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
 // MARK: View
 
-@internal
 pub fn view(model: Model) -> element.Element(Msg) {
   html.div([], [
     maybe_show_error(model.error_message),
@@ -291,7 +356,6 @@ fn maybe_generate_button(error_message) {
 // TODO: if user types `-` as if to start a negative number, it will give an
 // error because that doesn't parse.  It's a bit confusing.
 
-@internal
 pub fn parse_int_range_low(new_low, high high) {
   case int.parse(new_low) {
     Ok(low) if low >= high ->
@@ -309,7 +373,6 @@ pub fn parse_int_range_low(new_low, high high) {
   }
 }
 
-@internal
 pub fn parse_int_range_high(new_high, low low) {
   case int.parse(new_high) {
     Ok(high) if high <= low ->
@@ -411,7 +474,27 @@ fn generate_histogram(model: Model) -> json.Json {
         qcheck.char(),
       )
       |> histogram(of: json.string, bin: False)
+    CharUniform -> gen_histogram(qcheck.char_uniform(), json.string)
+    CharUniformInclusive ->
+      gen_histogram(
+        qcheck.char_uniform_inclusive(model.int_range_low, model.int_range_high),
+        json.string,
+      )
+    // CharUtfCodepoint -> gen_histogram(qcheck.char_utf_codepoint(), json.string)
+    CharUppercase -> gen_histogram(qcheck.char_uppercase(), json.string)
+    CharLowercase -> gen_histogram(qcheck.char_lowercase(), json.string)
+    CharDigit -> gen_histogram(qcheck.char_digit(), json.string)
+    CharPrintUniform -> gen_histogram(qcheck.char_print_uniform(), json.string)
+    CharAlpha -> gen_histogram(qcheck.char_alpha(), json.string)
+    CharAlphaNumeric -> gen_histogram(qcheck.char_alpha_numeric(), json.string)
+    CharWhitespace -> gen_histogram(qcheck.char_whitespace(), json.string)
+    CharPrint -> gen_histogram(qcheck.char_print(), json.string)
   }
+}
+
+fn gen_histogram(generator, to_json) {
+  gen(qcheck.default_config() |> qcheck.with_test_count(10_000), generator)
+  |> histogram(of: to_json, bin: False)
 }
 
 fn gen(config: qcheck.Config, generator: qcheck.Generator(a)) -> List(a) {
