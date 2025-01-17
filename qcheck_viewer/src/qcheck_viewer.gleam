@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/json
 import gleam/option
+import gleam/string
 import lustre
 import lustre/attribute
 import lustre/effect
@@ -58,7 +59,7 @@ pub type QcheckFunction {
   Char
   CharUniform
   CharUniformInclusive
-  // CharUtfCodepoint
+  CharUtfCodepoint
   CharUppercase
   CharLowercase
   CharDigit
@@ -100,10 +101,10 @@ fn qcheck_function_html_options(
       CharUniformInclusive,
       current_function: model_function,
     ),
-    // qcheck_function_to_html_option(
-    //   CharUtfCodepoint,
-    //   current_function: model_function,
-    // ),
+    qcheck_function_to_html_option(
+      CharUtfCodepoint,
+      current_function: model_function,
+    ),
     qcheck_function_to_html_option(
       CharUppercase,
       current_function: model_function,
@@ -154,7 +155,7 @@ pub fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
     Char -> "char"
     CharUniform -> "char_uniform"
     CharUniformInclusive -> "char_uniform_inclusive"
-    // CharUtfCodepoint -> "char_utf_codepoint"
+    CharUtfCodepoint -> "char_utf_codepoint"
     CharUppercase -> "char_uppercase"
     CharLowercase -> "char_lowercase"
     CharDigit -> "char_digit"
@@ -185,7 +186,7 @@ fn qcheck_function_from_string(
     "char" -> Ok(Char)
     "char_uniform" -> Ok(CharUniform)
     "char_uniform_inclusive" -> Ok(CharUniformInclusive)
-    // "char_utf_codepoint" -> Ok(CharUtfCodepoint)
+    "char_utf_codepoint" -> Ok(CharUtfCodepoint)
     "char_uppercase" -> Ok(CharUppercase)
     "char_lowercase" -> Ok(CharLowercase)
     "char_digit" -> Ok(CharDigit)
@@ -464,7 +465,16 @@ fn generate_histogram(model: Model) -> json.Json {
         of: json.string,
         bin: False,
       )
-    // CharUtfCodepoint -> gen_histogram(qcheck.char_utf_codepoint(), json.string)
+    CharUtfCodepoint ->
+      gen_histogram(
+        qcheck.char_utf_codepoint()
+          |> qcheck.map(fn(char) {
+            let assert [cp] = string.to_utf_codepoints(char)
+            string.utf_codepoint_to_int(cp)
+          }),
+        of: json.int,
+        bin: True,
+      )
     CharUppercase ->
       gen_histogram(qcheck.char_uppercase(), of: json.string, bin: False)
     CharLowercase ->

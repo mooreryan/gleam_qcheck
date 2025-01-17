@@ -222,7 +222,7 @@ fn qcheck_function_generator() {
     qcheck.return(qv.Char),
     qcheck.return(qv.CharUniform),
     qcheck.return(qv.CharUniformInclusive),
-    // qcheck.return(qv.CharUtfCodepoint),
+    qcheck.return(qv.CharUtfCodepoint),
     qcheck.return(qv.CharUppercase),
     qcheck.return(qv.CharLowercase),
     qcheck.return(qv.CharDigit),
