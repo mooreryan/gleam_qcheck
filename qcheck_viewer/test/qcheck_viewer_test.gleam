@@ -13,6 +13,8 @@ pub fn main() {
   gleeunit.main()
 }
 
+// MARK: error messages
+
 pub fn view_shows_error_if_it_is_in_model_test() {
   let error_message = "yo!!!"
 
@@ -20,8 +22,7 @@ pub fn view_shows_error_if_it_is_in_model_test() {
     qv.Model(..qv.default_model(), error_message: option.Some(error_message))
 
   qv.view(model)
-  |> element.to_string
-  |> domino.from_string
+  |> domino_from_element
   |> domino.select("#" <> qv.id_error_message)
   |> domino.text
   |> string.contains(error_message)
@@ -32,11 +33,42 @@ pub fn view_doesnt_show_error_if_it_is_not_in_model_test() {
   let model = qv.Model(..qv.default_model(), error_message: option.None)
 
   qv.view(model)
-  |> element.to_string
-  |> domino.from_string
+  |> domino_from_element
   |> domino.select("#" <> qv.id_error_message)
   |> domino.length
   |> should.equal(0)
+}
+
+// MARK: function options
+
+pub fn int_range_high_is_shown_for_correct_functions_test() {
+  use function <- qcheck.given(qcheck_function_generator())
+  let model = qv.Model(..qv.default_model(), function:)
+  let input =
+    qv.view(model)
+    |> domino_from_element
+    |> domino.select("input[name='range-high']")
+
+  case model.function {
+    qv.IntUniformInclusive | qv.FloatUniformInclusive ->
+      domino.length(input) == 1
+    _ -> domino.length(input) == 0
+  }
+}
+
+pub fn int_range_low_is_shown_for_correct_functions_test() {
+  use function <- qcheck.given(qcheck_function_generator())
+  let model = qv.Model(..qv.default_model(), function:)
+  let input =
+    qv.view(model)
+    |> domino_from_element
+    |> domino.select("input[name='range-low']")
+
+  case model.function {
+    qv.IntUniformInclusive | qv.FloatUniformInclusive ->
+      domino.length(input) == 1
+    _ -> domino.length(input) == 0
+  }
 }
 
 // MARK: parsing ints
@@ -165,4 +197,24 @@ fn non_digit_char_generator() {
     "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" -> "a"
     char -> char
   }
+}
+
+// MARK: Type generators
+
+fn qcheck_function_generator() {
+  qcheck.from_generators([
+    qcheck.return(qv.IntUniform),
+    qcheck.return(qv.IntUniformInclusive),
+    qcheck.return(qv.IntSmallPositiveOrZero),
+    qcheck.return(qv.IntSmallStrictlyPositive),
+    qcheck.return(qv.Float),
+    qcheck.return(qv.FloatUniformInclusive),
+    qcheck.return(qv.Char),
+  ])
+}
+
+// MARK: domino utils
+
+fn domino_from_element(element) {
+  element |> element.to_string |> domino.from_string
 }

@@ -56,6 +56,7 @@ pub type QcheckFunction {
   IntSmallPositiveOrZero
   IntSmallStrictlyPositive
   Float
+  FloatUniformInclusive
   Char
 }
 
@@ -80,6 +81,10 @@ fn qcheck_function_html_options(
       selected: model_function == IntUniformInclusive,
     ),
     qcheck_function_to_html_option(Float, selected: model_function == Float),
+    qcheck_function_to_html_option(
+      FloatUniformInclusive,
+      selected: model_function == FloatUniformInclusive,
+    ),
     qcheck_function_to_html_option(Char, selected: model_function == Char),
   ]
 }
@@ -104,6 +109,7 @@ fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
     IntSmallStrictlyPositive -> "int_small_strictly_positive"
     IntSmallPositiveOrZero -> "int_small_positive_or_zero"
     Float -> "float"
+    FloatUniformInclusive -> "float_uniform_inclusive"
     Char -> "char"
   }
 }
@@ -123,6 +129,7 @@ fn qcheck_function_from_string(
     "int_small_positive_or_zero" -> Ok(IntSmallPositiveOrZero)
     "int_small_strictly_positive" -> Ok(IntSmallStrictlyPositive)
     "float" -> Ok(Float)
+    "float_uniform_inclusive" -> Ok(FloatUniformInclusive)
     "char" -> Ok(Char)
     _ -> Error("bad function name")
   }
@@ -248,13 +255,14 @@ fn maybe_show_error(error_message) {
 
 fn maybe_function_options(model: Model) {
   case model.function {
-    IntUniformInclusive -> {
+    // TODO: make a float input box for the float functions.
+    IntUniformInclusive | FloatUniformInclusive -> {
       html.div([], [
         html.label([], [
           html.label([], [
             html.text("High"),
             html.input([
-              attribute.name("high"),
+              attribute.name("range-high"),
               attribute.type_("number"),
               attribute.property("value", model.int_range_high),
               event.on_input(parse_int_range_high(_, low: model.int_range_low)),
@@ -263,7 +271,7 @@ fn maybe_function_options(model: Model) {
           html.br([]),
           html.text("Low"),
           html.input([
-            attribute.name("low"),
+            attribute.name("range-low"),
             attribute.type_("number"),
             attribute.property("value", model.int_range_low),
             event.on_input(parse_int_range_low(_, high: model.int_range_high)),
@@ -390,6 +398,16 @@ fn generate_histogram(model: Model) -> json.Json {
         qcheck.float(),
       )
       |> histogram(of: json.float, bin: True)
+    FloatUniformInclusive ->
+      gen(
+        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
+        qcheck.float_uniform_inclusive(
+          int.to_float(model.int_range_low),
+          int.to_float(model.int_range_high),
+        ),
+      )
+      |> histogram(of: json.float, bin: True)
+
     Char ->
       gen(
         qcheck.default_config() |> qcheck.with_test_count(default_test_count),

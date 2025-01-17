@@ -34,3 +34,11 @@ qv_dev:
   cd qcheck_viewer
 
   gleam run -m lustre/dev start
+
+qv_test:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  cd qcheck_viewer
+
+  gleam test
