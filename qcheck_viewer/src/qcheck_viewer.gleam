@@ -42,7 +42,7 @@ pub type Model {
 @internal
 pub fn default_model() -> Model {
   Model(
-    function: IntUniformInclusive,
+    function: IntUniform,
     int_range_low: default_int_range_low,
     int_range_high: default_int_range_high,
     error_message: option.None,
