@@ -66,37 +66,34 @@ fn qcheck_function_html_options(
   [
     qcheck_function_to_html_option(
       IntSmallPositiveOrZero,
-      selected: model_function == IntSmallPositiveOrZero,
+      current_function: model_function,
     ),
     qcheck_function_to_html_option(
       IntSmallStrictlyPositive,
-      selected: model_function == IntSmallStrictlyPositive,
+      current_function: model_function,
     ),
-    qcheck_function_to_html_option(
-      IntUniform,
-      selected: model_function == IntUniform,
-    ),
+    qcheck_function_to_html_option(IntUniform, current_function: model_function),
     qcheck_function_to_html_option(
       IntUniformInclusive,
-      selected: model_function == IntUniformInclusive,
+      current_function: model_function,
     ),
-    qcheck_function_to_html_option(Float, selected: model_function == Float),
+    qcheck_function_to_html_option(Float, current_function: model_function),
     qcheck_function_to_html_option(
       FloatUniformInclusive,
-      selected: model_function == FloatUniformInclusive,
+      current_function: model_function,
     ),
-    qcheck_function_to_html_option(Char, selected: model_function == Char),
+    qcheck_function_to_html_option(Char, current_function: model_function),
   ]
 }
 
 fn qcheck_function_to_html_option(
   qcheck_function: QcheckFunction,
-  selected selected: Bool,
+  current_function current_function: QcheckFunction,
 ) -> element.Element(_) {
   html.option(
     [
       qcheck_function_to_attribute(qcheck_function),
-      attribute.selected(selected),
+      attribute.selected(qcheck_function == current_function),
     ],
     qcheck_function_to_string(qcheck_function),
   )
