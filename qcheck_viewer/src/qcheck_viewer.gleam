@@ -1,5 +1,4 @@
 import gleam/int
-import gleam/io
 import gleam/json
 import gleam/option
 import lustre
@@ -425,76 +424,66 @@ fn embed_plot(vega_lite_spec: json.Json) -> Nil {
 }
 
 fn generate_histogram(model: Model) -> json.Json {
-  let default_test_count = 10_000
-
   case model.function {
-    IntUniform ->
-      gen(
-        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
-        qcheck.int_uniform(),
-      )
-      |> histogram(of: json.int, bin: True)
+    IntUniform -> gen_histogram(qcheck.int_uniform(), of: json.int, bin: True)
     IntUniformInclusive ->
-      gen(
-        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
+      gen_histogram(
         qcheck.int_uniform_inclusive(model.int_range_low, model.int_range_high),
+        of: json.int,
+        bin: True,
       )
-      |> histogram(of: json.int, bin: True)
     IntSmallPositiveOrZero ->
-      gen(
-        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
+      gen_histogram(
         qcheck.int_small_positive_or_zero(),
+        of: json.int,
+        bin: False,
       )
-      |> histogram(of: json.int, bin: False)
     IntSmallStrictlyPositive ->
-      gen(
-        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
+      gen_histogram(
         qcheck.int_small_strictly_positive(),
+        of: json.int,
+        bin: False,
       )
-      |> histogram(of: json.int, bin: False)
-    Float ->
-      gen(
-        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
-        qcheck.float(),
-      )
-      |> histogram(of: json.float, bin: True)
+    Float -> gen_histogram(qcheck.float(), of: json.float, bin: True)
     FloatUniformInclusive ->
-      gen(
-        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
+      gen_histogram(
         qcheck.float_uniform_inclusive(
           int.to_float(model.int_range_low),
           int.to_float(model.int_range_high),
         ),
+        of: json.float,
+        bin: True,
       )
-      |> histogram(of: json.float, bin: True)
 
-    Char ->
-      gen(
-        qcheck.default_config() |> qcheck.with_test_count(default_test_count),
-        qcheck.char(),
-      )
-      |> histogram(of: json.string, bin: False)
-    CharUniform -> gen_histogram(qcheck.char_uniform(), json.string)
+    Char -> gen_histogram(qcheck.char(), of: json.string, bin: False)
+    CharUniform ->
+      gen_histogram(qcheck.char_uniform(), of: json.string, bin: False)
     CharUniformInclusive ->
       gen_histogram(
         qcheck.char_uniform_inclusive(model.int_range_low, model.int_range_high),
-        json.string,
+        of: json.string,
+        bin: False,
       )
     // CharUtfCodepoint -> gen_histogram(qcheck.char_utf_codepoint(), json.string)
-    CharUppercase -> gen_histogram(qcheck.char_uppercase(), json.string)
-    CharLowercase -> gen_histogram(qcheck.char_lowercase(), json.string)
-    CharDigit -> gen_histogram(qcheck.char_digit(), json.string)
-    CharPrintUniform -> gen_histogram(qcheck.char_print_uniform(), json.string)
-    CharAlpha -> gen_histogram(qcheck.char_alpha(), json.string)
-    CharAlphaNumeric -> gen_histogram(qcheck.char_alpha_numeric(), json.string)
-    CharWhitespace -> gen_histogram(qcheck.char_whitespace(), json.string)
-    CharPrint -> gen_histogram(qcheck.char_print(), json.string)
+    CharUppercase ->
+      gen_histogram(qcheck.char_uppercase(), of: json.string, bin: False)
+    CharLowercase ->
+      gen_histogram(qcheck.char_lowercase(), of: json.string, bin: False)
+    CharDigit -> gen_histogram(qcheck.char_digit(), of: json.string, bin: False)
+    CharPrintUniform ->
+      gen_histogram(qcheck.char_print_uniform(), of: json.string, bin: False)
+    CharAlpha -> gen_histogram(qcheck.char_alpha(), of: json.string, bin: False)
+    CharAlphaNumeric ->
+      gen_histogram(qcheck.char_alpha_numeric(), of: json.string, bin: False)
+    CharWhitespace ->
+      gen_histogram(qcheck.char_whitespace(), of: json.string, bin: False)
+    CharPrint -> gen_histogram(qcheck.char_print(), of: json.string, bin: False)
   }
 }
 
-fn gen_histogram(generator, to_json) {
+fn gen_histogram(generator, of to_json, bin bin) {
   gen(qcheck.default_config() |> qcheck.with_test_count(10_000), generator)
-  |> histogram(of: to_json, bin: False)
+  |> histogram(of: to_json, bin:)
 }
 
 fn gen(config: qcheck.Config, generator: qcheck.Generator(a)) -> List(a) {
