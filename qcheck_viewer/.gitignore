@@ -5,3 +5,4 @@ erl_crash.dump
 
 /node_modules
 /priv
+/vite_site
