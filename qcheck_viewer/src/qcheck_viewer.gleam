@@ -10,8 +10,6 @@ import lustre/element/html
 import lustre/event
 import qcheck
 
-// TODO: char_utf_codepoint crashes the histogram
-
 const default_int_range_low: Int = -100
 
 const default_int_range_high: Int = 100
@@ -280,13 +278,10 @@ pub fn view(model: Model) -> element.Element(Msg) {
     html.div([], [
       html.h2([], [element.text("Options")]),
       // Select function
-      html.select(
-        [event.on_input(UserChangedFunction)],
-        qcheck_function_html_options(model.function),
-      ),
+      select_function(model),
       html.br([]),
       maybe_function_options(model),
-      html.br([]),
+      // html.br([]),
       maybe_generate_button(model.error_message),
     ]),
     // Plot
@@ -294,6 +289,17 @@ pub fn view(model: Model) -> element.Element(Msg) {
       html.h2([], [element.text("Data")]),
       html.div([attribute.id("plot")], [element.text("Click 'Generate'")]),
     ]),
+  ])
+}
+
+fn select_function(model: Model) {
+  html.label([], [
+    html.text("qcheck function"),
+    html.br([]),
+    html.select(
+      [event.on_input(UserChangedFunction)],
+      qcheck_function_html_options(model.function),
+    ),
   ])
 }
 
@@ -332,17 +338,19 @@ fn maybe_function_options(model: Model) {
     IntUniformInclusive | FloatUniformInclusive -> {
       html.div([], [
         html.label([], [
-          html.label([], [
-            html.text("High"),
-            html.input([
-              attribute.name("range-high"),
-              attribute.type_("number"),
-              attribute.property("value", model.int_range_high),
-              event.on_input(parse_int_range_high(_, low: model.int_range_low)),
-            ]),
-          ]),
+          html.text("High"),
           html.br([]),
+          html.input([
+            attribute.name("range-high"),
+            attribute.type_("number"),
+            attribute.property("value", model.int_range_high),
+            event.on_input(parse_int_range_high(_, low: model.int_range_low)),
+          ]),
+        ]),
+        html.br([]),
+        html.label([], [
           html.text("Low"),
+          html.br([]),
           html.input([
             attribute.name("range-low"),
             attribute.type_("number"),
