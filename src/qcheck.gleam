@@ -1881,7 +1881,7 @@ fn test_error_message_get_shrink_steps(
   regexp_first_submatch(pattern: "shrink_steps: (.+?);", in: test_error_str)
 }
 
-/// This function should only be called to rescue a function that my call
+/// This function should only be called to rescue a function that may call
 /// `failwith` at some point to raise an exception.  It will likely 
 /// raise otherwise.
 pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
