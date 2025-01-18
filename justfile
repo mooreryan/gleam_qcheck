@@ -50,7 +50,10 @@ qv_build_site:
   cd qcheck_viewer
 
   if [ -d dist ]; then rm -r dist; fi
-  gleam run -m lustre/dev build --outdir=dist --minify
+  mkdir -p dist/priv/static
+  gleam run -m lustre/dev build --outdir=dist/priv/static --minify
+  mv dist/priv/static/qcheck_viewer.min.mjs \
+     dist/priv/static/qcheck_viewer.mjs
   cp index.html dist
 
 qv_setup_for_gh_pages:
