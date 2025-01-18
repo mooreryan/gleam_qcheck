@@ -2100,16 +2100,6 @@ fn byte_aligned_bit_size(min: Int) -> Generator(Int) {
 // MARK: Utils 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-fn list_return(a) {
-  [a]
-}
-
-fn ok_exn(result) {
-  let assert Ok(x) = result
-
-  x
-}
-
 fn list_cons(x, xs) {
   [x, ..xs]
 }
@@ -2161,18 +2151,15 @@ fn filter_map(
 }
 
 fn unsafe_int_to_char(n: Int) -> String {
-  n
-  |> string.utf_codepoint
-  |> ok_exn
-  |> list_return
-  |> string.from_utf_codepoints
+  let assert Ok(codepoint) = string.utf_codepoint(n)
+
+  string.from_utf_codepoints([codepoint])
 }
 
 fn unsafe_char_to_int(c: String) -> Int {
-  string.to_utf_codepoints(c)
-  |> list.first
-  |> ok_exn
-  |> string.utf_codepoint_to_int
+  let assert [codepoint] = string.to_utf_codepoints(c)
+
+  string.utf_codepoint_to_int(codepoint)
 }
 
 /// If `n <= 0` return `0`, else return `n`.
