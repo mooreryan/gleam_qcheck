@@ -3,6 +3,8 @@
 /build
 erl_crash.dump
 
+/dist
+/docs
 /node_modules
 /priv
 /vite_site
