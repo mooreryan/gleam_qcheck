@@ -45,6 +45,8 @@ jobs:
           if [ -d docs ]; then rm -r docs; fi
           mv qcheck_viewer/dist docs
 
+      # TODO: if there are no site changes, this step will fail with
+      # "nothing added to the commit".
       - name: Commit site changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
