@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Function signature changes in `from_generators`, `from_float_weighted_generators`, and `from_weighted_generators`.
   - These functions were called as `from_generators([g1, g2, ...])`.
   - Now they are called as `from_generators(g1, [g2, g3, ...])` to ensure one generator is always provided.
+- `char_from_list(["a", "b", "c"])` is now `char_from_list("a", ["b", "c"])` to address the same issue present in the `from_generators` functions.
 - Require `prng` >= 4.0.1 (#7)
 
 ### Fixed

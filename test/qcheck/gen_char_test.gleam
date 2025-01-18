@@ -272,7 +272,7 @@ pub fn char_alpha_numeric__failures_shrink_ok__test() {
 pub fn char_from_list__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_from_list(["b", "c", "x", "y", "z"]),
+    generator: qcheck.char_from_list("b", ["c", "x", "y", "z"]),
     property: fn(s) {
       case s {
         "b" -> True
@@ -293,7 +293,7 @@ pub fn char_from_list__failures_shrink_ok__test() {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_from_list(["b", "c", "x", "y", "z"]),
+      generator: qcheck.char_from_list("b", ["c", "x", "y", "z"]),
       property: fn(s) { s == "q" },
     )
   }

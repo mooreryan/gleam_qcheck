@@ -1399,13 +1399,17 @@ pub fn char_alpha_numeric() -> Generator(String) {
   ])
 }
 
-/// `char_from_list(chars)` generates characters from the given list of
+/// `char_from_list(char, chars)` generates characters from the given list of
 /// characters.
 /// 
-pub fn char_from_list(chars: List(String)) -> Generator(String) {
-  let ints = list.map(chars, unsafe_char_to_int)
-  // TODO: assert that they are all single length chars
-  let assert [hd, ..tl] = ints
+/// The name is slightly weird since there is a single argument plus the list, 
+/// but doing it this way avoids the case of an empty list crashing your 
+/// program.  E.g., `char_from_list([])` would crash your test suite, so a 
+/// single char must always be provided.
+/// 
+pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
+  let hd = unsafe_char_to_int(char)
+  let tl = list.map(chars, unsafe_char_to_int)
 
   // Take the char with the minimum int representation as the shrink target.
   let shrink_target = list.fold(tl, hd, int.min)
@@ -1420,10 +1424,6 @@ pub fn char_from_list(chars: List(String)) -> Generator(String) {
 
     #(tree, seed |> seed_from_prng_seed)
   })
-}
-
-fn all_char_list() {
-  list.range(char_min_value, char_max_value)
 }
 
 // TODO: should probably account for other non-ascii whitespace chars
@@ -1449,10 +1449,14 @@ fn char_is_whitespace(c) {
 /// `char_whitespace()` generates whitespace (ASCII) characters.
 /// 
 pub fn char_whitespace() -> Generator(String) {
-  all_char_list()
-  |> list.filter(char_is_whitespace)
-  |> list.map(unsafe_int_to_char)
-  |> char_from_list
+  // If this assert fails, then we have an implementation bug in the min and max
+  // char values.
+  let assert [char, ..chars] =
+    list.range(char_min_value, char_max_value)
+    |> list.filter(char_is_whitespace)
+    |> list.map(unsafe_int_to_char)
+
+  char_from_list(char, chars)
 }
 
 /// `char_print()` generates printable ASCII characters, with a bias towards
