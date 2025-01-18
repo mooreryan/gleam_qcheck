@@ -1785,16 +1785,17 @@ fn fail(test_error_display: String) -> a {
   do_fail(test_error_display)
 }
 
-// If this returned an opaque Exn type then you couldn't mess up the
-// `test_error_message.rescue` call later, but it could potentially conflict
-// with non-gleeunit test frameworks, depending on how they deal with
-// exceptions.
-pub fn failwith(
+fn failwith(
   original_value original_value: a,
   shrunk_value shrunk_value: a,
   shrink_steps shrink_steps: Int,
   error_msg error_msg: String,
 ) -> b {
+  // If this returned an opaque Exn type then you couldn't mess up the
+  // `test_error_message.rescue` call later, but it could potentially conflict
+  // with non-gleeunit test frameworks, depending on how they deal with
+  // exceptions.
+
   new_test_error(
     original_value: original_value,
     shrunk_value: shrunk_value,
@@ -1869,6 +1870,7 @@ fn regexp_first_submatch(
 }
 
 /// Mainly for asserting values in qcheck internal tests.
+/// 
 fn test_error_message_get_original_value(
   test_error_str: String,
 ) -> Result(String, String) {
@@ -1876,6 +1878,7 @@ fn test_error_message_get_original_value(
 }
 
 /// Mainly for asserting values in qcheck internal tests.
+/// 
 fn test_error_message_get_shrunk_value(
   test_error_str: String,
 ) -> Result(String, String) {
@@ -1883,6 +1886,7 @@ fn test_error_message_get_shrunk_value(
 }
 
 /// Mainly for asserting values in qcheck internal tests.
+/// 
 fn test_error_message_get_shrink_steps(
   test_error_str: String,
 ) -> Result(String, String) {
@@ -1892,6 +1896,11 @@ fn test_error_message_get_shrink_steps(
 /// This function should only be called to rescue a function that may call
 /// `failwith` at some point to raise an exception.  It will likely 
 /// raise otherwise.
+/// 
+/// This function is internal.  Breaking changes may occur without a major 
+/// version update.
+/// 
+@internal
 pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
   case rescue_error(thunk) {
     Ok(a) -> Ok(a)
@@ -1917,18 +1926,18 @@ pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
 
 @external(erlang, "qcheck_ffi", "rescue_error")
 @external(javascript, "./qcheck_ffi.mjs", "rescue_error")
-pub fn rescue_error(f: fn() -> a) -> Result(a, String)
+fn rescue_error(f: fn() -> a) -> Result(a, String)
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: Try
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-pub type Try(a) {
+type Try(a) {
   NoPanic(a)
   Panic(exception.Exception)
 }
 
-pub fn try(f: fn() -> a) -> Try(a) {
+fn try(f: fn() -> a) -> Try(a) {
   case exception.rescue(fn() { f() }) {
     Ok(y) -> NoPanic(y)
     Error(exn) -> Panic(exn)

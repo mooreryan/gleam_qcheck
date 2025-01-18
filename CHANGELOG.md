@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now they are called as `from_generators(g1, [g2, g3, ...])` to ensure one generator is always provided.
 - `char_from_list(["a", "b", "c"])` is now `char_from_list("a", ["b", "c"])` to address the same issue present in the `from_generators` functions.
 - Require `prng` >= 4.0.1 (#7)
+- These functions are now private:
+  - `failwith`
+  - `try`
+  - `rescue_error`
+- These functions are now internal:
+  - `rescue`
 
 ### Fixed
 
