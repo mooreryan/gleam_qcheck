@@ -1,0 +1,56 @@
+name: build_viewer
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+  pull_request:
+
+jobs:
+  build_viewer:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27.0.1"
+          gleam-version: "1.6.3"
+          rebar3-version: "3"
+      - run: echo "LOCAL_PATH=$HOME/.local/bin" >> $GITHUB_ENV
+      - name: Setup path
+        run: |
+          mkdir -p "$LOCAL_PATH"
+          echo "$LOCAL_PATH" >> $GITHUB_PATH
+      - name: Setup just
+        run: |
+          \curl \
+            --proto '=https' \
+            --tlsv1.2 \
+            -sSf \
+            https://just.systems/install.sh \
+          | bash -s -- \
+            --to "$LOCAL_PATH"
+      - name: Setup Gleam project
+        run: just qv_setup_for_gh_pages
+      - name: Build site
+        run: just qv_build_site
+      - name: Make docs dir
+        run: |
+          git checkout gh-pages
+          if [ -d docs ]; then rm -r docs; fi
+          mv qcheck_viewer/dist docs
+
+      - name: Commit site changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          git add docs
+          git commit -m "Update docs site"
+          git push

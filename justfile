@@ -42,3 +42,22 @@ qv_test:
   cd qcheck_viewer
 
   gleam test
+
+qv_build_site:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  cd qcheck_viewer
+
+  if [ -d dist ]; then rm -r dist; fi
+  gleam run -m lustre/dev build --outdir=dist --minify
+  cp index.html dist
+
+qv_setup_for_gh_pages:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  cd qcheck_viewer
+
+  npm install
+  gleam deps download
