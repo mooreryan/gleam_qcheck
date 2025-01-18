@@ -212,8 +212,7 @@ fn non_digit_char_generator() {
 // MARK: Type generators
 
 fn qcheck_function_generator() {
-  qcheck.from_generators([
-    qcheck.return(qv.IntUniform),
+  qcheck.from_generators(qcheck.return(qv.IntUniform), [
     qcheck.return(qv.IntUniformInclusive),
     qcheck.return(qv.IntSmallPositiveOrZero),
     qcheck.return(qv.IntSmallStrictlyPositive),

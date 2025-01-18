@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Function signature changes in `from_generators`, `from_float_weighted_generators`, and `from_weighted_generators`.
+  - These functions were called as `from_generators([g1, g2, ...])`.
+  - Now they are called as `from_generators(g1, [g2, g3, ...])` to ensure one generator is always provided.
 - Require `prng` >= 4.0.1 (#7)
+
+### Fixed
+
 - Fix some tests that were broken on JS target
 - Fix a bug in `int_small_positive_or_zero`
 

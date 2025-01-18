@@ -1128,13 +1128,16 @@ pub fn tuple6(
   |> apply(g6)
 }
 
-/// `from_generators(generators)` chooses a generator from a list of generators 
-/// weighted uniformly, then chooses a value from that generator.
+/// `from_generators(generator, generators)` chooses a generator from the given 
+/// generators, then chooses a value from that generator. 
 /// 
-pub fn from_generators(generators: List(Generator(a))) -> Generator(a) {
-  // TODO: better error message on empty list
-  let assert [generator, ..generators] = generators
-
+/// This generator will always produce values, since at least one generator must 
+/// always be provided.
+/// 
+pub fn from_generators(
+  generator: Generator(a),
+  generators: List(Generator(a)),
+) -> Generator(a) {
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
       prng_random.uniform(generator, generators)
@@ -1144,17 +1147,16 @@ pub fn from_generators(generators: List(Generator(a))) -> Generator(a) {
   })
 }
 
-/// `from_float_weighted_generators(generators)` chooses a generator from a list of generators
-/// weighted by the given float weights, then chooses a value from that generator.
+/// `from_float_weighted_generators(generator, generators)` chooses a generator 
+/// from the given generators weighted by the given float weights, then chooses 
+/// a value from that generator.
 /// 
 /// You should generally prefer `from_weighted_generators` as it is much faster.
 /// 
 pub fn from_float_weighted_generators(
+  generator: #(Float, Generator(a)),
   generators: List(#(Float, Generator(a))),
 ) -> Generator(a) {
-  // TODO: better error message on empty list
-  let assert [generator, ..generators] = generators
-
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
       random.weighted(generator, generators)
@@ -1164,18 +1166,17 @@ pub fn from_float_weighted_generators(
   })
 }
 
-/// `from_float_generators(generators)` chooses a generator from a list of generators
-/// weighted by the given integer weights, then chooses a value from that generator.
+/// `from_float_generators(generator, generators)` chooses a generator from the 
+/// given generators weighted by the integer weights, then chooses a value from 
+/// that generator.
 /// 
 /// You should generally prefer this function over 
 /// `from_float_weighted_generators` as this function is faster.
 /// 
 pub fn from_weighted_generators(
+  generator: #(Int, Generator(a)),
   generators: List(#(Int, Generator(a))),
 ) -> Generator(a) {
-  // TODO: better error message on empty list
-  let assert [generator, ..generators] = generators
-
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
       prng_random.weighted(generator, generators)
@@ -1382,15 +1383,16 @@ pub fn char_uniform() -> Generator(String) {
 /// `char_alpha()` generates alphabetic (ASCII) characters.
 /// 
 pub fn char_alpha() -> Generator(String) {
-  [char_uppercase(), char_lowercase()]
-  |> from_generators
+  from_generators(char_uppercase(), [char_lowercase()])
 }
 
 /// `char_alpha_numeric()` generates alphanumeric (ASCII) characters.
 /// 
 pub fn char_alpha_numeric() -> Generator(String) {
-  [#(26, char_uppercase()), #(26, char_lowercase()), #(10, char_digit())]
-  |> from_weighted_generators
+  from_weighted_generators(#(26, char_uppercase()), [
+    #(26, char_lowercase()),
+    #(10, char_digit()),
+  ])
 }
 
 /// `char_from_list(chars)` generates characters from the given list of
@@ -1453,9 +1455,7 @@ pub fn char_whitespace() -> Generator(String) {
 /// alphanumeric characters.
 /// 
 pub fn char_print() -> Generator(String) {
-  // Numbers indicate percent chance of picking the generator.
-  from_weighted_generators([
-    #(381, char_uppercase()),
+  from_weighted_generators(#(381, char_uppercase()), [
     #(381, char_lowercase()),
     #(147, char_digit()),
     #(91, char_print_uniform()),
@@ -1471,9 +1471,7 @@ pub fn char_utf_codepoint() -> Generator(String) {
 /// characters, while still hitting some edge cases.
 /// 
 pub fn char() {
-  // Numbers indicate percent chance of picking the generator.
-  from_weighted_generators([
-    #(340, char_uppercase()),
+  from_weighted_generators(#(340, char_uppercase()), [
     #(340, char_lowercase()),
     #(131, char_digit()),
     #(81, char_print_uniform()),

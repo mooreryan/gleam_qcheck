@@ -11,7 +11,11 @@ testw:
   watchexec --no-process-group gleam test
 
 test:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
   gleam test
+  gleam test --target=javascript
 
 test_review:
   gleam run -m birdie
