@@ -1260,6 +1260,10 @@ pub fn int_uniform() -> Generator(Int) {
 // 
 
 fn exp(x: Float) -> Float {
+  // Gleam's float.power will return an Error if the base is negative, but here
+  // it is known to always be positive (e).  On JavaScript, if `x` is too big,
+  // it will return Infinity.  However, Gleam doesn't treat this case as an
+  // Error  and your code will be anyway.  So the `let assert` shouldn't crash.
   let assert Ok(result) = float.power(2.71828, x)
   result
 }
