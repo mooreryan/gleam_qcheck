@@ -1198,6 +1198,20 @@ pub fn from_weighted_generators(
   })
 }
 
+// MARK: Sized generators
+
+/// TODO docs
+type SizedGenerator(a) =
+  fn(Int) -> Generator(a)
+
+/// TODO docs
+pub fn sized_from(
+  sized_generator: SizedGenerator(a),
+  size_generator: Generator(Int),
+) -> Generator(a) {
+  size_generator |> bind(sized_generator)
+}
+
 // MARK: Ints
 
 /// `int_small_positive_or_zero()` generates small integers well suited for 

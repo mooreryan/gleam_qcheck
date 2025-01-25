@@ -249,6 +249,19 @@ pub fn bit_array_with_size__doesnt_crash_for_huge_numbers__test() {
   True
 }
 
+// MARK: Sized 
+
+pub fn sizing_bit_arrays__test() -> Nil {
+  use bytes <- qcheck.given({
+    qcheck.bit_array_byte_aligned_with_size
+    |> qcheck.sized_from(qcheck.int_uniform_inclusive(0, 10))
+  })
+
+  let byte_size = bit_array.byte_size(bytes)
+
+  0 <= byte_size && byte_size <= 10
+}
+
 // MARK: Utils
 
 fn utf8_bytes_to_codepoints(utf8_bytes) {
