@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `constant`: a synonym for `qcheck.return`
+- `sized_from`
+
 ### Changed
 
 - Function signature changes in `from_generators`, `from_float_weighted_generators`, and `from_weighted_generators`.
@@ -14,12 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now they are called as `from_generators(g1, [g2, g3, ...])` to ensure one generator is always provided.
 - `char_from_list(["a", "b", "c"])` is now `char_from_list("a", ["b", "c"])` to address the same issue present in the `from_generators` functions.
 - Require `prng` >= 4.0.1 (#7)
+- Improved generation and shrinking of bit arrays
+- `int_uniform_inclusive` and `float_uniform_inclusive`
+  - Changed named args:
+    - `low` -> `from`
+    - `high` -> `to`
+  - No longer panics if the first arg is less than the second arg
 - These functions are now private:
   - `failwith`
   - `try`
   - `rescue_error`
 - These functions are now internal:
   - `rescue`
+- These functions have been renamed:
+  - `char_print` -> `char_printable`
+  - `char_print_uniform` -> `char_printable_uniform`
 
 ### Fixed
 
