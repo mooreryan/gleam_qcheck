@@ -467,12 +467,29 @@ const default_test_count: Int = 1000
 const default_max_retries: Int = 1
 
 /// `default()` returns the default configuration for the property-based testing.
+/// 
 pub fn default_config() -> Config {
   Config(
     test_count: default_test_count,
     max_retries: default_max_retries,
     seed: seed_random(),
   )
+}
+
+/// `config(test_count, max_retries, seed)` builds a new `Config`.
+/// 
+/// Any invalid arguments will be replaced with reasonable defaults.
+/// 
+pub fn config(
+  test_count test_count: Int,
+  max_retries max_retries: Int,
+  seed seed: Seed,
+) -> Config {
+  // Use the `with_*` functions so we get their validation logic.
+  default_config()
+  |> with_test_count(test_count)
+  |> with_max_retries(max_retries)
+  |> with_seed(seed)
 }
 
 /// `with_test_count()` returns a new configuration with the given test count.
