@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `low` -> `from`
     - `high` -> `to`
   - No longer panics if the first arg is less than the second arg
+- The `Config` type is now opaque
 - These functions are now private:
   - `failwith`
   - `try`

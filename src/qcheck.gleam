@@ -458,7 +458,7 @@ fn seed_from_prng_seed(prng_seed: prng_seed.Seed) -> Seed {
 /// - `max_retries`: The number of times to retry the tested property while 
 ///   shrinking.
 /// - `random_seed`: The seed for the random generator.
-pub type Config {
+pub opaque type Config {
   Config(test_count: Int, max_retries: Int, random_seed: Seed)
 }
 
