@@ -30,7 +30,7 @@
 //// - [default_config](#default_config)
 //// - [with_test_count](#with_test_count)
 //// - [with_max_retries](#with_max_retries)
-//// - [with_random_seed](#with_random_seed)
+//// - [with_seed](#with_seed)
 //// 
 //// 
 //// ## Generators
@@ -299,14 +299,14 @@ fn do_run(
     True -> Nil
     False -> {
       let Generator(generate) = generator
-      let #(tree, seed) = generate(config.random_seed)
+      let #(tree, seed) = generate(config.seed)
       let Tree(value, _shrinks) = tree
 
       case try(fn() { property(value) }) {
         NoPanic(True) -> {
           do_run(
             config
-              |> with_random_seed(seed),
+              |> with_seed(seed),
             generator,
             property,
             i + 1,
@@ -349,14 +349,14 @@ fn do_run_result(
     True -> Nil
     False -> {
       let Generator(generate) = generator
-      let #(tree, seed) = generate(config.random_seed)
+      let #(tree, seed) = generate(config.seed)
       let Tree(value, _shrinks) = tree
 
       case try(fn() { property(value) }) {
         NoPanic(Ok(_)) ->
           do_run_result(
             config
-              |> with_random_seed(seed),
+              |> with_seed(seed),
             generator,
             property,
             i + 1,
@@ -415,7 +415,7 @@ pub opaque type Seed {
 /// ```
 /// let config = 
 ///   qcheck.default_config() 
-///   |> qcheck.with_random_seed(qcheck.seed(124))
+///   |> qcheck.with_seed(qcheck.seed(124))
 /// ```
 /// 
 pub fn seed(n: Int) -> Seed {
@@ -432,7 +432,7 @@ pub fn seed(n: Int) -> Seed {
 /// ```
 /// let config = 
 ///   qcheck.default_config() 
-///   |> qcheck.with_random_seed(qcheck.seed_random())
+///   |> qcheck.with_seed(qcheck.seed_random())
 /// ```
 /// 
 pub fn seed_random() -> Seed {
@@ -457,14 +457,14 @@ fn seed_from_prng_seed(prng_seed: prng_seed.Seed) -> Seed {
 /// - `test_count`: The number of tests to run for each property.
 /// - `max_retries`: The number of times to retry the tested property while 
 ///   shrinking.
-/// - `random_seed`: The seed for the random generator.
+/// - `seed`: The seed for the random generator.
 pub opaque type Config {
-  Config(test_count: Int, max_retries: Int, random_seed: Seed)
+  Config(test_count: Int, max_retries: Int, seed: Seed)
 }
 
 /// `default()` returns the default configuration for the property-based testing.
 pub fn default_config() -> Config {
-  Config(test_count: 1000, max_retries: 1, random_seed: seed_random())
+  Config(test_count: 1000, max_retries: 1, seed: seed_random())
 }
 
 /// `with_test_count()` returns a new configuration with the given test count.
@@ -477,9 +477,9 @@ pub fn with_max_retries(config, max_retries) {
   Config(..config, max_retries: max_retries)
 }
 
-/// `with_random_seed()` returns a new configuration with the given random seed.
-pub fn with_random_seed(config, random_seed) {
-  Config(..config, random_seed: random_seed)
+/// `with_seed()` returns a new configuration with the given random seed.
+pub fn with_seed(config, seed) {
+  Config(..config, seed: seed)
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
