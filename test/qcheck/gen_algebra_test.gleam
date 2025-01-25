@@ -43,7 +43,7 @@ pub fn map2__test() {
 
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.map2(fn(a, b) { #(a, b) }, gen_int, gen_int),
+    generator: qcheck.map2(gen_int, gen_int, fn(a, b) { #(a, b) }),
     property: fn(tup2) {
       let #(a, b) = tup2
 
@@ -62,12 +62,7 @@ pub fn map3__test() {
 
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.map3(
-      fn(a, b, c) { #(a, b, c) },
-      gen_int,
-      gen_int,
-      gen_int,
-    ),
+    generator: qcheck.map3(gen_int, gen_int, gen_int, fn(a, b, c) { #(a, b, c) }),
     property: fn(tup3) {
       let #(a, b, c) = tup3
 
@@ -77,6 +72,85 @@ pub fn map3__test() {
 }
 
 pub fn map4__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
+
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map4(gen_int, gen_int, gen_int, gen_int, fn(a, b, c, d) {
+      #(a, b, c, d)
+    }),
+    property: fn(tup4) {
+      let #(a, b, c, d) = tup4
+
+      in_range(a) && in_range(b) && in_range(c) && in_range(d)
+    },
+  )
+}
+
+pub fn map5__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
+
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map5(
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      fn(a, b, c, d, e) { #(a, b, c, d, e) },
+    ),
+    property: fn(tup5) {
+      let #(a, b, c, d, e) = tup5
+
+      in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e)
+    },
+  )
+}
+
+pub fn map6__test() {
+  let min = -100
+  let max = 100
+
+  let in_range = in_range(min, max)
+
+  let gen_int = qcheck.int_uniform_inclusive(min, max)
+
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.map6(
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      gen_int,
+      fn(a, b, c, d, e, f) { #(a, b, c, d, e, f) },
+    ),
+    property: fn(tup6) {
+      let #(a, b, c, d, e, f) = tup6
+
+      in_range(a)
+      && in_range(b)
+      && in_range(c)
+      && in_range(d)
+      && in_range(e)
+      && in_range(f)
+    },
+  )
+}
+
+pub fn map4_with_apply__test() {
   let min = -100
   let max = 100
 

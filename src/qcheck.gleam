@@ -541,7 +541,7 @@ pub fn return_tree(x: a) -> Tree(a) {
   Tree(x, yielder.empty())
 }
 
-pub fn map2_tree(f: fn(a, b) -> c, a: Tree(a), b: Tree(b)) -> Tree(c) {
+pub fn map2_tree(a: Tree(a), b: Tree(b), f: fn(a, b) -> c) -> Tree(c) {
   {
     use x1 <- parameter
     use x2 <- parameter
@@ -558,7 +558,7 @@ pub fn sequence_list(l: List(Tree(a))) -> Tree(List(a)) {
   case l {
     [] -> return_tree([])
     [hd, ..tl] -> {
-      map2_tree(list_cons, hd, sequence_list(tl))
+      map2_tree(hd, sequence_list(tl), list_cons)
     }
   }
 }
@@ -954,7 +954,7 @@ pub fn parameter(f: fn(x) -> y) -> fn(x) -> y {
 /// `map(generator, f)` transforms the generator `generator` by applying `f` to 
 /// each generated value.  Shrinks as `generator` shrinks, but with `f` applied.
 /// 
-pub fn map(generator generator: Generator(a), f f: fn(a) -> b) -> Generator(b) {
+pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   let Generator(generate) = generator
 
   Generator(fn(seed) {
@@ -993,6 +993,7 @@ pub fn bind(
 /// `x`, into a result generator.
 /// 
 pub fn apply(
+  // TODO: arg names
   f f: Generator(fn(a) -> b),
   generator x: Generator(a),
 ) -> Generator(b) {
@@ -1008,14 +1009,14 @@ pub fn apply(
   })
 }
 
-/// `map2(f, g1, g2)` transforms two generators, `g1` and `g2`, by applying `f` 
+/// `map2(g1, g2, f)` transforms two generators, `g1` and `g2`, by applying `f` 
 /// to each pair of generated values.
 /// 
 pub fn map2(
-  f f: fn(t1, t2) -> t3,
-  g1 g1: Generator(t1),
-  g2 g2: Generator(t2),
-) -> Generator(t3) {
+  g1: Generator(x1),
+  g2: Generator(x2),
+  f: fn(x1, x2) -> y,
+) -> Generator(y) {
   return({
     use x1 <- parameter
     use x2 <- parameter
@@ -1025,15 +1026,15 @@ pub fn map2(
   |> apply(g2)
 }
 
-/// `map3(f, g1, g2, g3)` transforms three generators, `g1`, `g2`, and `g3`, by
+/// `map3(g1, g2, g3, f)` transforms three generators, `g1`, `g2`, and `g3`, by
 /// applying `f` to each triple of generated values.
 /// 
 pub fn map3(
-  f f: fn(t1, t2, t3) -> t4,
-  g1 g1: Generator(t1),
-  g2 g2: Generator(t2),
-  g3 g3: Generator(t3),
-) -> Generator(t4) {
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+  f: fn(x1, x2, x3) -> y,
+) -> Generator(y) {
   return({
     use x1 <- parameter
     use x2 <- parameter
@@ -1045,41 +1046,22 @@ pub fn map3(
   |> apply(g3)
 }
 
-/// `tuple2(g1, g2)` generates a tuple of two values, one each from generators 
-/// `g1` and `g2`.
+/// `map4(g1, g2, g3, g4, f)` transforms four generators, `g1`, `g2`, `g3`, and
+/// `g4`, by applying `f` to each quadruple of generated values.
 /// 
-pub fn tuple2(g1: Generator(t1), g2: Generator(t2)) -> Generator(#(t1, t2)) {
-  fn(t1, t2) { #(t1, t2) }
-  |> map2(g1, g2)
-}
-
-/// `tuple3(g1, g2, g3)` generates a tuple of three values, one each from
-/// generators `g1`, `g2`, and `g3`.
-/// 
-pub fn tuple3(
-  g1: Generator(t1),
-  g2: Generator(t2),
-  g3: Generator(t3),
-) -> Generator(#(t1, t2, t3)) {
-  fn(t1, t2, t3) { #(t1, t2, t3) }
-  |> map3(g1, g2, g3)
-}
-
-/// `tuple4(g1, g2, g3, g4)` generates a tuple of four values, one each from
-/// generators `g1`, `g2`, `g3`, and `g4`.
-/// 
-pub fn tuple4(
-  g1: Generator(t1),
-  g2: Generator(t2),
-  g3: Generator(t3),
-  g4: Generator(t4),
-) -> Generator(#(t1, t2, t3, t4)) {
+pub fn map4(
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+  g4: Generator(x4),
+  f: fn(x1, x2, x3, x4) -> y,
+) -> Generator(y) {
   return({
     use x1 <- parameter
     use x2 <- parameter
     use x3 <- parameter
     use x4 <- parameter
-    #(x1, x2, x3, x4)
+    f(x1, x2, x3, x4)
   })
   |> apply(g1)
   |> apply(g2)
@@ -1087,23 +1069,24 @@ pub fn tuple4(
   |> apply(g4)
 }
 
-/// `tuple5(g1, g2, g3, g4, g5)` generates a tuple of five values, one each from
-/// generators `g1`, `g2`, `g3`, `g4`, and `g5`.
+/// `map5(g1, g2, g3, g4, g5, f)` transforms five generators, `g1`, `g2`, `g3`,
+/// `g4`, and `g5`, by applying `f` to each quintuple of generated values.
 /// 
-pub fn tuple5(
-  g1: Generator(t1),
-  g2: Generator(t2),
-  g3: Generator(t3),
-  g4: Generator(t4),
-  g5: Generator(t5),
-) -> Generator(#(t1, t2, t3, t4, t5)) {
+pub fn map5(
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+  g4: Generator(x4),
+  g5: Generator(x5),
+  f: fn(x1, x2, x3, x4, x5) -> y,
+) -> Generator(y) {
   return({
     use x1 <- parameter
     use x2 <- parameter
     use x3 <- parameter
     use x4 <- parameter
     use x5 <- parameter
-    #(x1, x2, x3, x4, x5)
+    f(x1, x2, x3, x4, x5)
   })
   |> apply(g1)
   |> apply(g2)
@@ -1112,17 +1095,18 @@ pub fn tuple5(
   |> apply(g5)
 }
 
-/// `tuple6(g1, g2, g3, g4, g5, g6)` generates a tuple of six values, one each 
-/// from generators `g1`, `g2`, `g3`, `g4`, `g5`, and `g6`.
+/// `map6(g1, g2, g3, g4, g5, g6, f)` transforms six generators, `g1`, `g2`, `g3`,
+/// `g4`, `g5`, and `g6`, by applying `f` to each sextuple of generated values.
 /// 
-pub fn tuple6(
-  g1: Generator(t1),
-  g2: Generator(t2),
-  g3: Generator(t3),
-  g4: Generator(t4),
-  g5: Generator(t5),
-  g6: Generator(t6),
-) -> Generator(#(t1, t2, t3, t4, t5, t6)) {
+pub fn map6(
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+  g4: Generator(x4),
+  g5: Generator(x5),
+  g6: Generator(x6),
+  f: fn(x1, x2, x3, x4, x5, x6) -> y,
+) -> Generator(y) {
   return({
     use x1 <- parameter
     use x2 <- parameter
@@ -1130,7 +1114,7 @@ pub fn tuple6(
     use x4 <- parameter
     use x5 <- parameter
     use x6 <- parameter
-    #(x1, x2, x3, x4, x5, x6)
+    f(x1, x2, x3, x4, x5, x6)
   })
   |> apply(g1)
   |> apply(g2)
@@ -1138,6 +1122,68 @@ pub fn tuple6(
   |> apply(g4)
   |> apply(g5)
   |> apply(g6)
+}
+
+/// `tuple2(g1, g2)` generates a tuple of two values, one each from generators 
+/// `g1` and `g2`.
+/// 
+pub fn tuple2(g1: Generator(x1), g2: Generator(x2)) -> Generator(#(x1, x2)) {
+  use x1, x2 <- map2(g1, g2)
+  #(x1, x2)
+}
+
+/// `tuple3(g1, g2, g3)` generates a tuple of three values, one each from
+/// generators `g1`, `g2`, and `g3`.
+/// 
+pub fn tuple3(
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+) -> Generator(#(x1, x2, x3)) {
+  use x1, x2, x3 <- map3(g1, g2, g3)
+  #(x1, x2, x3)
+}
+
+/// `tuple4(g1, g2, g3, g4)` generates a tuple of four values, one each from
+/// generators `g1`, `g2`, `g3`, and `g4`.
+/// 
+pub fn tuple4(
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+  g4: Generator(x4),
+) -> Generator(#(x1, x2, x3, x4)) {
+  use x1, x2, x3, x4 <- map4(g1, g2, g3, g4)
+  #(x1, x2, x3, x4)
+}
+
+/// `tuple5(g1, g2, g3, g4, g5)` generates a tuple of five values, one each from
+/// generators `g1`, `g2`, `g3`, `g4`, and `g5`.
+/// 
+pub fn tuple5(
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+  g4: Generator(x4),
+  g5: Generator(x5),
+) -> Generator(#(x1, x2, x3, x4, x5)) {
+  use x1, x2, x3, x4, x5 <- map5(g1, g2, g3, g4, g5)
+  #(x1, x2, x3, x4, x5)
+}
+
+/// `tuple6(g1, g2, g3, g4, g5, g6)` generates a tuple of six values, one each 
+/// from generators `g1`, `g2`, `g3`, `g4`, `g5`, and `g6`.
+/// 
+pub fn tuple6(
+  g1: Generator(x1),
+  g2: Generator(x2),
+  g3: Generator(x3),
+  g4: Generator(x4),
+  g5: Generator(x5),
+  g6: Generator(x6),
+) -> Generator(#(x1, x2, x3, x4, x5, x6)) {
+  use x1, x2, x3, x4, x5, x6 <- map6(g1, g2, g3, g4, g5, g6)
+  #(x1, x2, x3, x4, x5, x6)
 }
 
 /// `from_generators(generator, generators)` chooses a generator from the given 
@@ -1653,7 +1699,7 @@ fn list_generic_loop(
 
       list_generic_loop(
         n - 1,
-        map2_tree(list_cons, tree, acc),
+        map2_tree(tree, acc, list_cons),
         element_generator,
         seed,
       )

@@ -14,7 +14,7 @@ fn make_point(x: Int, y: Int) -> Point {
 }
 
 fn point_generator() -> Generator(Point) {
-  qcheck.map2(make_point, qcheck.int_uniform(), qcheck.int_uniform())
+  qcheck.map2(qcheck.int_uniform(), qcheck.int_uniform(), make_point)
 }
 
 fn point_equal(p1: Point, p2: Point) -> Bool {

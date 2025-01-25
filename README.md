@@ -140,7 +140,7 @@ Okay, first we need to write a generator of valid points. In this case, it isn't
 
 ```gleam
 fn point_generator() {
-  qcheck.map2(make_point, qcheck.int_uniform(), qcheck.int_uniform())
+  qcheck.map2(qcheck.int_uniform(), qcheck.int_uniform(), make_point)
 }
 ```
 
@@ -148,7 +148,7 @@ Alternatively, if you prefer the `use` syntax, you could write:
 
 ```gleam
 fn point_generator() {
-  use x, y <- qcheck.map2(g1: qcheck.int_uniform(), g2: qcheck.int_uniform())
+  use x, y <- qcheck.map2(qcheck.int_uniform(), qcheck.int_uniform())
 
   make_point(x, y)
 }
