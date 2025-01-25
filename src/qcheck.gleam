@@ -552,13 +552,13 @@ pub fn map2_tree(a: Tree(a), b: Tree(b), f: fn(a, b) -> c) -> Tree(c) {
   |> apply_tree(b)
 }
 
-/// `sequence_list(list_of_trees)` sequsences a list of trees into a tree of lists.
+/// `sequence_trees(list_of_trees)` sequences a list of trees into a tree of lists.
 /// 
-pub fn sequence_list(l: List(Tree(a))) -> Tree(List(a)) {
+pub fn sequence_trees(l: List(Tree(a))) -> Tree(List(a)) {
   case l {
     [] -> return_tree([])
     [hd, ..tl] -> {
-      map2_tree(hd, sequence_list(tl), list_cons)
+      map2_tree(hd, sequence_trees(tl), list_cons)
     }
   }
 }
@@ -1610,7 +1610,7 @@ pub fn string_with_length_from(
 
     let shrink = fn() {
       let char_trees: List(Tree(String)) = list.reverse(char_trees_rev)
-      let char_list_tree: Tree(List(String)) = sequence_list(char_trees)
+      let char_list_tree: Tree(List(String)) = sequence_trees(char_trees)
 
       // Technically `Tree(_root, children)` is the whole tree, but we create it
       // eagerly above.
@@ -2066,7 +2066,7 @@ pub fn bit_array_with_size_from(
     do_gen_bit_array(value_generator, seed, <<>>, [], bit_size)
 
   let shrink = fn() {
-    let int_list_tree = int_trees |> list.reverse |> sequence_list
+    let int_list_tree = int_trees |> list.reverse |> sequence_trees
 
     let Tree(_root, children) =
       map_tree(int_list_tree, value_with_size_list_to_bit_array)
