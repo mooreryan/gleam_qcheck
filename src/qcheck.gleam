@@ -1244,15 +1244,19 @@ pub fn int_small_strictly_positive() -> Generator(Int) {
   |> map(int.add(_, 1))
 }
 
-/// `int_uniform_inclusive(low, high)` generates integers uniformly distributed
-/// between `low` and `high`, inclusive.
+/// `int_uniform_inclusive(from, to)` generates integers uniformly distributed
+/// between `from` and `to`, inclusive.
 /// 
-/// Shrinks towards `0`, but won't shrink outside of the range `[low, high]`.
-pub fn int_uniform_inclusive(low low: Int, high high: Int) -> Generator(Int) {
-  case high < low {
-    // TODO get rid of this panic
-    True -> panic as "int_uniform_includive: high < low"
-    False -> Nil
+/// Shrinks towards `0`, but won't shrink outside of the range `[from, to]`.
+/// 
+/// Note: If you pass the parameters backwards, e.g., 
+/// `int_uniform_inclusive(5, 2)` it will be treated the same as 
+/// `int_uniform_inclusive(2, 5)`.
+/// 
+pub fn int_uniform_inclusive(from low: Int, to high: Int) -> Generator(Int) {
+  let #(low, high) = case low <= high {
+    True -> #(low, high)
+    False -> #(high, low)
   }
 
   make_primitive_generator(
@@ -1314,6 +1318,7 @@ pub fn float() -> Generator(Float) {
 
 pub fn float_uniform_inclusive(low: Float, high: Float) {
   case high <. low {
+    // TODO: remove panic
     True -> panic as "int_uniform_includive: high < low"
     False -> Nil
   }

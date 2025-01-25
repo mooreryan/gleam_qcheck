@@ -37,7 +37,7 @@ fn make_person(name, age) {
 
 fn valid_name_and_age_generator() {
   let name_generator = qcheck.string_non_empty()
-  let age_generator = qcheck.int_uniform_inclusive(low: 0, high: 129)
+  let age_generator = qcheck.int_uniform_inclusive(from: 0, to: 129)
 
   use name, age <- qcheck.map2(g1: name_generator, g2: age_generator)
   #(name, age)

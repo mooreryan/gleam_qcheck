@@ -171,3 +171,9 @@ pub fn negative_int_uniform_range_not_including_zero__shrinks_ok__test() {
   qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(-5))
 }
+
+pub fn int_uniform_inclusive__high_less_than_low_ok__test() {
+  use n <- qcheck.given(qcheck.int_uniform_inclusive(10, -10))
+
+  -10 <= n && n <= 10
+}
