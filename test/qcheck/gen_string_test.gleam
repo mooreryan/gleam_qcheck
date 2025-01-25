@@ -26,7 +26,6 @@ pub fn string_generic__test() {
       qcheck.int_uniform_inclusive(1, 10),
     ),
     property: fn(s) {
-      // io.debug(s)
       let s_len = string.length(s)
 
       1 <= s_len && s_len <= 10 && has_only_a_through_z(s)

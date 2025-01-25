@@ -104,6 +104,8 @@
 //// 
 //// ### Bit arrays
 //// 
+//// Bit array shrinking is a bit wonky compared to shrinking of the other types.  
+//// 
 //// These functions will generate bit arrays that cause runtime crashes when 
 //// targeting JavaScript.
 //// 
@@ -1188,7 +1190,6 @@ pub fn from_weighted_generators(
 
 // MARK: Ints
 
-// TODO: consider switching to base_quickcheck small int generator
 /// `int_small_positive_or_zero()` generates small integers well suited for 
 /// modeling the sizes of sized elements like lists or strings.
 /// 
@@ -1219,17 +1220,13 @@ pub fn int_small_strictly_positive() -> Generator(Int) {
   |> map(int.add(_, 1))
 }
 
-// The QCheck2 code does some fancy stuff to avoid generating ranges wider than
-// `Int.max_int`. TODO: consider the implications for this code.
-//
-// TODO: QCheck2 code also has a parameter for the shrink origin.
-// 
 /// `int_uniform_inclusive(low, high)` generates integers uniformly distributed
 /// between `low` and `high`, inclusive.
 /// 
 /// Shrinks towards `0`, but won't shrink outside of the range `[low, high]`.
 pub fn int_uniform_inclusive(low low: Int, high high: Int) -> Generator(Int) {
   case high < low {
+    // TODO get rid of this panic
     True -> panic as "int_uniform_includive: high < low"
     False -> Nil
   }
@@ -1314,10 +1311,8 @@ pub fn float_uniform_inclusive(low: Float, high: Float) {
 
 const char_min_value: Int = 0
 
-// TODO: what is a reasonable value here?
 const char_max_value: Int = 255
 
-// TODO: why not take the "char" directly?
 // For now, this is only used in setting up the string generators.
 //
 /// `char_uniform_inclusive(low, high)` generates "characters" uniformly
@@ -1368,10 +1363,9 @@ pub fn char_digit() -> Generator(String) {
   char_uniform_inclusive(ascii_zero, ascii_nine)
 }
 
-// TODO: name char_printable_uniform?
-// Note: the shrink target for this will be `"a"`.
-//
 /// `char_print_uniform()` generates printable ASCII characters.
+/// 
+/// Shrinks to `"a"`.
 /// 
 pub fn char_print_uniform() -> Generator(String) {
   char_uniform_inclusive(ascii_space, ascii_tilde)
@@ -1426,7 +1420,6 @@ pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
   })
 }
 
-// TODO: should probably account for other non-ascii whitespace chars
 // This is from OCaml Stdlib.Char module
 fn char_is_whitespace(c) {
   case c {
@@ -1501,7 +1494,6 @@ fn do_gen_string(
   let Generator(gen_char_tree) = char_gen
 
   let #(char_tree, seed) = gen_char_tree(seed)
-  // char_tree |> tree_to_string_(fn(x) { x }, 3) |> io.println
 
   case i <= 0 {
     True -> #(string_tree.to_string(string_tree), char_trees_rev, seed)
@@ -1533,7 +1525,6 @@ pub fn string_with_length_from(
     let #(generated_string, char_trees_rev, seed) =
       do_gen_string(length, string_tree.new(), generator, [], seed)
 
-    // TODO: Ideally this whole thing would be delayed until needed.
     let shrink = fn() {
       let char_trees: List(Tree(String)) = list.reverse(char_trees_rev)
       let char_list_tree: Tree(List(String)) = sequence_list(char_trees)
@@ -1972,13 +1963,114 @@ fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
 
 // MARK: Bit arrays
 
+fn byte() {
+  int_uniform_inclusive(0, 255)
+}
+
+/// `bit_array_with_size_from(bit_generator, bit_size)` generates bit arrays of 
+/// the given number of bits (bit_size) where elements are generated according 
+/// to the given `bit_generator`.
+///
+/// Shrinks on values, not on length.
+/// 
+pub fn bit_array_with_size_from(
+  value_generator: Generator(Int),
+  bit_size bit_size: Int,
+) -> Generator(BitArray) {
+  use seed <- Generator
+
+  let #(generated_bit_array, int_trees, seed) =
+    do_gen_bit_array(value_generator, seed, <<>>, [], bit_size)
+
+  let shrink = fn() {
+    // io.println_error("IM GONNA SHRINK YO")
+    let int_list_tree = int_trees |> list.reverse |> sequence_list
+
+    let Tree(_root, children) =
+      map_tree(int_list_tree, value_with_size_list_to_bit_array)
+
+    children
+  }
+
+  let tree = Tree(generated_bit_array, shrink())
+
+  #(tree, seed)
+}
+
+type ValueWithSize {
+  ValueWithSize(int: Int, size: Int)
+}
+
+fn value_with_size_list_to_bit_array(
+  value_with_size_list: List(ValueWithSize),
+) -> BitArray {
+  use acc, ValueWithSize(int:, size:) <- list.fold(value_with_size_list, <<>>)
+  <<int:size(size), acc:bits>>
+}
+
+fn do_gen_bit_array(
+  value_generator: Generator(Int),
+  seed: Seed,
+  acc: BitArray,
+  value_with_size_trees: List(Tree(ValueWithSize)),
+  k: Int,
+) -> #(BitArray, List(Tree(ValueWithSize)), Seed) {
+  let Generator(generate) = value_generator
+  let #(int_tree, seed) = generate(seed)
+
+  case k {
+    k if k <= 0 -> #(acc, value_with_size_trees, seed)
+    k if k <= 8 -> {
+      let value_with_size_tree =
+        map_tree(int_tree, fn(int) { ValueWithSize(int:, size: k) })
+
+      let Tree(ValueWithSize(int: root, size: _), _) = value_with_size_tree
+
+      do_gen_bit_array(
+        value_generator,
+        seed,
+        <<root:size(k), acc:bits>>,
+        [value_with_size_tree, ..value_with_size_trees],
+        0,
+      )
+    }
+    k -> {
+      let value_with_size_tree =
+        map_tree(int_tree, fn(int) { ValueWithSize(int:, size: 8) })
+
+      let Tree(ValueWithSize(int: root, size: _), _) = value_with_size_tree
+
+      do_gen_bit_array(
+        value_generator,
+        seed,
+        <<root, acc:bits>>,
+        [value_with_size_tree, ..value_with_size_trees],
+        k - 8,
+      )
+    }
+  }
+}
+
+/// `bit_array_generic(value_generator, bit_size_generator)` generates bit_arrays with 
+/// characters from `value_generator` and lengths from `bit_size_generator`.
+/// 
+pub fn bit_array_generic(
+  value_generator value_generator: Generator(Int),
+  bit_size_generator bit_size_generator: Generator(Int),
+) -> Generator(BitArray) {
+  bit_size_generator |> bind(bit_array_with_size_from(value_generator, _))
+}
+
 /// `bit_array()` generates `BitArrays`.
 /// 
 /// Note: This function will generate bit arrays that cause runtime crashes when 
 /// targeting JavaScript.
 /// 
 pub fn bit_array() -> Generator(BitArray) {
-  bit_array_with_size_from(int_small_positive_or_zero())
+  bit_array_generic(
+    value_generator: byte(),
+    bit_size_generator: int_small_positive_or_zero(),
+  )
 }
 
 /// `bit_array()` generates non-empty `BitArrays`.
@@ -1987,30 +2079,24 @@ pub fn bit_array() -> Generator(BitArray) {
 /// targeting JavaScript.
 /// 
 pub fn bit_array_non_empty() -> Generator(BitArray) {
-  bit_array_with_size_from(int_small_strictly_positive())
-}
-
-/// `bit_array_with_size_from(size_generator)` generates `BitArrays` of size 
-/// determined by the given `size_generator`.
-/// 
-/// Note: This function will generate bit arrays that cause runtime crashes when 
-/// targeting JavaScript.
-/// 
-pub fn bit_array_with_size_from(
-  size_generator: Generator(Int),
-) -> Generator(BitArray) {
-  bind(size_generator, bit_array_with_size)
+  bit_array_generic(
+    value_generator: byte(),
+    bit_size_generator: int_small_strictly_positive(),
+  )
 }
 
 /// `bit_array_with_size(size)` generates `BitArrays` of the given `size`.
 /// 
+/// Note:
+/// - If `size > 1023`, then size will be `1023`.
+/// - If `size < 0`, then size will be `0`.
+/// 
 /// Note: This function will generate bit arrays that cause runtime crashes when 
-/// targeting JavaScript.
+/// targeting JavaScript, since the JS target only supports byte aligned bit 
+/// arrays. TODO this note needs to go on all the ones that don't work on JS
 /// 
 pub fn bit_array_with_size(size: Int) -> Generator(BitArray) {
-  let max_int = size |> ensure_non_negative |> max_representable_int
-  use n <- map(int_uniform_inclusive(0, max_int))
-  <<n:size(size)>>
+  bit_array_with_size_from(byte(), size)
 }
 
 // MARK: Bit arrays (UTF-8)
@@ -2019,11 +2105,9 @@ pub fn bit_array_with_size(size: Int) -> Generator(BitArray) {
 /// 
 pub fn bit_array_utf8() -> Generator(BitArray) {
   use max_length <- bind(int_small_strictly_positive())
-  use codepoints <- map(list_generic(utf_codepoint(), 0, max_length))
+  use codepoints <- map(utf_codepoint_list(0, max_length))
 
-  codepoints
-  |> string.from_utf_codepoints()
-  |> bit_array.from_string()
+  bit_array_from_codepoints(codepoints)
 }
 
 /// `bit_array_utf8()` generates non-empty `BitArrays` of valid UTF-8
@@ -2031,11 +2115,9 @@ pub fn bit_array_utf8() -> Generator(BitArray) {
 /// 
 pub fn bit_array_utf8_non_empty() -> Generator(BitArray) {
   use max_length <- bind(int_small_strictly_positive())
-  use codepoints <- map(list_generic(utf_codepoint(), 1, max_length))
+  use codepoints <- map(utf_codepoint_list(1, max_length))
 
-  codepoints
-  |> string.from_utf_codepoints()
-  |> bit_array.from_string()
+  bit_array_from_codepoints(codepoints)
 }
 
 /// `bit_array_utf8_with_size(num_codepoints)` generates non-empty `BitArrays` 
@@ -2046,17 +2128,18 @@ pub fn bit_array_utf8_non_empty() -> Generator(BitArray) {
 /// bytes.
 /// 
 pub fn bit_array_utf8_with_size(num_codepoints: Int) -> Generator(BitArray) {
-  let num_codepoints = ensure_non_negative(num_codepoints)
+  let num_codepoints = ensure_positive_or_zero(num_codepoints)
 
-  use codepoints <- map(list_generic(
-    utf_codepoint(),
-    num_codepoints,
-    num_codepoints,
-  ))
+  use codepoints <- map(utf_codepoint_list(num_codepoints, num_codepoints))
 
-  codepoints
-  |> string.from_utf_codepoints()
-  |> bit_array.from_string()
+  bit_array_from_codepoints(codepoints)
+}
+
+fn utf_codepoint_list(
+  min_length: Int,
+  max_length: Int,
+) -> Generator(List(UtfCodepoint)) {
+  list_generic(utf_codepoint(), min_length, max_length)
 }
 
 /// `bit_array_utf8_with_size_from(num_codepoints_generator)` generates 
@@ -2067,10 +2150,30 @@ pub fn bit_array_utf8_with_size(num_codepoints: Int) -> Generator(BitArray) {
 /// bytes.
 /// 
 pub fn bit_array_utf8_with_size_from(
-  num_codepoints_generator: Generator(Int),
+  codepoint_generator: Generator(UtfCodepoint),
+  num_codepoints: Int,
 ) -> Generator(BitArray) {
-  use num_codepoints <- bind(num_codepoints_generator)
-  bit_array_utf8_with_size(num_codepoints)
+  use codepoints <- map(list_generic(
+    codepoint_generator,
+    num_codepoints,
+    num_codepoints,
+  ))
+
+  bit_array_from_codepoints(codepoints)
+}
+
+pub fn bit_array_utf8_generic(
+  codepoint_generator: Generator(UtfCodepoint),
+  num_codepoints_generator: Generator(Int),
+) {
+  use length <- map(num_codepoints_generator)
+  list_generic(codepoint_generator, length, length)
+}
+
+fn bit_array_from_codepoints(codepoints: List(UtfCodepoint)) -> BitArray {
+  codepoints
+  |> string.from_utf_codepoints()
+  |> bit_array.from_string()
 }
 
 // MARK: Bit arrays (byte-aligned)
@@ -2078,20 +2181,28 @@ pub fn bit_array_utf8_with_size_from(
 /// `bit_array_byte_aligned()` generates byte-aligned `BitArrays`.
 /// 
 pub fn bit_array_byte_aligned() -> Generator(BitArray) {
-  bit_array_with_size_from(byte_aligned_bit_size(0))
+  bit_array_generic(
+    value_generator: byte(),
+    bit_size_generator: byte_aligned_bit_size_generator(0),
+  )
 }
 
 /// `bit_array_byte_aligned_non_empty()` generates byte-aligned `BitArrays`.
 /// 
 pub fn bit_array_byte_aligned_non_empty() -> Generator(BitArray) {
-  bit_array_with_size_from(byte_aligned_bit_size(1))
+  bit_array_generic(
+    value_generator: byte(),
+    bit_size_generator: byte_aligned_bit_size_generator(1),
+  )
 }
 
 /// `bit_array_byte_aligned_with_size(num_bytes)` generates byte-aligned 
 /// `BitArrays` with the given number of bytes.
 /// 
+/// Note: the `num_bytes` will be adjusted 
+/// 
 pub fn bit_array_byte_aligned_with_size(num_bytes: Int) -> Generator(BitArray) {
-  let num_bits = ensure_non_negative(num_bytes) * 8
+  let num_bits = ensure_positive_or_zero(num_bytes) * 8
   bit_array_with_size(num_bits)
 }
 
@@ -2100,14 +2211,16 @@ pub fn bit_array_byte_aligned_with_size(num_bytes: Int) -> Generator(BitArray) {
 /// generator.
 /// 
 pub fn bit_array_byte_aligned_with_size_from(
-  num_bytes_generator: Generator(Int),
+  value_generator: Generator(Int),
+  byte_size: Int,
 ) -> Generator(BitArray) {
-  use num_bytes <- bind(num_bytes_generator)
-  bit_array_byte_aligned_with_size(num_bytes)
+  let bit_size = byte_size * 8
+  bit_array_with_size_from(value_generator, bit_size)
 }
 
-/// Generate a number from `[0, 8, 16, ..., 128]`.
-fn byte_aligned_bit_size(min: Int) -> Generator(Int) {
+/// Generate a number from the sequence `[0, 8, 16, ..., 128]`.
+/// 
+fn byte_aligned_bit_size_generator(min: Int) -> Generator(Int) {
   use num_bytes <- map(int_uniform_inclusive(min, 16))
   let num_bits = 8 * num_bytes
   num_bits
@@ -2180,19 +2293,9 @@ fn unsafe_char_to_int(c: String) -> Int {
 }
 
 /// If `n <= 0` return `0`, else return `n`.
-fn ensure_non_negative(n: Int) -> Int {
+fn ensure_positive_or_zero(n: Int) -> Int {
   case int.compare(n, 0) {
     order.Gt | order.Eq -> n
     order.Lt -> 0
   }
-}
-
-/// The max int representable in a given number of bits (`size`) is 
-/// `(2 ** size) - 1`.
-///
-/// Will panic if `2 ** size` is unrepresentable as a `Float`.
-/// 
-fn max_representable_int(size: Int) -> Int {
-  let assert Ok(x) = int.power(2, int.to_float(size))
-  float.round(x) - 1
 }
