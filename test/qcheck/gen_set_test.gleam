@@ -41,7 +41,7 @@ pub fn set_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.set_generic(qcheck.int_uniform_inclusive(-1, 2), max_length: 3),
-      qcheck.seed_new(10_003),
+      qcheck.seed(10_003),
     )
 
   tree

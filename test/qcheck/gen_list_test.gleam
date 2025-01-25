@@ -38,7 +38,7 @@ pub fn list_generators_shrink_on_size_then_on_elements__test() {
         min_length: 0,
         max_length: 3,
       ),
-      qcheck.seed_new(10_003),
+      qcheck.seed(10_003),
     )
 
   tree

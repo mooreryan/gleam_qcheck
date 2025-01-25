@@ -7,7 +7,7 @@ pub fn bool_true_shrink_tree__test() {
     qcheck.generate_tree(
       qcheck.bool(),
       // Don't change this seed--it generates `True` to start.
-      qcheck.seed_new(2),
+      qcheck.seed(2),
     )
 
   tree

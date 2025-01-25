@@ -119,7 +119,7 @@ pub fn string_generators_shrink_on_size_then_on_characters__test() {
         qcheck.char_uniform_inclusive(97, 99),
         qcheck.int_uniform_inclusive(2, 5),
       ),
-      qcheck.seed_new(3),
+      qcheck.seed(3),
     )
 
   tree

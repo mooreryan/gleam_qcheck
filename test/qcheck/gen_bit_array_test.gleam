@@ -72,7 +72,7 @@ pub fn bit_array_shrinking__test() -> Nil {
       qcheck.int_uniform_inclusive(3, 5),
       qcheck.int_uniform_inclusive(1, 3),
     )
-  let #(tree, _seed) = qcheck.generate_tree(generator, qcheck.seed_new(11))
+  let #(tree, _seed) = qcheck.generate_tree(generator, qcheck.seed(11))
 
   tree
   |> qcheck.tree_to_string(string.inspect)
@@ -94,7 +94,7 @@ pub fn bit_array_with_size_from__shrinks_are_the_correct_size__test() -> Nil {
         qcheck.int_uniform_inclusive(200, 202),
         bit_size,
       ),
-      qcheck.seed_new(seed),
+      qcheck.seed(seed),
     )
 
   let sizes = tree_collect(tree, bit_array.bit_size)

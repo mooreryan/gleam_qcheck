@@ -406,7 +406,7 @@ pub opaque type Seed {
   Seed(prng_seed.Seed)
 }
 
-/// `seed_new(n) creates a new seed from the given integer, `n`.
+/// `seed(n) creates a new seed from the given integer, `n`.
 ///
 /// ### Example
 /// 
@@ -415,10 +415,10 @@ pub opaque type Seed {
 /// ```
 /// let config = 
 ///   qcheck.default_config() 
-///   |> qcheck.with_random_seed(qcheck.seed_new(124))
+///   |> qcheck.with_random_seed(qcheck.seed(124))
 /// ```
 /// 
-pub fn seed_new(n: Int) -> Seed {
+pub fn seed(n: Int) -> Seed {
   prng_seed.new(n) |> Seed
 }
 

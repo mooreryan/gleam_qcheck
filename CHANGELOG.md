@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - These functions have been renamed:
   - `char_print` -> `char_printable`
   - `char_print_uniform` -> `char_printable_uniform`
+  - `seed_new` -> `seed`
 - Changes to the `map` family of functions:
   - The function argument `f` is now in the last position so that you can use `use` sugar without needing to specify label names.
   - Label names have been removed.
