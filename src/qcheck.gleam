@@ -897,8 +897,18 @@ fn make_primitive_generator(
 
 /// `return(a)` creates a generator that always returns `a` and does not shrink.
 /// 
+/// It is an alias for `constant(a)`.
+/// 
 pub fn return(a) {
   Generator(fn(seed) { #(return_tree(a), seed) })
+}
+
+/// `constant(a)` creates a generator that always returns `a` and does not shrink.
+/// 
+/// It is an alias for `return(a)`.
+///
+pub fn constant(a) {
+  return(a)
 }
 
 /// `parameter(f)` is used in constructing curried functions for the applicative 
