@@ -1979,6 +1979,7 @@ pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
   case rescue_error(thunk) {
     Ok(a) -> Ok(a)
     Error(err) -> {
+      // If this assert causes a panic, then you have an implementation error.
       let assert Ok(test_error_message) = {
         use original_value <- result.then(test_error_message_get_original_value(
           err,
@@ -2362,12 +2363,15 @@ fn filter_map(
   yielder.unfold(it, do_filter_map(_, f))
 }
 
+/// WARNING: only call this if you know that the codepoint is valid.
 fn unsafe_int_to_char(n: Int) -> String {
   let assert Ok(codepoint) = string.utf_codepoint(n)
 
   string.from_utf_codepoints([codepoint])
 }
 
+/// WARNING: only call this if you know that the string you are converting
+/// consists of a single codepoint.
 fn unsafe_char_to_int(c: String) -> Int {
   let assert [codepoint] = string.to_utf_codepoints(c)
 

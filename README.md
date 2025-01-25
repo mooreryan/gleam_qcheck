@@ -13,7 +13,8 @@ You might also be interested in checking out [this project](https://github.com/m
 
 ## Usage & Examples
 
-For more info, see the API docs for detailed usage, and [qcheck_viewer](https://mooreryan.github.io/gleam_qcheck/) to visualize the distributions of some of the qcheck generators.
+- See the API docs for detailed usage,
+- See [qcheck_viewer](https://mooreryan.github.io/gleam_qcheck/) to visualize the distributions of some of the qcheck generators.
 
 ### Basic example
 
