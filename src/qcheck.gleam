@@ -462,13 +462,23 @@ pub opaque type Config {
   Config(test_count: Int, max_retries: Int, seed: Seed)
 }
 
+const default_test_count: Int = 1000
+
 /// `default()` returns the default configuration for the property-based testing.
 pub fn default_config() -> Config {
-  Config(test_count: 1000, max_retries: 1, seed: seed_random())
+  Config(test_count: default_test_count, max_retries: 1, seed: seed_random())
 }
 
 /// `with_test_count()` returns a new configuration with the given test count.
+/// 
+/// If `test_count <= 0` then it will be adjusted to a valid value.
+///  
 pub fn with_test_count(config, test_count) {
+  let test_count = case test_count <= 0 {
+    True -> default_test_count
+    False -> test_count
+  }
+
   Config(..config, test_count: test_count)
 }
 
