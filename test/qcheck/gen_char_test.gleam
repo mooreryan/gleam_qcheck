@@ -138,20 +138,20 @@ pub fn char_digit__failures_shink_ok__test() {
   |> should.equal(expected)
 }
 
-pub fn char_print_uniform__test() {
+pub fn char_printable_uniform__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_print_uniform(),
+    generator: qcheck.char_printable_uniform(),
     property: has_one_codepoint_in_range(_, int(" "), int("~")),
   )
 }
 
-pub fn char_print_uniform__failures_shink_ok__test() {
+pub fn char_printable_uniform__failures_shink_ok__test() {
   let assert Error(msg) = {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_print_uniform(),
+      generator: qcheck.char_printable_uniform(),
       property: has_one_codepoint_in_range(_, int(" ") + 2, int("~") - 2),
     )
   }
@@ -355,10 +355,10 @@ pub fn char_whitespace__failures_shrink_ok__test() {
   |> should_be_one_of(["\n", "\r"])
 }
 
-pub fn char_print__test() {
+pub fn char_printable__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_print(),
+    generator: qcheck.char_printable(),
     property: fn(s) {
       has_one_codepoint_in_range(s, int("A"), int("Z"))
       || has_one_codepoint_in_range(s, int("a"), int("z"))
@@ -368,12 +368,12 @@ pub fn char_print__test() {
   )
 }
 
-pub fn char_print__failures_shrink_ok__test() {
+pub fn char_printable__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- qcheck.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_print(),
+      generator: qcheck.char_printable(),
       property: fn(_) { False },
     )
   }

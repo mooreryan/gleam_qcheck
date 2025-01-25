@@ -84,13 +84,13 @@
 ////  - [char_uppercase](#char_uppercase)
 ////  - [char_lowercase](#char_lowercase)
 ////  - [char_digit](#char_digit)
-////  - [char_print_uniform](#char_print_uniform)
+////  - [char_printable_uniform](#char_printable_uniform)
 ////  - [char_uniform](#char_uniform)
 ////  - [char_alpha](#char_alpha)
 ////  - [char_alpha_numeric](#char_alpha_numeric)
 ////  - [char_from_list](#char_from_list)
 ////  - [char_whitespace](#char_whitespace)
-////  - [char_print](#char_print)
+////  - [char_printable](#char_printable)
 //// 
 //// ### Strings
 //// 
@@ -1400,11 +1400,11 @@ pub fn char_digit() -> Generator(String) {
   char_uniform_inclusive(ascii_zero, ascii_nine)
 }
 
-/// `char_print_uniform()` generates printable ASCII characters.
+/// `char_printable_uniform()` generates printable ASCII characters.
 /// 
 /// Shrinks to `"a"`.
 /// 
-pub fn char_print_uniform() -> Generator(String) {
+pub fn char_printable_uniform() -> Generator(String) {
   char_uniform_inclusive(ascii_space, ascii_tilde)
 }
 
@@ -1489,14 +1489,14 @@ pub fn char_whitespace() -> Generator(String) {
   char_from_list(char, chars)
 }
 
-/// `char_print()` generates printable ASCII characters, with a bias towards
+/// `char_printable()` generates printable ASCII characters, with a bias towards
 /// alphanumeric characters.
 /// 
-pub fn char_print() -> Generator(String) {
+pub fn char_printable() -> Generator(String) {
   from_weighted_generators(#(381, char_uppercase()), [
     #(381, char_lowercase()),
     #(147, char_digit()),
-    #(91, char_print_uniform()),
+    #(91, char_printable_uniform()),
   ])
 }
 
@@ -1512,7 +1512,7 @@ pub fn char() {
   from_weighted_generators(#(340, char_uppercase()), [
     #(340, char_lowercase()),
     #(131, char_digit()),
-    #(81, char_print_uniform()),
+    #(81, char_printable_uniform()),
     #(89, char_uniform()),
     #(09, return(unsafe_int_to_char(char_min_value))),
     #(09, return(unsafe_int_to_char(char_max_value))),
@@ -2020,7 +2020,6 @@ pub fn bit_array_with_size_from(
     do_gen_bit_array(value_generator, seed, <<>>, [], bit_size)
 
   let shrink = fn() {
-    // io.println_error("IM GONNA SHRINK YO")
     let int_list_tree = int_trees |> list.reverse |> sequence_list
 
     let Tree(_root, children) =
