@@ -68,3 +68,9 @@ pub fn negative_float_uniform_range_not_including_zero__shrinks_ok__test() {
   qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(-5.0))
 }
+
+pub fn float_uniform_inclusive__high_less_than_low_ok__test() {
+  use n <- qcheck.given(qcheck.float_uniform_inclusive(10.0, -10.0))
+
+  -10.0 <=. n && n <=. 10.0
+}

@@ -1316,11 +1316,19 @@ pub fn float() -> Generator(Float) {
   })
 }
 
-pub fn float_uniform_inclusive(low: Float, high: Float) {
-  case high <. low {
-    // TODO: remove panic
-    True -> panic as "int_uniform_includive: high < low"
-    False -> Nil
+/// `float_uniform_inclusive(from, to)` generates floats uniformly distributed
+/// between `from` and `to`, inclusive.
+/// 
+/// Shrinks towards `0.0`, but won't shrink outside of the range `[from, to]`.
+/// 
+/// Note: If you pass the parameters backwards, e.g., 
+/// `float_uniform_inclusive(5.0, 2.0)` it will be treated the same as 
+/// `float_uniform_inclusive(2.0, 5.0)`.
+/// 
+pub fn float_uniform_inclusive(from low: Float, to high: Float) {
+  let #(low, high) = case low <=. high {
+    True -> #(low, high)
+    False -> #(high, low)
   }
 
   make_primitive_generator(
