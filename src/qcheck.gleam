@@ -222,7 +222,7 @@ import gleam/string_tree.{type StringTree}
 import gleam/yielder
 import prng/random
 import prng/seed as prng_seed
-import qcheck/prng_random
+import qcheck/random as qcheck_random
 import qcheck/shrink
 import qcheck/tree.{type Tree, Tree}
 
@@ -1059,7 +1059,7 @@ pub fn from_generators(
 ) -> Generator(a) {
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
-      prng_random.uniform(generator, generators)
+      qcheck_random.uniform(generator, generators)
       |> random.step(seed |> seed_to_prng_seed)
 
     generator(seed |> seed_from_prng_seed)
@@ -1098,7 +1098,7 @@ pub fn from_weighted_generators(
 ) -> Generator(a) {
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
-      prng_random.weighted(generator, generators)
+      qcheck_random.weighted(generator, generators)
       |> random.step(seed |> seed_to_prng_seed)
 
     generator(seed |> seed_from_prng_seed)
@@ -1223,8 +1223,8 @@ pub fn float() -> Generator(Float) {
   Generator(fn(seed) {
     let seed = seed |> seed_to_prng_seed
     let #(x, seed) = random.float(0.0, 15.0) |> random.step(seed)
-    let #(y, seed) = prng_random.choose(1.0, -1.0) |> random.step(seed)
-    let #(z, seed) = prng_random.choose(1.0, -1.0) |> random.step(seed)
+    let #(y, seed) = qcheck_random.choose(1.0, -1.0) |> random.step(seed)
+    let #(z, seed) = qcheck_random.choose(1.0, -1.0) |> random.step(seed)
 
     // The QCheck2.Gen.float code has this double multiply in it. Actually not
     // sure about that.
@@ -1383,7 +1383,7 @@ pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
 
   Generator(fn(seed) {
     let #(n, seed) =
-      prng_random.uniform(hd, tl) |> random.step(seed |> seed_to_prng_seed)
+      qcheck_random.uniform(hd, tl) |> random.step(seed |> seed_to_prng_seed)
 
     let tree =
       tree.new(n, shrink.int_towards(shrink_target))
@@ -1702,7 +1702,7 @@ type GenerateOption {
 }
 
 fn generate_option() -> random.Generator(GenerateOption) {
-  prng_random.weighted(#(15, GenerateNone), [#(85, GenerateSome)])
+  qcheck_random.weighted(#(15, GenerateNone), [#(85, GenerateSome)])
 }
 
 /// `option(gen)` is an `Option` generator that uses `gen` to generate `Some` 
@@ -1739,7 +1739,8 @@ pub fn nil() -> Generator(Nil) {
 pub fn bool() -> Generator(Bool) {
   Generator(fn(seed) {
     let #(bool, seed) =
-      prng_random.choose(True, False) |> random.step(seed |> seed_to_prng_seed)
+      qcheck_random.choose(True, False)
+      |> random.step(seed |> seed_to_prng_seed)
 
     let tree = case bool {
       True -> Tree(True, yielder.once(fn() { tree.return(False) }))

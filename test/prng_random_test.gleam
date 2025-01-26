@@ -12,47 +12,47 @@ import gleam/yielder
 import gleeunit/should
 import prng/random
 import prng/seed
-import qcheck/prng_random
+import qcheck/random as qcheck_random
 
-pub fn prng_random_weighted_never_returns_value_with_zero_weight_test() {
-  let languages = prng_random.weighted(#(1, "Gleam"), [#(0, "TypeScript")])
+pub fn qcheck_random_weighted_never_returns_value_with_zero_weight_test() {
+  let languages = qcheck_random.weighted(#(1, "Gleam"), [#(0, "TypeScript")])
   do_test(for_all: languages, that: fn(language) { language == "Gleam" })
 }
 
 pub fn uniform_generates_values_from_the_given_list_test() {
-  let examples = prng_random.uniform(1, [2, 3])
+  let examples = qcheck_random.uniform(1, [2, 3])
   do_test(for_all: examples, that: fn(n) { n == 1 || n == 2 || n == 3 })
 }
 
 pub fn choose_behaves_the_same_as_uniform_test() {
-  let gen1 = prng_random.choose(1, 2)
-  let gen2 = prng_random.uniform(1, [2])
+  let gen1 = qcheck_random.choose(1, 2)
+  let gen2 = qcheck_random.uniform(1, [2])
   behaves_the_same(gen1, gen2)
 }
 
 pub fn uniform_behaves_like_weighted_when_all_weights_are_equal_test() {
-  let gen1 = prng_random.uniform("a", ["b", "c"])
-  let gen2 = prng_random.weighted(#(2, "a"), [#(2, "b"), #(2, "c")])
+  let gen1 = qcheck_random.uniform("a", ["b", "c"])
+  let gen2 = qcheck_random.weighted(#(2, "a"), [#(2, "b"), #(2, "c")])
 
   assert_similar_distributions(gen1, gen2, string.compare)
 }
 
 pub fn weighted_with_different_but_proportional_weights_test() {
-  let gen1 = prng_random.weighted(#(2, "a"), [#(2, "b"), #(2, "c")])
-  let gen2 = prng_random.weighted(#(1, "a"), [#(1, "b"), #(1, "c")])
+  let gen1 = qcheck_random.weighted(#(2, "a"), [#(2, "b"), #(2, "c")])
+  let gen2 = qcheck_random.weighted(#(1, "a"), [#(1, "b"), #(1, "c")])
 
   assert_similar_distributions(gen1, gen2, string.compare)
 }
 
 pub fn uniform_behaves_like_try_uniform_test() {
-  let gen1 = prng_random.uniform(1, [2])
-  let assert Ok(gen2) = prng_random.try_uniform([1, 2])
+  let gen1 = qcheck_random.uniform(1, [2])
+  let assert Ok(gen2) = qcheck_random.try_uniform([1, 2])
   behaves_the_same(gen1, gen2)
 }
 
 pub fn weighted_behaves_like_try_weighted_test() {
-  let gen1 = prng_random.weighted(#(1, 1), [#(2, 2)])
-  let assert Ok(gen2) = prng_random.try_weighted([#(1, 1), #(2, 2)])
+  let gen1 = qcheck_random.weighted(#(1, 1), [#(2, 2)])
+  let assert Ok(gen2) = qcheck_random.try_weighted([#(1, 1), #(2, 2)])
   behaves_the_same(gen1, gen2)
 }
 
