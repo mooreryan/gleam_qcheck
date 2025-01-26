@@ -12,22 +12,22 @@ import gleam/int
 import gleam/list
 import gleam/order.{Eq, Gt, Lt}
 import gleam/pair
-import prng/random
+import prng/random as prng_random
 
 pub fn weighted(
   first: #(Int, a),
   others: List(#(Int, a)),
-) -> random.Generator(a) {
+) -> prng_random.Generator(a) {
   let normalise = fn(pair: #(Int, a)) { int.absolute_value(pair.first(pair)) }
   let total = normalise(first) + int.sum(list.map(others, normalise))
-  random.map(random.int(0, total - 1), get_by_weight(first, others, _))
+  prng_random.map(prng_random.int(0, total - 1), get_by_weight(first, others, _))
 }
 
-pub fn uniform(first: a, others: List(a)) -> random.Generator(a) {
+pub fn uniform(first: a, others: List(a)) -> prng_random.Generator(a) {
   weighted(#(1, first), list.map(others, pair.new(1, _)))
 }
 
-pub fn choose(one: a, or other: a) -> random.Generator(a) {
+pub fn choose(one: a, or other: a) -> prng_random.Generator(a) {
   uniform(one, [other])
 }
 
@@ -47,14 +47,14 @@ fn get_by_weight(first: #(Int, a), others: List(#(Int, a)), countdown: Int) -> a
 
 pub fn try_weighted(
   options: List(#(Int, a)),
-) -> Result(random.Generator(a), Nil) {
+) -> Result(prng_random.Generator(a), Nil) {
   case options {
     [first, ..rest] -> Ok(weighted(first, rest))
     [] -> Error(Nil)
   }
 }
 
-pub fn try_uniform(options: List(a)) -> Result(random.Generator(a), Nil) {
+pub fn try_uniform(options: List(a)) -> Result(prng_random.Generator(a), Nil) {
   case options {
     [first, ..rest] -> Ok(uniform(first, rest))
     [] -> Error(Nil)
