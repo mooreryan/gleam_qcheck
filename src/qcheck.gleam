@@ -152,6 +152,15 @@
 //// - [nil](#nil)
 //// - [option](#option)
 //// 
+//// ## Debug Generators
+//// 
+//// These functions aren't meant to be used directly in tests.  They are 
+//// provided to help debug or investigate what values and shrinks that a 
+//// generator produces.
+//// 
+//// - [generate](#generate)
+//// - [generate_tree](#generate_tree)
+//// 
 //// ## Trees
 //// 
 //// There are functions for dealing with the [Tree](#Tree) type directly, but 
@@ -916,16 +925,6 @@ pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
 }
 
-/// `generate(gen, seed)` generates a value of type `a` and its shrinks using the generator `gen`.
-/// 
-/// You should not use this function directly. It is for internal use only.
-/// 
-pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
-  let Generator(generate) = generator
-
-  generate(seed)
-}
-
 fn make_primitive_generator(
   random_generator random_generator: random.Generator(a),
   make_tree make_tree: fn(a) -> Tree(a),
@@ -936,6 +935,48 @@ fn make_primitive_generator(
 
     #(make_tree(generated_value), next_seed |> seed_from_prng_seed)
   })
+}
+
+// MARK: Debug Generators
+
+/// `generate(generator, n, seed)` generates `n` values using `generator` and 
+/// the starting `seed`.
+/// 
+///   Discards any shrinks.
+pub fn generate(
+  generator: Generator(a),
+  number_to_generate: Int,
+  seed: Seed,
+) -> List(a) {
+  do_gen(generator, number_to_generate, seed, [], 0)
+}
+
+fn do_gen(
+  generator: Generator(a),
+  number_to_generate: Int,
+  seed: Seed,
+  acc: List(a),
+  k: Int,
+) -> List(a) {
+  case k >= number_to_generate {
+    True -> acc
+    False -> {
+      let Generator(generate) = generator
+      let #(tree, seed) = generate(seed)
+      let Tree(value, _shrinks) = tree
+      do_gen(generator, number_to_generate, seed, [value, ..acc], k + 1)
+    }
+  }
+}
+
+/// `generate_tree(generator, seed)` generates a value of type `a` and its 
+/// shrinks using 
+/// the generator `generator`.
+/// 
+pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
+  let Generator(generate) = generator
+
+  generate(seed)
 }
 
 // MARK: Combinators

@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `constant`: a synonym for `qcheck.return`
-- `sized_from`
-- `list_with_length_from`
 - `bit_array_byte_aligned_generic`
+- `constant`: a synonym for `qcheck.return`
+- `generate`
+- `list_with_length_from`
+- `sized_from`
 
 ### Changed
 
