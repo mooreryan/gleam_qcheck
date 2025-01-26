@@ -4,6 +4,7 @@ import gleam/list
 import gleam/set
 import gleam/string
 import qcheck
+import qcheck/tree
 
 pub fn set_generic__generates_valid_values__test() {
   qcheck.run(
@@ -48,6 +49,6 @@ pub fn set_generators_shrink_on_size_then_on_elements__test() {
     )
 
   tree
-  |> qcheck.tree_to_string(int_set_to_string)
+  |> tree.to_string(int_set_to_string)
   |> birdie.snap("set_generators_shrink_on_size_then_on_elements__test")
 }

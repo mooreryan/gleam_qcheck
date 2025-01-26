@@ -3,6 +3,7 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import qcheck
+import qcheck/tree
 
 pub fn dict_generic__generates_valid_values__test() {
   qcheck.run(
@@ -64,7 +65,7 @@ pub fn dict_generators_shrink_on_size_then_on_elements__test() {
     )
 
   tree
-  |> qcheck.tree_to_string(int_int_dict_to_string)
+  |> tree.to_string(int_int_dict_to_string)
   |> birdie.snap("dict_generators_shrink_on_size_then_on_elements__test")
 }
 

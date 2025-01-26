@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `list_generic`
   - `set_generic`
 - `bit_array_with_size_from` gains an argument label
+- Tree type and functions move into their own module. Since they are mainly for internal use or "advanced" manual construction of generators, moving them out of the `qcheck` module simplifies that module.
 
 ### Fixed
 

@@ -5,7 +5,8 @@ import gleam/regexp
 import gleam/string
 import gleam/yielder
 import gleeunit/should
-import qcheck.{type Tree, Tree}
+import qcheck
+import qcheck/tree.{type Tree, Tree}
 
 const test_count: Int = 5000
 
@@ -123,7 +124,7 @@ pub fn string_generators_shrink_on_size_then_on_characters__test() {
     )
 
   tree
-  |> qcheck.tree_to_string(function.identity)
+  |> tree.to_string(function.identity)
   |> birdie.snap("string_generators_shrink_on_size_then_on_characters__test")
 }
 

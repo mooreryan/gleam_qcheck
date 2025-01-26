@@ -4,6 +4,7 @@ import gleam/list
 import gleam/string
 import gleam/yielder
 import qcheck
+import qcheck/tree
 import qcheck_gleeunit_utils/test_spec
 
 pub fn list_generic__generates_valid_values__test() {
@@ -40,7 +41,7 @@ pub fn list_generators_shrink_on_size_then_on_elements__test() {
     )
 
   tree
-  |> qcheck.tree_to_string(int_list_to_string)
+  |> tree.to_string(int_list_to_string)
   |> birdie.snap("list_generators_shrink_on_size_then_on_elements__test")
 }
 
@@ -75,7 +76,7 @@ pub fn list_with_length_from__generates_correct_length__test() {
 }
 
 fn all_lengths_good(tree, min_length min_length, max_length max_length) {
-  let qcheck.Tree(root, children) = tree
+  let tree.Tree(root, children) = tree
 
   let root_length = list.length(root)
   let assert True = min_length <= root_length && root_length <= max_length

@@ -2,8 +2,8 @@ import birdie
 import gleam/bit_array
 import gleam/list
 import gleam/string
-import gleam/yielder
 import qcheck
+import qcheck/tree
 
 // MARK: Bit arrays
 
@@ -75,7 +75,7 @@ pub fn bit_array_shrinking__test() -> Nil {
   let #(tree, _seed) = qcheck.generate_tree(generator, qcheck.seed(11))
 
   tree
-  |> qcheck.tree_to_string(string.inspect)
+  |> tree.to_string(string.inspect)
   |> birdie.snap("bit_array_shrinking__test")
 }
 
@@ -97,7 +97,7 @@ pub fn bit_array_with_size_from__shrinks_are_the_correct_size__test() -> Nil {
       qcheck.seed(seed),
     )
 
-  let sizes = tree_collect(tree, bit_array.bit_size)
+  let sizes = tree.collect(tree, bit_array.bit_size)
   use size <- list.all(sizes)
   size == bit_size
 }
@@ -286,20 +286,4 @@ fn ok_exn(x) {
 
 fn negative_numbers() -> qcheck.Generator(Int) {
   qcheck.int_uniform_inclusive(-1_000_000, -1)
-}
-
-/// Collect values of the tree into a list, while processing them with the mapping given function `f`.
-fn tree_collect(tree: qcheck.Tree(a), f: fn(a) -> b) -> List(b) {
-  do_tree_collect(tree, f, [])
-}
-
-fn do_tree_collect(tree: qcheck.Tree(a), f: fn(a) -> b, acc: List(b)) -> List(b) {
-  let qcheck.Tree(root, children) = tree
-
-  let acc =
-    yielder.fold(children, acc, fn(a_list, a_tree) {
-      do_tree_collect(a_tree, f, a_list)
-    })
-
-  [f(root), ..acc]
 }

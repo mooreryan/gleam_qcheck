@@ -3,34 +3,35 @@ import gleam/int
 import gleam/option.{None, Some}
 import gleam/yielder
 import gleeunit/should
-import qcheck.{type Tree, Tree}
+import qcheck
+import qcheck/tree.{type Tree, Tree}
 
 fn identity(x) {
   x
 }
 
 pub fn int_tree_root_8_shrink_towards_zero__test() {
-  qcheck.make_primitive_tree(8, qcheck.shrink_int_towards_zero())
-  |> qcheck.tree_to_string(int.to_string)
+  tree.new(8, qcheck.shrink_int_towards_zero())
+  |> tree.to_string(int.to_string)
   |> birdie.snap("int_tree_root_8_shrink_towards_zero__test")
 }
 
 pub fn int_tree_root_2_shrink_towards_6__test() {
-  qcheck.make_primitive_tree(2, qcheck.shrink_int_towards(6))
-  |> qcheck.tree_to_string(int.to_string)
+  tree.new(2, qcheck.shrink_int_towards(6))
+  |> tree.to_string(int.to_string)
   |> birdie.snap("int_tree_root_2_shrink_towards_6__test")
 }
 
 pub fn int_tree_atomic_shrinker__test() {
-  qcheck.make_primitive_tree(10, qcheck.shrink_atomic())
-  |> qcheck.tree_to_string(int.to_string)
+  tree.new(10, qcheck.shrink_atomic())
+  |> tree.to_string(int.to_string)
   |> should.equal("10\n")
 }
 
 pub fn int_option_tree__test() {
-  qcheck.make_primitive_tree(4, qcheck.shrink_int_towards_zero())
-  |> qcheck.option_tree()
-  |> qcheck.tree_to_string(fn(n) {
+  tree.new(4, qcheck.shrink_int_towards_zero())
+  |> tree.option()
+  |> tree.to_string(fn(n) {
     case n {
       None -> "N"
       Some(n) -> int.to_string(n)
@@ -52,14 +53,14 @@ fn either_to_string(either: Either(a, b), a_to_string, b_to_string) -> String {
 }
 
 pub fn custom_type_tree__test() {
-  qcheck.make_primitive_tree(4, qcheck.shrink_int_towards_zero())
-  |> qcheck.map_tree(fn(n) {
+  tree.new(4, qcheck.shrink_int_towards_zero())
+  |> tree.map(fn(n) {
     case n % 2 == 0 {
       True -> First(n)
       False -> Second(n)
     }
   })
-  |> qcheck.tree_to_string(fn(either) {
+  |> tree.to_string(fn(either) {
     either
     |> either_to_string(int.to_string, int.to_string)
   })
@@ -75,13 +76,13 @@ fn do_trivial_map_test(i) {
     True -> Nil
     False -> {
       let a =
-        qcheck.make_primitive_tree(i, qcheck.shrink_int_towards_zero())
-        |> qcheck.tree_to_string(int.to_string)
+        tree.new(i, qcheck.shrink_int_towards_zero())
+        |> tree.to_string(int.to_string)
 
       let b =
-        qcheck.make_primitive_tree(i, qcheck.shrink_int_towards_zero())
-        |> qcheck.map_tree(identity)
-        |> qcheck.tree_to_string(int.to_string)
+        tree.new(i, qcheck.shrink_int_towards_zero())
+        |> tree.map(identity)
+        |> tree.to_string(int.to_string)
 
       should.equal(a, b)
     }
@@ -113,11 +114,9 @@ fn my_int_to_string(my_int) {
 
 // Note, these trees will not be the same as the ones generated with the map.
 pub fn custom_type_tree_with_bind__test() {
-  qcheck.make_primitive_tree(3, qcheck.shrink_int_towards_zero())
-  |> qcheck.bind_tree(fn(n) {
-    qcheck.make_primitive_tree(MyInt(n), shrink: my_int_towards_zero())
-  })
-  |> qcheck.tree_to_string(my_int_to_string)
+  tree.new(3, qcheck.shrink_int_towards_zero())
+  |> tree.bind(fn(n) { tree.new(MyInt(n), shrink: my_int_towards_zero()) })
+  |> tree.to_string(my_int_to_string)
   |> birdie.snap("custom_type_tree_with_bind__test")
 }
 
@@ -144,21 +143,21 @@ pub fn apply__test() {
     |> curry3
 
   let make_tree = fn(root: a) -> Tree(a) {
-    qcheck.make_primitive_tree(root, qcheck.shrink_atomic())
+    tree.new(root, qcheck.shrink_atomic())
   }
 
   let result =
     tuple3
-    |> qcheck.return_tree
-    |> qcheck.apply_tree(make_tree(3))
-    |> qcheck.apply_tree(make_tree(33))
-    |> qcheck.apply_tree(make_tree(333))
+    |> tree.return
+    |> tree.apply(make_tree(3))
+    |> tree.apply(make_tree(33))
+    |> tree.apply(make_tree(333))
 
   let expected = make_tree(#(3, 33, 333))
 
   should.equal(
-    qcheck.tree_to_string(result, int3_tuple_to_string),
-    qcheck.tree_to_string(expected, int3_tuple_to_string),
+    tree.to_string(result, int3_tuple_to_string),
+    tree.to_string(expected, int3_tuple_to_string),
   )
 }
 
@@ -173,16 +172,16 @@ pub fn apply_with_shrinking__test() {
     |> curry2
 
   let make_int_tree = fn(root: Int) -> Tree(Int) {
-    qcheck.make_primitive_tree(root, qcheck.shrink_int_towards_zero())
+    tree.new(root, qcheck.shrink_int_towards_zero())
   }
 
   let result =
     tuple2
-    |> qcheck.return_tree
-    |> qcheck.apply_tree(make_int_tree(1))
-    |> qcheck.apply_tree(make_int_tree(2))
+    |> tree.return
+    |> tree.apply(make_int_tree(1))
+    |> tree.apply(make_int_tree(2))
 
   result
-  |> qcheck.tree_to_string(int2_tuple_to_string)
+  |> tree.to_string(int2_tuple_to_string)
   |> birdie.snap("apply_with_shrinking__test")
 }

@@ -173,23 +173,6 @@
 //// - [generate](#generate)
 //// - [generate_tree](#generate_tree)
 //// 
-//// ## Trees
-//// 
-//// There are functions for dealing with the [Tree](#Tree) type directly, but 
-//// they are low-level and you should not need to use them much. 
-//// 
-//// - The [Tree](#Tree) type
-//// - [make_primitive_tree](#make_primitive_tree)
-//// - [return_tree](#return_tree)
-//// - [map_tree](#map_tree)
-//// - [map2_tree](#map2_tree)
-//// - [bind_tree](#bind_tree)
-//// - [apply_tree](#apply_tree)
-//// - [sequence_list](#sequence_list)
-//// - [option_tree](#option_tree)
-//// - [tree_to_string](#tree_to_string)
-//// - [tree_to_string_](#tree_to_string_)
-//// 
 //// ## Seeding generators
 //// 
 //// - The [Seed](#Seed) type
@@ -240,6 +223,7 @@ import gleam/yielder.{type Yielder}
 import prng/random
 import prng/seed as prng_seed
 import qcheck/prng_random
+import qcheck/tree.{type Tree, Tree}
 
 const ascii_a_lowercase: Int = 97
 
@@ -549,155 +533,6 @@ pub fn with_seed(config, seed) {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Trees
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-pub type Tree(a) {
-  Tree(a, Yielder(Tree(a)))
-}
-
-// `shrink` should probably be `shrink_steps` or `make_shrink_steps`
-pub fn make_primitive_tree(
-  root x: a,
-  shrink shrink: fn(a) -> Yielder(a),
-) -> Tree(a) {
-  let shrink_trees =
-    shrink(x)
-    |> yielder.map(make_primitive_tree(_, shrink))
-
-  Tree(x, shrink_trees)
-}
-
-pub fn map_tree(tree: Tree(a), f: fn(a) -> b) -> Tree(b) {
-  let Tree(x, xs) = tree
-  let y = f(x)
-  let ys = yielder.map(xs, fn(smaller_x) { map_tree(smaller_x, f) })
-
-  Tree(y, ys)
-}
-
-pub fn bind_tree(tree: Tree(a), f: fn(a) -> Tree(b)) -> Tree(b) {
-  let Tree(x, xs) = tree
-
-  let Tree(y, ys_of_x) = f(x)
-
-  let ys_of_xs = yielder.map(xs, fn(smaller_x) { bind_tree(smaller_x, f) })
-
-  let ys = yielder.append(ys_of_xs, ys_of_x)
-
-  Tree(y, ys)
-}
-
-pub fn apply_tree(f: Tree(fn(a) -> b), x: Tree(a)) -> Tree(b) {
-  let Tree(x0, xs) = x
-  let Tree(f0, fs) = f
-
-  let y = f0(x0)
-
-  let ys =
-    yielder.append(
-      yielder.map(fs, fn(f_) { apply_tree(f_, x) }),
-      yielder.map(xs, fn(x_) { apply_tree(f, x_) }),
-    )
-
-  Tree(y, ys)
-}
-
-pub fn return_tree(x: a) -> Tree(a) {
-  Tree(x, yielder.empty())
-}
-
-pub fn map2_tree(a: Tree(a), b: Tree(b), f: fn(a, b) -> c) -> Tree(c) {
-  {
-    use x1 <- parameter
-    use x2 <- parameter
-    f(x1, x2)
-  }
-  |> return_tree
-  |> apply_tree(a)
-  |> apply_tree(b)
-}
-
-/// `sequence_trees(list_of_trees)` sequences a list of trees into a tree of lists.
-/// 
-pub fn sequence_trees(l: List(Tree(a))) -> Tree(List(a)) {
-  case l {
-    [] -> return_tree([])
-    [hd, ..tl] -> {
-      map2_tree(hd, sequence_trees(tl), list_cons)
-    }
-  }
-}
-
-fn yielder_cons(element: a, yielder: fn() -> Yielder(a)) -> Yielder(a) {
-  yielder.yield(element, yielder)
-}
-
-pub fn option_tree(tree: Tree(a)) -> Tree(Option(a)) {
-  let Tree(x, xs) = tree
-
-  // Shrink trees will all have None as a value.
-  let shrinks =
-    yielder_cons(return_tree(None), fn() { yielder.map(xs, option_tree) })
-
-  Tree(Some(x), shrinks)
-}
-
-// Debugging trees
-
-/// `tree_to_string(tree, element_to_string)` converts a tree into an unspecified string representation.
-/// 
-/// - `element_to_string`: a function that converts individual elements of the tree to strings.
-/// 
-pub fn tree_to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
-  do_tree_to_string(tree, a_to_string, level: 0, max_level: 99_999_999, acc: [])
-}
-
-/// Like `tree_to_string` but with a configurable `max_depth`.
-/// 
-pub fn tree_to_string_(
-  tree: Tree(a),
-  a_to_string: fn(a) -> String,
-  max_depth max_depth: Int,
-) -> String {
-  do_tree_to_string(tree, a_to_string, level: 0, max_level: max_depth, acc: [])
-}
-
-fn do_tree_to_string(
-  tree: Tree(a),
-  a_to_string a_to_string: fn(a) -> String,
-  level level: Int,
-  max_level max_level: Int,
-  acc acc: List(String),
-) -> String {
-  case tree {
-    Tree(root, children) -> {
-      let padding = string.repeat("-", times: level)
-
-      let children = case level > max_level {
-        False ->
-          children
-          |> yielder.map(fn(tree) {
-            do_tree_to_string(tree, a_to_string, level + 1, max_level, acc)
-          })
-          |> yielder.to_list
-          |> string.join("")
-
-        True ->
-          children
-          |> yielder.map(fn(_) { "" })
-          |> yielder.to_list
-          |> string.join("")
-      }
-
-      let root = padding <> a_to_string(root)
-
-      root <> "\n" <> children
-    }
-  }
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: Shrinking
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -998,7 +833,7 @@ pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
 /// It is an alias for `constant(a)`.
 /// 
 pub fn return(a) {
-  Generator(fn(seed) { #(return_tree(a), seed) })
+  Generator(fn(seed) { #(tree.return(a), seed) })
 }
 
 /// `constant(a)` creates a generator that always returns `a` and does not shrink.
@@ -1058,7 +893,7 @@ pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   Generator(fn(seed) {
     let #(tree, seed) = generate(seed)
 
-    let tree = map_tree(tree, f)
+    let tree = tree.map(tree, f)
 
     #(tree, seed)
   })
@@ -1077,7 +912,7 @@ pub fn bind(
     let #(tree, seed) = generate(seed)
 
     let tree =
-      bind_tree(tree, fn(x) {
+      tree.bind(tree, fn(x) {
         let Generator(generate) = f(x)
         let #(tree, _seed) = generate(seed)
         tree
@@ -1097,7 +932,7 @@ pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   Generator(fn(seed) {
     let #(y_of_x, seed) = x(seed)
     let #(y_of_f, seed) = f(seed)
-    let tree = apply_tree(y_of_f, y_of_x)
+    let tree = tree.apply(y_of_f, y_of_x)
 
     #(tree, seed)
   })
@@ -1385,9 +1220,7 @@ pub fn int_small_positive_or_zero() -> Generator(Int) {
           False -> random.int(0, 100)
         }
       }),
-    make_tree: fn(n) {
-      make_primitive_tree(root: n, shrink: shrink_int_towards_zero())
-    },
+    make_tree: fn(n) { tree.new(root: n, shrink: shrink_int_towards_zero()) },
   )
 }
 
@@ -1419,7 +1252,7 @@ pub fn int_uniform_inclusive(from low: Int, to high: Int) -> Generator(Int) {
     make_tree: fn(n) {
       let origin = pick_origin_within_range(low, high, goal: 0)
 
-      make_primitive_tree(root: n, shrink: shrink_int_towards(origin))
+      tree.new(root: n, shrink: shrink_int_towards(origin))
     },
   )
 }
@@ -1465,7 +1298,7 @@ pub fn float() -> Generator(Float) {
     // sure about that.
     let generated_value = exp(x) *. y *. z
 
-    let tree = make_primitive_tree(generated_value, shrink_float_towards_zero())
+    let tree = tree.new(generated_value, shrink_float_towards_zero())
 
     #(tree, seed |> seed_from_prng_seed)
   })
@@ -1491,7 +1324,7 @@ pub fn float_uniform_inclusive(from low: Float, to high: Float) {
     make_tree: fn(n) {
       let origin = pick_origin_within_range_float(low, high, goal: 0.0)
 
-      make_primitive_tree(root: n, shrink: shrink_float_towards(origin))
+      tree.new(root: n, shrink: shrink_float_towards(origin))
     },
   )
 }
@@ -1540,12 +1373,12 @@ pub fn char_uniform_inclusive(from low: Int, to high: Int) -> Generator(String) 
       |> random.step(seed |> seed_to_prng_seed)
 
     let tree =
-      make_primitive_tree(n, shrink)
+      tree.new(n, shrink)
       // If user crafts a range that generates lots of invalid codepoints, then
       // the nice shrinking will get a bit weird.  But origin should be valid
       // unless there is an implementation error, since the "goal" above should
       // always be valid.
-      |> map_tree(int_to_char(_, default: origin))
+      |> tree.map(int_to_char(_, default: origin))
 
     #(tree, seed |> seed_from_prng_seed)
   })
@@ -1621,8 +1454,8 @@ pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
       prng_random.uniform(hd, tl) |> random.step(seed |> seed_to_prng_seed)
 
     let tree =
-      make_primitive_tree(n, shrink_int_towards(shrink_target))
-      |> map_tree(int_to_char(_, default: shrink_target))
+      tree.new(n, shrink_int_towards(shrink_target))
+      |> tree.map(int_to_char(_, default: shrink_target))
 
     #(tree, seed |> seed_from_prng_seed)
   })
@@ -1745,13 +1578,13 @@ pub fn string_with_length_from(
 
     let shrink = fn() {
       let char_trees: List(Tree(String)) = list.reverse(char_trees_rev)
-      let char_list_tree: Tree(List(String)) = sequence_trees(char_trees)
+      let char_list_tree: Tree(List(String)) = tree.sequence_trees(char_trees)
 
       // Technically `Tree(_root, children)` is the whole tree, but we create it
       // eagerly above.
       let Tree(_root, children) =
         char_list_tree
-        |> map_tree(fn(char_list) { string.join(char_list, "") })
+        |> tree.map(fn(char_list) { string.join(char_list, "") })
 
       children
     }
@@ -1839,7 +1672,7 @@ fn list_generic_loop(
 
       list_generic_loop(
         n - 1,
-        map2_tree(tree, acc, list_cons),
+        tree.map2(tree, acc, list_cons),
         element_generator,
         seed,
       )
@@ -1870,7 +1703,7 @@ pub fn list_with_length_from(
   length length: Int,
 ) -> Generator(List(a)) {
   use seed <- Generator
-  list_generic_loop(length, return_tree([]), element_generator, seed)
+  list_generic_loop(length, tree.return([]), element_generator, seed)
 }
 
 // MARK: Dicts
@@ -1953,11 +1786,11 @@ pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
     let seed = seed |> seed_from_prng_seed
 
     case generate_option {
-      GenerateNone -> #(return_tree(None), seed)
+      GenerateNone -> #(tree.return(None), seed)
       GenerateSome -> {
         let #(tree, seed) = generate(seed)
 
-        #(option_tree(tree), seed)
+        #(tree.option(tree), seed)
       }
     }
   })
@@ -1966,7 +1799,7 @@ pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
 /// `nil()` is the `Nil` generator. It always returns `Nil` and does not shrink.
 /// 
 pub fn nil() -> Generator(Nil) {
-  Generator(fn(seed) { #(return_tree(Nil), seed) })
+  Generator(fn(seed) { #(tree.return(Nil), seed) })
 }
 
 /// `bool()` generates booleans and shrinks towards `False`.
@@ -1977,8 +1810,8 @@ pub fn bool() -> Generator(Bool) {
       prng_random.choose(True, False) |> random.step(seed |> seed_to_prng_seed)
 
     let tree = case bool {
-      True -> Tree(True, yielder.once(fn() { return_tree(False) }))
-      False -> return_tree(False)
+      True -> Tree(True, yielder.once(fn() { tree.return(False) }))
+      False -> tree.return(False)
     }
 
     #(tree, seed |> seed_from_prng_seed)
@@ -2240,10 +2073,10 @@ pub fn bit_array_with_size_from(
     do_gen_bit_array(value_generator, seed, <<>>, [], bit_size)
 
   let shrink = fn() {
-    let int_list_tree = int_trees |> list.reverse |> sequence_trees
+    let int_list_tree = int_trees |> list.reverse |> tree.sequence_trees
 
     let Tree(_root, children) =
-      map_tree(int_list_tree, value_with_size_list_to_bit_array)
+      tree.map(int_list_tree, value_with_size_list_to_bit_array)
 
     children
   }
@@ -2278,7 +2111,7 @@ fn do_gen_bit_array(
     k if k <= 0 -> #(acc, value_with_size_trees, seed)
     k if k <= 8 -> {
       let value_with_size_tree =
-        map_tree(int_tree, fn(int) { ValueWithSize(int:, size: k) })
+        tree.map(int_tree, fn(int) { ValueWithSize(int:, size: k) })
 
       let Tree(ValueWithSize(int: root, size: _), _) = value_with_size_tree
 
@@ -2292,7 +2125,7 @@ fn do_gen_bit_array(
     }
     k -> {
       let value_with_size_tree =
-        map_tree(int_tree, fn(int) { ValueWithSize(int:, size: 8) })
+        tree.map(int_tree, fn(int) { ValueWithSize(int:, size: 8) })
 
       let Tree(ValueWithSize(int: root, size: _), _) = value_with_size_tree
 
