@@ -50,11 +50,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `dict_generic`
   - `list_generic`
   - `set_generic`
+- `bit_array_with_size_from` gains an argument label
 
 ### Fixed
 
 - Fix some tests that were broken on JS target
 - Fix a bug in `int_small_positive_or_zero`
+- `char_uniform_inclusive` won't panic if the given range includes invalid unicode codepoints
 
 ## [0.0.8] - 2024-12-31
 
