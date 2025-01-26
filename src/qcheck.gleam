@@ -220,9 +220,7 @@ import gleam/set
 import gleam/string
 import gleam/string_tree.{type StringTree}
 import gleam/yielder
-import prng/random
-import prng/seed as prng_seed
-import qcheck/random as qcheck_random
+import qcheck/random
 import qcheck/shrink
 import qcheck/tree.{type Tree, Tree}
 
@@ -569,11 +567,10 @@ fn do_filter_map(
 // MARK: Seeds 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-/// An opaque type representing a seed value used to initialize random generators.
+/// A type representing a seed value used to initialize random generators.
 /// 
-pub opaque type Seed {
-  Seed(prng_seed.Seed)
-}
+pub type Seed =
+  random.Seed
 
 /// `seed(n) creates a new seed from the given integer, `n`.
 ///
@@ -588,7 +585,7 @@ pub opaque type Seed {
 /// ```
 /// 
 pub fn seed(n: Int) -> Seed {
-  prng_seed.new(n) |> Seed
+  random.seed(n)
 }
 
 /// `seed_random()` creates a new randomly-generated seed.  You can use it when
@@ -605,16 +602,7 @@ pub fn seed(n: Int) -> Seed {
 /// ```
 /// 
 pub fn seed_random() -> Seed {
-  prng_seed.random() |> Seed
-}
-
-fn seed_to_prng_seed(seed: Seed) -> prng_seed.Seed {
-  let Seed(seed) = seed
-  seed
-}
-
-fn seed_from_prng_seed(prng_seed: prng_seed.Seed) -> Seed {
-  Seed(prng_seed)
+  random.seed_random()
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -709,10 +697,9 @@ fn make_primitive_generator(
   make_tree make_tree: fn(a) -> Tree(a),
 ) -> Generator(a) {
   Generator(fn(seed) {
-    let #(generated_value, next_seed) =
-      random.step(random_generator, seed |> seed_to_prng_seed)
+    let #(generated_value, next_seed) = random.step(random_generator, seed)
 
-    #(make_tree(generated_value), next_seed |> seed_from_prng_seed)
+    #(make_tree(generated_value), next_seed)
   })
 }
 
@@ -1059,10 +1046,10 @@ pub fn from_generators(
 ) -> Generator(a) {
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
-      qcheck_random.uniform(generator, generators)
-      |> random.step(seed |> seed_to_prng_seed)
+      random.uniform(generator, generators)
+      |> random.step(seed)
 
-    generator(seed |> seed_from_prng_seed)
+    generator(seed)
   })
 }
 
@@ -1078,10 +1065,10 @@ pub fn from_float_weighted_generators(
 ) -> Generator(a) {
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
-      random.weighted(generator, generators)
-      |> random.step(seed |> seed_to_prng_seed)
+      random.float_weighted(generator, generators)
+      |> random.step(seed)
 
-    generator(seed |> seed_from_prng_seed)
+    generator(seed)
   })
 }
 
@@ -1098,10 +1085,10 @@ pub fn from_weighted_generators(
 ) -> Generator(a) {
   Generator(fn(seed) {
     let #(Generator(generator), seed) =
-      qcheck_random.weighted(generator, generators)
-      |> random.step(seed |> seed_to_prng_seed)
+      random.weighted(generator, generators)
+      |> random.step(seed)
 
-    generator(seed |> seed_from_prng_seed)
+    generator(seed)
   })
 }
 
@@ -1221,10 +1208,9 @@ fn exp(x: Float) -> Float {
 /// 
 pub fn float() -> Generator(Float) {
   Generator(fn(seed) {
-    let seed = seed |> seed_to_prng_seed
     let #(x, seed) = random.float(0.0, 15.0) |> random.step(seed)
-    let #(y, seed) = qcheck_random.choose(1.0, -1.0) |> random.step(seed)
-    let #(z, seed) = qcheck_random.choose(1.0, -1.0) |> random.step(seed)
+    let #(y, seed) = random.choose(1.0, -1.0) |> random.step(seed)
+    let #(z, seed) = random.choose(1.0, -1.0) |> random.step(seed)
 
     // The QCheck2.Gen.float code has this double multiply in it. Actually not
     // sure about that.
@@ -1232,7 +1218,7 @@ pub fn float() -> Generator(Float) {
 
     let tree = tree.new(generated_value, shrink.float_towards_zero())
 
-    #(tree, seed |> seed_from_prng_seed)
+    #(tree, seed)
   })
 }
 
@@ -1300,9 +1286,7 @@ pub fn char_uniform_inclusive(from low: Int, to high: Int) -> Generator(String) 
   let shrink = shrink.int_towards(origin)
 
   Generator(fn(seed) {
-    let #(n, seed) =
-      random.int(low, high)
-      |> random.step(seed |> seed_to_prng_seed)
+    let #(n, seed) = random.int(low, high) |> random.step(seed)
 
     let tree =
       tree.new(n, shrink)
@@ -1312,7 +1296,7 @@ pub fn char_uniform_inclusive(from low: Int, to high: Int) -> Generator(String) 
       // always be valid.
       |> tree.map(int_to_char(_, default: origin))
 
-    #(tree, seed |> seed_from_prng_seed)
+    #(tree, seed)
   })
 }
 
@@ -1382,14 +1366,13 @@ pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
   let shrink_target = list.fold(tl, hd, int.min)
 
   Generator(fn(seed) {
-    let #(n, seed) =
-      qcheck_random.uniform(hd, tl) |> random.step(seed |> seed_to_prng_seed)
+    let #(n, seed) = random.uniform(hd, tl) |> random.step(seed)
 
     let tree =
       tree.new(n, shrink.int_towards(shrink_target))
       |> tree.map(int_to_char(_, default: shrink_target))
 
-    #(tree, seed |> seed_from_prng_seed)
+    #(tree, seed)
   })
 }
 
@@ -1702,7 +1685,7 @@ type GenerateOption {
 }
 
 fn generate_option() -> random.Generator(GenerateOption) {
-  qcheck_random.weighted(#(15, GenerateNone), [#(85, GenerateSome)])
+  random.weighted(#(15, GenerateNone), [#(85, GenerateSome)])
 }
 
 /// `option(gen)` is an `Option` generator that uses `gen` to generate `Some` 
@@ -1712,10 +1695,7 @@ pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
   let Generator(generate) = generator
 
   Generator(fn(seed) {
-    let #(generate_option, seed) =
-      random.step(generate_option(), seed |> seed_to_prng_seed)
-
-    let seed = seed |> seed_from_prng_seed
+    let #(generate_option, seed) = random.step(generate_option(), seed)
 
     case generate_option {
       GenerateNone -> #(tree.return(None), seed)
@@ -1739,15 +1719,15 @@ pub fn nil() -> Generator(Nil) {
 pub fn bool() -> Generator(Bool) {
   Generator(fn(seed) {
     let #(bool, seed) =
-      qcheck_random.choose(True, False)
-      |> random.step(seed |> seed_to_prng_seed)
+      random.choose(True, False)
+      |> random.step(seed)
 
     let tree = case bool {
       True -> Tree(True, yielder.once(fn() { tree.return(False) }))
       False -> tree.return(False)
     }
 
-    #(tree, seed |> seed_from_prng_seed)
+    #(tree, seed)
   })
 }
 
