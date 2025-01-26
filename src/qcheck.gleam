@@ -236,6 +236,10 @@ const ascii_z_uppercase: Int = 90
 
 const ascii_zero: Int = 48
 
+const min_valid_codepoint: Int = 0
+
+const max_valid_codepoint: Int = 0x10FFFF
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: Running tests 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1448,8 +1452,6 @@ const char_min_value: Int = 0
 
 const char_max_value: Int = 255
 
-// For now, this is only used in setting up the string generators.
-//
 /// `char_uniform_inclusive(low, high)` generates "characters" uniformly
 /// distributed between `low` and `high`, inclusive.  Here, "characters" are 
 /// strings of a single codepoint.
@@ -1463,7 +1465,19 @@ const char_max_value: Int = 255
 /// 
 /// Shrinks towards `a` when possible, but won't go outside of the range.
 /// 
-pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String) {
+/// Note: if you provide a range that it outside the range of valid codepoints, 
+/// a default range will be chosen for you.
+/// 
+pub fn char_uniform_inclusive(from low: Int, to high: Int) -> Generator(String) {
+  let #(low, high) = case low <= high {
+    True -> #(low, high)
+    False -> #(high, low)
+  }
+
+  // It is okay if the min and max are the same.
+  let low = int.clamp(low, min: min_valid_codepoint, max: max_valid_codepoint)
+  let high = int.clamp(high, min: min_valid_codepoint, max: max_valid_codepoint)
+
   let origin = pick_origin_within_range(low, high, goal: ascii_a_lowercase)
   let shrink = shrink_int_towards(origin)
 
@@ -1474,7 +1488,11 @@ pub fn char_uniform_inclusive(low low: Int, high high: Int) -> Generator(String)
 
     let tree =
       make_primitive_tree(n, shrink)
-      |> map_tree(unsafe_int_to_char)
+      // If user crafts a range that generates lots of invalid codepoints, then
+      // the nice shrinking will get a bit weird.  But origin should be valid
+      // unless there is an implementation error, since the "goal" above should
+      // always be valid.
+      |> map_tree(int_to_char(_, default: origin))
 
     #(tree, seed |> seed_from_prng_seed)
   })
@@ -1538,6 +1556,8 @@ pub fn char_alpha_numeric() -> Generator(String) {
 /// 
 pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
   let hd = unsafe_char_to_int(char)
+  // TODO: if you provide a multi-codepoint single-"character" grapheme, then
+  // this will panic.
   let tl = list.map(chars, unsafe_char_to_int)
 
   // Take the char with the minimum int representation as the shrink target.
@@ -1549,7 +1569,7 @@ pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
 
     let tree =
       make_primitive_tree(n, shrink_int_towards(shrink_target))
-      |> map_tree(unsafe_int_to_char)
+      |> map_tree(int_to_char(_, default: shrink_target))
 
     #(tree, seed |> seed_from_prng_seed)
   })
@@ -1582,7 +1602,7 @@ pub fn char_whitespace() -> Generator(String) {
   let assert [char, ..chars] =
     list.range(char_min_value, char_max_value)
     |> list.filter(char_is_whitespace)
-    |> list.map(unsafe_int_to_char)
+    |> list.map(int_to_char(_, default: ascii_space))
 
   char_from_list(char, chars)
 }
@@ -1607,13 +1627,18 @@ pub fn char_utf_codepoint() -> Generator(String) {
 /// characters, while still hitting some edge cases.
 /// 
 pub fn char() {
+  // If these fail, then char_min/max_value are incorrect (implementation bug).
+  let assert Ok(min_value) = string.utf_codepoint(char_min_value)
+  let assert Ok(max_value) = string.utf_codepoint(char_max_value)
+
+  // TODO add in some charaters in the higher unicode ranges.
   from_weighted_generators(#(340, char_uppercase()), [
     #(340, char_lowercase()),
     #(131, char_digit()),
     #(81, char_printable_uniform()),
     #(89, char_uniform()),
-    #(09, return(unsafe_int_to_char(char_min_value))),
-    #(09, return(unsafe_int_to_char(char_max_value))),
+    #(09, return(string.from_utf_codepoints([min_value]))),
+    #(09, return(string.from_utf_codepoints([max_value]))),
   ])
 }
 
@@ -2462,11 +2487,25 @@ fn filter_map(
   yielder.unfold(it, do_filter_map(_, f))
 }
 
-/// WARNING: only call this if you know that the codepoint is valid.
-fn unsafe_int_to_char(n: Int) -> String {
-  let assert Ok(codepoint) = string.utf_codepoint(n)
-
-  string.from_utf_codepoints([codepoint])
+/// Convert and int to a single character string.  
+/// 
+/// If the given int does not 
+/// represent a valid codepoint, returns try to convert `default` into a valid 
+/// codepoint.
+/// 
+/// If that too doesn't work, then just return `"a"` -- but you should ensure 
+/// that `default` will be a valid codepoint or you may mess up the expected 
+/// shrinking behavior.
+/// 
+fn int_to_char(n: Int, default default: Int) -> String {
+  case string.utf_codepoint(n) {
+    Ok(cp) -> string.from_utf_codepoints([cp])
+    Error(Nil) ->
+      case string.utf_codepoint(default) {
+        Ok(cp) -> string.from_utf_codepoints([cp])
+        Error(Nil) -> "a"
+      }
+  }
 }
 
 /// WARNING: only call this if you know that the string you are converting

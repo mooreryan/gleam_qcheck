@@ -20,6 +20,52 @@ pub fn char_uniform_inclusive__test() {
   )
 }
 
+pub fn char_uniform_inclusive__ranges_that_include_invalid_codepoints__test() {
+  qcheck.run(
+    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
+    generator: qcheck.char_uniform_inclusive(55_200, 58_000),
+    property: fn(s) {
+      let codepoints = string.to_utf_codepoints(s)
+
+      // There should be only a single codepoint generated.
+      let assert [codepoint] = codepoints
+
+      let n = string.utf_codepoint_to_int(codepoint)
+
+      55_200 <= n && n <= 58_000
+    },
+  )
+}
+
+pub fn char_uniform_inclusive__low_greater_than_hi__test() {
+  qcheck.run(
+    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
+    generator: qcheck.char_uniform_inclusive(70, 65),
+    property: fn(s) {
+      let codepoints = string.to_utf_codepoints(s)
+
+      // There should be only a single codepoint generated.
+      let assert [codepoint] = codepoints
+
+      let n = string.utf_codepoint_to_int(codepoint)
+
+      65 <= n && n <= 70
+    },
+  )
+}
+
+pub fn char_uniform_inclusive__codepoints_out_of_range__test() {
+  qcheck.run(
+    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
+    generator: qcheck.char_uniform_inclusive(-2_000_000, 2_000_000),
+    property: it_doesnt_crash,
+  )
+}
+
+fn it_doesnt_crash(_) {
+  True
+}
+
 pub fn char_uniform_inclusive__failures_shink_ok__test() {
   let expected =
     500
