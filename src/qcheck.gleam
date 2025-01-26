@@ -185,10 +185,10 @@
 //// Similar to the Tree functions, you often won't need to use these directly.
 ////
 //// - [shrink_atomic](#shrink_atomic)
-//// - [shrink_int_towards](#shrink_int_towards)
-//// - [shrink_int_towards_zero](#shrink_int_towards_zero)
-//// - [shrink_float_towards](#shrink_float_towards)
-//// - [shrink_float_towards_zero](#shrink_float_towards_zero)
+//// - [shrink.int_towards](#shrink.int_towards)
+//// - [shrink.int_towards_zero](#shrink.int_towards_zero)
+//// - [shrink.float_towards](#shrink.float_towards)
+//// - [shrink.float_towards_zero](#shrink.float_towards_zero)
 ////
 //// 
 //// ## Notes
@@ -219,10 +219,11 @@ import gleam/result
 import gleam/set
 import gleam/string
 import gleam/string_tree.{type StringTree}
-import gleam/yielder.{type Yielder}
+import gleam/yielder
 import prng/random
 import prng/seed as prng_seed
 import qcheck/prng_random
+import qcheck/shrink
 import qcheck/tree.{type Tree, Tree}
 
 const ascii_a_lowercase: Int = 97
@@ -405,218 +406,6 @@ fn do_run_result(
   }
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Seeds 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-/// An opaque type representing a seed value used to initialize random generators.
-/// 
-pub opaque type Seed {
-  Seed(prng_seed.Seed)
-}
-
-/// `seed(n) creates a new seed from the given integer, `n`.
-///
-/// ### Example
-/// 
-/// Use a specific seed for the `Config`.
-/// 
-/// ```
-/// let config = 
-///   qcheck.default_config() 
-///   |> qcheck.with_seed(qcheck.seed(124))
-/// ```
-/// 
-pub fn seed(n: Int) -> Seed {
-  prng_seed.new(n) |> Seed
-}
-
-/// `seed_random()` creates a new randomly-generated seed.  You can use it when
-/// you don't care about having specifically reproducible results.
-///
-/// ### Example
-/// 
-/// Use a random seed for the `Config`.
-/// 
-/// ```
-/// let config = 
-///   qcheck.default_config() 
-///   |> qcheck.with_seed(qcheck.seed_random())
-/// ```
-/// 
-pub fn seed_random() -> Seed {
-  prng_seed.random() |> Seed
-}
-
-fn seed_to_prng_seed(seed: Seed) -> prng_seed.Seed {
-  let Seed(seed) = seed
-  seed
-}
-
-fn seed_from_prng_seed(prng_seed: prng_seed.Seed) -> Seed {
-  Seed(prng_seed)
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Test config 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-/// Configuration for the property-based testing.
-/// 
-/// - `test_count`: The number of tests to run for each property.
-/// - `max_retries`: The number of times to retry the tested property while 
-///   shrinking.
-/// - `seed`: The seed for the random generator.
-pub opaque type Config {
-  Config(test_count: Int, max_retries: Int, seed: Seed)
-}
-
-const default_test_count: Int = 1000
-
-const default_max_retries: Int = 1
-
-/// `default()` returns the default configuration for the property-based testing.
-/// 
-pub fn default_config() -> Config {
-  Config(
-    test_count: default_test_count,
-    max_retries: default_max_retries,
-    seed: seed_random(),
-  )
-}
-
-/// `config(test_count, max_retries, seed)` builds a new `Config`.
-/// 
-/// Any invalid arguments will be replaced with reasonable defaults.
-/// 
-pub fn config(
-  test_count test_count: Int,
-  max_retries max_retries: Int,
-  seed seed: Seed,
-) -> Config {
-  // Use the `with_*` functions so we get their validation logic.
-  default_config()
-  |> with_test_count(test_count)
-  |> with_max_retries(max_retries)
-  |> with_seed(seed)
-}
-
-/// `with_test_count()` returns a new configuration with the given test count.
-/// 
-/// If `test_count <= 0`, then it will be adjusted to a valid value.
-///  
-pub fn with_test_count(config, test_count) {
-  let test_count = case test_count <= 0 {
-    True -> default_test_count
-    False -> test_count
-  }
-
-  Config(..config, test_count: test_count)
-}
-
-/// `with_max_retries()` returns a new configuration with the given max retries.
-/// 
-/// If `max_retries < 0`, then it will be adjusted to a valid value.
-/// 
-pub fn with_max_retries(config, max_retries) {
-  let max_retries = case max_retries < 0 {
-    True -> default_max_retries
-    False -> max_retries
-  }
-
-  Config(..config, max_retries: max_retries)
-}
-
-/// `with_seed()` returns a new configuration with the given random seed.
-pub fn with_seed(config, seed) {
-  Config(..config, seed: seed)
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Shrinking
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-fn float_half_difference(x: Float, y: Float) -> Float {
-  { x /. 2.0 } -. { y /. 2.0 }
-}
-
-fn int_half_difference(x: Int, y: Int) -> Int {
-  { x / 2 } - { y / 2 }
-}
-
-fn int_shrink_step(
-  x x: Int,
-  current_shrink current_shrink: Int,
-) -> yielder.Step(Int, Int) {
-  case x == current_shrink {
-    True -> yielder.Done
-    False -> {
-      let half_difference = int_half_difference(x, current_shrink)
-
-      case half_difference == 0 {
-        True -> {
-          yielder.Next(current_shrink, x)
-        }
-        False -> {
-          yielder.Next(current_shrink, current_shrink + half_difference)
-        }
-      }
-    }
-  }
-}
-
-fn float_shrink_step(
-  x x: Float,
-  current_shrink current_shrink: Float,
-) -> yielder.Step(Float, Float) {
-  case x == current_shrink {
-    True -> yielder.Done
-    False -> {
-      let half_difference = float_half_difference(x, current_shrink)
-
-      case half_difference == 0.0 {
-        True -> {
-          yielder.Next(current_shrink, x)
-        }
-        False -> {
-          yielder.Next(current_shrink, current_shrink +. half_difference)
-        }
-      }
-    }
-  }
-}
-
-pub fn shrink_int_towards(
-  destination destination: Int,
-) -> fn(Int) -> yielder.Yielder(Int) {
-  fn(x) {
-    yielder.unfold(destination, fn(current_shrink) {
-      int_shrink_step(x: x, current_shrink: current_shrink)
-    })
-  }
-}
-
-pub fn shrink_float_towards(
-  destination destination: Float,
-) -> fn(Float) -> yielder.Yielder(Float) {
-  fn(x) {
-    yielder.unfold(destination, fn(current_shrink) {
-      float_shrink_step(x: x, current_shrink: current_shrink)
-    })
-    // (Arbitrarily) Limit to the first 15 elements as dividing a `Float` by 2
-    // doesn't converge quickly towards the destination.
-    |> yielder.take(15)
-  }
-}
-
-pub fn shrink_int_towards_zero() -> fn(Int) -> yielder.Yielder(Int) {
-  shrink_int_towards(destination: 0)
-}
-
-pub fn shrink_float_towards_zero() -> fn(Float) -> yielder.Yielder(Float) {
-  shrink_float_towards(destination: 0.0)
-}
-
 type RunPropertyResult {
   RunPropertyOk
   RunPropertyFail
@@ -754,10 +543,153 @@ fn do_shrink_result(
   }
 }
 
-/// The `atomic` shrinker treats types as atomic, and never attempts to produce
-/// smaller values.
-pub fn shrink_atomic() -> fn(a) -> Yielder(a) {
-  fn(_) { yielder.empty() }
+fn filter_map(
+  it: yielder.Yielder(a),
+  f: fn(a) -> Option(b),
+) -> yielder.Yielder(b) {
+  yielder.unfold(it, do_filter_map(_, f))
+}
+
+fn do_filter_map(
+  it: yielder.Yielder(a),
+  f: fn(a) -> Option(b),
+) -> yielder.Step(b, yielder.Yielder(a)) {
+  case yielder.step(it) {
+    yielder.Done -> yielder.Done
+    yielder.Next(x, it) -> {
+      case f(x) {
+        None -> do_filter_map(it, f)
+        Some(y) -> yielder.Next(y, it)
+      }
+    }
+  }
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MARK: Seeds 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/// An opaque type representing a seed value used to initialize random generators.
+/// 
+pub opaque type Seed {
+  Seed(prng_seed.Seed)
+}
+
+/// `seed(n) creates a new seed from the given integer, `n`.
+///
+/// ### Example
+/// 
+/// Use a specific seed for the `Config`.
+/// 
+/// ```
+/// let config = 
+///   qcheck.default_config() 
+///   |> qcheck.with_seed(qcheck.seed(124))
+/// ```
+/// 
+pub fn seed(n: Int) -> Seed {
+  prng_seed.new(n) |> Seed
+}
+
+/// `seed_random()` creates a new randomly-generated seed.  You can use it when
+/// you don't care about having specifically reproducible results.
+///
+/// ### Example
+/// 
+/// Use a random seed for the `Config`.
+/// 
+/// ```
+/// let config = 
+///   qcheck.default_config() 
+///   |> qcheck.with_seed(qcheck.seed_random())
+/// ```
+/// 
+pub fn seed_random() -> Seed {
+  prng_seed.random() |> Seed
+}
+
+fn seed_to_prng_seed(seed: Seed) -> prng_seed.Seed {
+  let Seed(seed) = seed
+  seed
+}
+
+fn seed_from_prng_seed(prng_seed: prng_seed.Seed) -> Seed {
+  Seed(prng_seed)
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MARK: Test config 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/// Configuration for the property-based testing.
+/// 
+/// - `test_count`: The number of tests to run for each property.
+/// - `max_retries`: The number of times to retry the tested property while 
+///   shrinking.
+/// - `seed`: The seed for the random generator.
+pub opaque type Config {
+  Config(test_count: Int, max_retries: Int, seed: Seed)
+}
+
+const default_test_count: Int = 1000
+
+const default_max_retries: Int = 1
+
+/// `default()` returns the default configuration for the property-based testing.
+/// 
+pub fn default_config() -> Config {
+  Config(
+    test_count: default_test_count,
+    max_retries: default_max_retries,
+    seed: seed_random(),
+  )
+}
+
+/// `config(test_count, max_retries, seed)` builds a new `Config`.
+/// 
+/// Any invalid arguments will be replaced with reasonable defaults.
+/// 
+pub fn config(
+  test_count test_count: Int,
+  max_retries max_retries: Int,
+  seed seed: Seed,
+) -> Config {
+  // Use the `with_*` functions so we get their validation logic.
+  default_config()
+  |> with_test_count(test_count)
+  |> with_max_retries(max_retries)
+  |> with_seed(seed)
+}
+
+/// `with_test_count()` returns a new configuration with the given test count.
+/// 
+/// If `test_count <= 0`, then it will be adjusted to a valid value.
+///  
+pub fn with_test_count(config, test_count) {
+  let test_count = case test_count <= 0 {
+    True -> default_test_count
+    False -> test_count
+  }
+
+  Config(..config, test_count: test_count)
+}
+
+/// `with_max_retries()` returns a new configuration with the given max retries.
+/// 
+/// If `max_retries < 0`, then it will be adjusted to a valid value.
+/// 
+pub fn with_max_retries(config, max_retries) {
+  let max_retries = case max_retries < 0 {
+    True -> default_max_retries
+    False -> max_retries
+  }
+
+  Config(..config, max_retries: max_retries)
+}
+
+/// `with_seed()` returns a new configuration with the given random seed.
+pub fn with_seed(config, seed) {
+  Config(..config, seed: seed)
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1220,7 +1152,7 @@ pub fn int_small_positive_or_zero() -> Generator(Int) {
           False -> random.int(0, 100)
         }
       }),
-    make_tree: fn(n) { tree.new(root: n, shrink: shrink_int_towards_zero()) },
+    make_tree: fn(n) { tree.new(root: n, shrink: shrink.int_towards_zero()) },
   )
 }
 
@@ -1252,7 +1184,7 @@ pub fn int_uniform_inclusive(from low: Int, to high: Int) -> Generator(Int) {
     make_tree: fn(n) {
       let origin = pick_origin_within_range(low, high, goal: 0)
 
-      tree.new(root: n, shrink: shrink_int_towards(origin))
+      tree.new(root: n, shrink: shrink.int_towards(origin))
     },
   )
 }
@@ -1298,7 +1230,7 @@ pub fn float() -> Generator(Float) {
     // sure about that.
     let generated_value = exp(x) *. y *. z
 
-    let tree = tree.new(generated_value, shrink_float_towards_zero())
+    let tree = tree.new(generated_value, shrink.float_towards_zero())
 
     #(tree, seed |> seed_from_prng_seed)
   })
@@ -1324,7 +1256,7 @@ pub fn float_uniform_inclusive(from low: Float, to high: Float) {
     make_tree: fn(n) {
       let origin = pick_origin_within_range_float(low, high, goal: 0.0)
 
-      tree.new(root: n, shrink: shrink_float_towards(origin))
+      tree.new(root: n, shrink: shrink.float_towards(origin))
     },
   )
 }
@@ -1365,7 +1297,7 @@ pub fn char_uniform_inclusive(from low: Int, to high: Int) -> Generator(String) 
   let high = int.clamp(high, min: min_valid_codepoint, max: max_valid_codepoint)
 
   let origin = pick_origin_within_range(low, high, goal: ascii_a_lowercase)
-  let shrink = shrink_int_towards(origin)
+  let shrink = shrink.int_towards(origin)
 
   Generator(fn(seed) {
     let #(n, seed) =
@@ -1454,7 +1386,7 @@ pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
       prng_random.uniform(hd, tl) |> random.step(seed |> seed_to_prng_seed)
 
     let tree =
-      tree.new(n, shrink_int_towards(shrink_target))
+      tree.new(n, shrink.int_towards(shrink_target))
       |> tree.map(int_to_char(_, default: shrink_target))
 
     #(tree, seed |> seed_from_prng_seed)
@@ -2359,28 +2291,6 @@ fn pick_origin_within_range_float(low: Float, high: Float, goal goal: Float) {
         False -> goal
       }
   }
-}
-
-fn do_filter_map(
-  it: yielder.Yielder(a),
-  f: fn(a) -> Option(b),
-) -> yielder.Step(b, yielder.Yielder(a)) {
-  case yielder.step(it) {
-    yielder.Done -> yielder.Done
-    yielder.Next(x, it) -> {
-      case f(x) {
-        None -> do_filter_map(it, f)
-        Some(y) -> yielder.Next(y, it)
-      }
-    }
-  }
-}
-
-fn filter_map(
-  it: yielder.Yielder(a),
-  f: fn(a) -> Option(b),
-) -> yielder.Yielder(b) {
-  yielder.unfold(it, do_filter_map(_, f))
 }
 
 /// Convert and int to a single character string.  
