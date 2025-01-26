@@ -10,9 +10,8 @@ pub fn list_generic__generates_valid_values__test() {
   qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.list_generic(
-      qcheck.int_uniform_inclusive(-5, 5),
-      min_length: 2,
-      max_length: 5,
+      element_generator: qcheck.int_uniform_inclusive(-5, 5),
+      length_generator: qcheck.int_uniform_inclusive(2, 5),
     ),
     property: fn(l) {
       let len = list.length(l)
@@ -34,9 +33,8 @@ pub fn list_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.list_generic(
-        qcheck.int_uniform_inclusive(-1, 2),
-        min_length: 0,
-        max_length: 3,
+        element_generator: qcheck.int_uniform_inclusive(-1, 2),
+        length_generator: qcheck.int_uniform_inclusive(0, 3),
       ),
       qcheck.seed(10_003),
     )
@@ -46,7 +44,7 @@ pub fn list_generators_shrink_on_size_then_on_elements__test() {
   |> birdie.snap("list_generators_shrink_on_size_then_on_elements__test")
 }
 
-pub fn list_generic_doesnt_shkrink_out_of_length_range__test_() {
+pub fn list_generic_doesnt_shrink_out_of_length_range__test_() {
   use <- test_spec.make_with_timeout(60)
   let min_length = 2
   let max_length = 4
@@ -54,14 +52,26 @@ pub fn list_generic_doesnt_shkrink_out_of_length_range__test_() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.list_generic(
-        qcheck.int_uniform_inclusive(1, 2),
-        min_length:,
-        max_length:,
+        element_generator: qcheck.int_uniform_inclusive(1, 2),
+        length_generator: qcheck.int_uniform_inclusive(min_length, max_length),
       ),
       qcheck.seed_random(),
     )
 
   all_lengths_good(tree, min_length:, max_length:)
+}
+
+pub fn list_with_length_from__generates_correct_length__test() {
+  use #(list, expected_length) <- qcheck.given({
+    use length <- qcheck.bind(qcheck.int_small_positive_or_zero())
+    use list <- qcheck.map(qcheck.list_with_length_from(
+      qcheck.int_small_positive_or_zero(),
+      length,
+    ))
+    #(list, length)
+  })
+
+  list.length(list) == expected_length
 }
 
 fn all_lengths_good(tree, min_length min_length, max_length max_length) {

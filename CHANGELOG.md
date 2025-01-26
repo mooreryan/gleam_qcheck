@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `constant`: a synonym for `qcheck.return`
 - `sized_from`
+- `list_with_length_from`
 
 ### Changed
 
@@ -44,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Reinstanted `map4`, `map5`, and `map6`.
     - Lower down in the changelog, it mentions it is better to use the applicative style, but sometimes it is convenient to just use these and be done with it.
 - Removed arg labels for `apply`
+- Function signature of `list_generic` now follows the pattern of other generic generators
 
 ### Fixed
 

@@ -1744,29 +1744,31 @@ fn list_generic_loop(
   }
 }
 
-/// `list_generic(element_generator, min_length, max_length)` generates lists of 
-/// elements from `element_generator` with lengths between `min_len` and 
-/// `max_len`, inclusive.
+/// `list_generic(element_generator, length_generator)` generates lists of 
+/// elements from `element_generator` with lengths from `length_generator`.
 ///  
 /// Shrinks first on the number of elements, then on the elements themselves.
-/// Will not generate shrinks outside of the range of [min_length, max_length].
+/// Will not generate shrinks whose length is  outside of the range specified
+/// by the `length_generator`.
 /// 
 pub fn list_generic(
-  element_generator: Generator(a),
-  min_length min_len: Int,
-  max_length max_len: Int,
+  element_generator element_generator: Generator(a),
+  length_generator length_generator: Generator(Int),
 ) -> Generator(List(a)) {
-  int_uniform_inclusive(min_len, max_len)
-  |> bind(fn(length) {
-    Generator(fn(seed) {
-      list_generic_loop(length, return_tree([]), element_generator, seed)
-    })
-  })
+  use length <- bind(length_generator)
+  list_with_length_from(element_generator, length)
 }
 
-// TODO: list_with_length
-// TODO: list_with_length_inclusive (actually, you probably really don't need this range one because you can use sized......)
-// TODO: list_generic should take an element_generator and a length_generator
+/// `list_with_length_from(element_generator, length)` generates lists of 
+/// elements from `element_generator` of length `length`.
+/// 
+pub fn list_with_length_from(
+  element_generator element_generator: Generator(a),
+  length length: Int,
+) -> Generator(List(a)) {
+  use seed <- Generator
+  list_generic_loop(length, return_tree([]), element_generator, seed)
+}
 
 // MARK: Dicts
 
@@ -1780,9 +1782,11 @@ pub fn dict_generic(
   value_generator value_generator: Generator(value),
   max_length max_length: Int,
 ) -> Generator(Dict(key, value)) {
-  tuple2(key_generator, value_generator)
-  |> list_generic(0, max_length)
-  |> map(dict.from_list)
+  use association_list <- map(list_generic(
+    element_generator: tuple2(key_generator, value_generator),
+    length_generator: int_uniform_inclusive(0, max_length),
+  ))
+  dict.from_list(association_list)
 }
 
 // TODO: generic should take key_gen, value_gen, and size_gen
@@ -1796,9 +1800,12 @@ pub fn dict_generic(
 /// 
 /// Shrinks first on the number of elements, then on the elements themselves.
 /// 
-pub fn set_generic(element_generator: Generator(a), max_length max_len: Int) {
-  list_generic(element_generator, 0, max_len)
-  |> map(set.from_list)
+pub fn set_generic(element_generator: Generator(a), max_length max_length: Int) {
+  use elements <- map(list_generic(
+    element_generator:,
+    length_generator: int_uniform_inclusive(0, max_length),
+  ))
+  set.from_list(elements)
 }
 
 // TODO: Sets have size not length
@@ -2269,11 +2276,15 @@ pub fn bit_array_utf8_with_size(num_codepoints: Int) -> Generator(BitArray) {
   bit_array_from_codepoints(codepoints)
 }
 
+// TODO: min and max length again.....
 fn utf_codepoint_list(
   min_length: Int,
   max_length: Int,
 ) -> Generator(List(UtfCodepoint)) {
-  list_generic(utf_codepoint(), min_length, max_length)
+  list_generic(
+    element_generator: utf_codepoint(),
+    length_generator: int_uniform_inclusive(min_length, max_length),
+  )
 }
 
 /// `bit_array_utf8_with_size_from(num_codepoints_generator)` generates 
@@ -2287,10 +2298,9 @@ pub fn bit_array_utf8_with_size_from(
   codepoint_generator: Generator(UtfCodepoint),
   num_codepoints: Int,
 ) -> Generator(BitArray) {
-  use codepoints <- map(list_generic(
-    codepoint_generator,
-    num_codepoints,
-    num_codepoints,
+  use codepoints <- map(list_with_length_from(
+    element_generator: codepoint_generator,
+    length: num_codepoints,
   ))
 
   bit_array_from_codepoints(codepoints)
@@ -2301,7 +2311,7 @@ pub fn bit_array_utf8_generic(
   num_codepoints_generator: Generator(Int),
 ) {
   use length <- map(num_codepoints_generator)
-  list_generic(codepoint_generator, length, length)
+  list_with_length_from(codepoint_generator, length)
 }
 
 fn bit_array_from_codepoints(codepoints: List(UtfCodepoint)) -> BitArray {
