@@ -10,7 +10,7 @@ pub fn dict_generic__generates_valid_values__test() {
     generator: qcheck.dict_generic(
       qcheck.int_uniform_inclusive(0, 2),
       qcheck.int_uniform_inclusive(10, 12),
-      max_length: 5,
+      qcheck.int_uniform_inclusive(0, 5),
     ),
     property: fn(d) {
       let size_is_good = dict.size(d) <= 5
@@ -58,7 +58,7 @@ pub fn dict_generators_shrink_on_size_then_on_elements__test() {
       qcheck.dict_generic(
         key_generator: qcheck.int_uniform_inclusive(0, 2),
         value_generator: qcheck.int_uniform_inclusive(10, 12),
-        max_length: 3,
+        size_generator: qcheck.int_uniform_inclusive(0, 3),
       ),
       qcheck.seed(12),
     )
@@ -72,7 +72,7 @@ pub fn dict_generic__allows_empty_dict__test() {
   use _ <- qcheck.given(qcheck.dict_generic(
     qcheck.int_uniform_inclusive(0, 2),
     qcheck.int_uniform_inclusive(10, 12),
-    0,
+    qcheck.constant(0),
   ))
   True
 }

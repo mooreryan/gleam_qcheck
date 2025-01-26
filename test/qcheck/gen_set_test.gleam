@@ -9,8 +9,8 @@ pub fn set_generic__generates_valid_values__test() {
   qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.set_generic(
-      qcheck.int_uniform_inclusive(-5, 5),
-      max_length: 5,
+      element_generator: qcheck.int_uniform_inclusive(-5, 5),
+      size_generator: qcheck.int_uniform_inclusive(0, 5),
     ),
     property: fn(s) {
       let len = set.size(s)
@@ -40,7 +40,10 @@ fn int_set_to_string(s) {
 pub fn set_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
-      qcheck.set_generic(qcheck.int_uniform_inclusive(-1, 2), max_length: 3),
+      qcheck.set_generic(
+        element_generator: qcheck.int_uniform_inclusive(-1, 2),
+        size_generator: qcheck.int_uniform_inclusive(0, 3),
+      ),
       qcheck.seed(10_003),
     )
 

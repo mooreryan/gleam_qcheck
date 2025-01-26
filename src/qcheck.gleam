@@ -1772,26 +1772,32 @@ pub fn list_with_length_from(
 
 // MARK: Dicts
 
-/// `dict_generic(key_generator, value_generator, max_len)` generates dictionaries with keys
-/// from `key_generator` and values from `value_generator` with lengths up to `max_len`.
+/// `dict_generic(key_generator, value_generator, length_generator)` generates 
+/// dictionaries with keys
+/// from `key_generator`, values from `value_generator`, and sizes from 
+/// `size_generator`.
 /// 
 /// Shrinks on size then on elements.
+/// 
+/// Note: If the size generator generates a size of 5 for an example, then for
+/// that example `5` is taken as the upper bound on the size of the 
+/// dictionary.
+/// The current implementation will generate 5 key-value pairs, but it does NOT
+/// guarantee that each of the 5 keys is unique.  So, depending on your
+/// `key_generator`, the actual size may be less than 5.  (This is considered
+/// to be an implementation detail that you should not rely upon.)
 /// 
 pub fn dict_generic(
   key_generator key_generator: Generator(key),
   value_generator value_generator: Generator(value),
-  max_length max_length: Int,
+  size_generator size_generator: Generator(Int),
 ) -> Generator(Dict(key, value)) {
   use association_list <- map(list_generic(
     element_generator: tuple2(key_generator, value_generator),
-    length_generator: int_uniform_inclusive(0, max_length),
+    length_generator: size_generator,
   ))
   dict.from_list(association_list)
 }
-
-// TODO: generic should take key_gen, value_gen, and size_gen
-// TODO: rename max_length to max_size
-// TODO: dict_with_size
 
 // MARK: Sets
 
@@ -1800,17 +1806,25 @@ pub fn dict_generic(
 /// 
 /// Shrinks first on the number of elements, then on the elements themselves.
 /// 
-pub fn set_generic(element_generator: Generator(a), max_length max_length: Int) {
+/// Note: If the size generator generates a size of 5 for an example, then for
+/// that example `5` is taken as the upper bound on the size of the 
+/// set.
+/// The current implementation will generate 5 key-value pairs, but it does NOT
+/// guarantee that each of the 5 keys is unique.  So, depending on your
+/// `element_generator`, the actual size may be less than 5.  (This is 
+/// considered
+/// to be an implementation detail that you should not rely upon.)
+/// 
+pub fn set_generic(
+  element_generator element_generator: Generator(a),
+  size_generator size_generator: Generator(Int),
+) -> Generator(set.Set(a)) {
   use elements <- map(list_generic(
     element_generator:,
-    length_generator: int_uniform_inclusive(0, max_length),
+    length_generator: size_generator,
   ))
   set.from_list(elements)
 }
-
-// TODO: Sets have size not length
-// TODO: needs to be exact length not max length
-// TODO: the generic one should have el_gen and size_gen
 
 // MARK: Other
 
