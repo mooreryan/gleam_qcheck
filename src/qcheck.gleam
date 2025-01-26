@@ -2143,7 +2143,7 @@ fn byte() {
 /// Shrinks on values, not on length.
 /// 
 pub fn bit_array_with_size_from(
-  value_generator: Generator(Int),
+  value_generator value_generator: Generator(Int),
   bit_size bit_size: Int,
 ) -> Generator(BitArray) {
   use seed <- Generator
