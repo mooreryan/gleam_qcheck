@@ -1033,11 +1033,7 @@ pub fn bind(
 /// `apply(f, x)` applies a function generator, `f`, and an argument generator, 
 /// `x`, into a result generator.
 /// 
-pub fn apply(
-  // TODO: arg names
-  f f: Generator(fn(a) -> b),
-  generator x: Generator(a),
-) -> Generator(b) {
+pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   let Generator(f) = f
   let Generator(x) = x
 
@@ -1768,6 +1764,10 @@ pub fn list_generic(
   })
 }
 
+// TODO: list_with_length
+// TODO: list_with_length_inclusive (actually, you probably really don't need this range one because you can use sized......)
+// TODO: list_generic should take an element_generator and a length_generator
+
 // MARK: Dicts
 
 /// `dict_generic(key_generator, value_generator, max_len)` generates dictionaries with keys
@@ -1785,6 +1785,10 @@ pub fn dict_generic(
   |> map(dict.from_list)
 }
 
+// TODO: generic should take key_gen, value_gen, and size_gen
+// TODO: rename max_length to max_size
+// TODO: dict_with_size
+
 // MARK: Sets
 
 /// `set_generic(element_generator, max_len)` generates sets of elements from 
@@ -1796,6 +1800,10 @@ pub fn set_generic(element_generator: Generator(a), max_length max_len: Int) {
   list_generic(element_generator, 0, max_len)
   |> map(set.from_list)
 }
+
+// TODO: Sets have size not length
+// TODO: needs to be exact length not max length
+// TODO: the generic one should have el_gen and size_gen
 
 // MARK: Other
 
@@ -2184,6 +2192,8 @@ pub fn bit_array_generic(
 ) -> Generator(BitArray) {
   bit_size_generator |> bind(bit_array_with_size_from(value_generator, _))
 }
+
+// TODO: bit_size_generator -> size_generator (OR make what the "size" is explicit for all bit array generators)
 
 /// `bit_array()` generates `BitArrays`.
 /// 
