@@ -225,11 +225,11 @@ fn qcheck_function_generator() {
     qcheck.return(qv.CharUppercase),
     qcheck.return(qv.CharLowercase),
     qcheck.return(qv.CharDigit),
-    qcheck.return(qv.CharPrintUniform),
+    qcheck.return(qv.CharPrintableUniform),
     qcheck.return(qv.CharAlpha),
     qcheck.return(qv.CharAlphaNumeric),
     qcheck.return(qv.CharWhitespace),
-    qcheck.return(qv.CharPrint),
+    qcheck.return(qv.CharPrintable),
   ])
 }
 

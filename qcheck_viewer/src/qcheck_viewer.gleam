@@ -48,24 +48,24 @@ pub fn default_model() -> Model {
 }
 
 pub type QcheckFunction {
-  IntUniform
-  IntUniformInclusive
-  IntSmallPositiveOrZero
-  IntSmallStrictlyPositive
-  Float
-  FloatUniformInclusive
   Char
-  CharUniform
-  CharUniformInclusive
-  CharUtfCodepoint
-  CharUppercase
-  CharLowercase
-  CharDigit
-  CharPrintUniform
   CharAlpha
   CharAlphaNumeric
+  CharDigit
+  CharLowercase
+  CharPrintable
+  CharPrintableUniform
+  CharUniform
+  CharUniformInclusive
+  CharUppercase
+  CharUtfCodepoint
   CharWhitespace
-  CharPrint
+  Float
+  FloatUniformInclusive
+  IntSmallPositiveOrZero
+  IntSmallStrictlyPositive
+  IntUniform
+  IntUniformInclusive
 }
 
 fn qcheck_function_html_options(
@@ -113,7 +113,7 @@ fn qcheck_function_html_options(
     ),
     qcheck_function_to_html_option(CharDigit, current_function: model_function),
     qcheck_function_to_html_option(
-      CharPrintUniform,
+      CharPrintableUniform,
       current_function: model_function,
     ),
     qcheck_function_to_html_option(CharAlpha, current_function: model_function),
@@ -125,7 +125,10 @@ fn qcheck_function_html_options(
       CharWhitespace,
       current_function: model_function,
     ),
-    qcheck_function_to_html_option(CharPrint, current_function: model_function),
+    qcheck_function_to_html_option(
+      CharPrintable,
+      current_function: model_function,
+    ),
   ]
 }
 
@@ -157,11 +160,11 @@ pub fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
     CharUppercase -> "char_uppercase"
     CharLowercase -> "char_lowercase"
     CharDigit -> "char_digit"
-    CharPrintUniform -> "char_print_uniform"
+    CharPrintableUniform -> "char_printable_uniform"
     CharAlpha -> "char_alpha"
     CharAlphaNumeric -> "char_alpha_numeric"
     CharWhitespace -> "char_whitespace"
-    CharPrint -> "char_print"
+    CharPrintable -> "char_printable"
   }
 }
 
@@ -188,11 +191,11 @@ fn qcheck_function_from_string(
     "char_uppercase" -> Ok(CharUppercase)
     "char_lowercase" -> Ok(CharLowercase)
     "char_digit" -> Ok(CharDigit)
-    "char_print_uniform" -> Ok(CharPrintUniform)
+    "char_printable_uniform" -> Ok(CharPrintableUniform)
     "char_alpha" -> Ok(CharAlpha)
     "char_alpha_numeric" -> Ok(CharAlphaNumeric)
     "char_whitespace" -> Ok(CharWhitespace)
-    "char_print" -> Ok(CharPrint)
+    "char_printable" -> Ok(CharPrintable)
     _ -> Error("bad function name")
   }
 }
@@ -499,44 +502,24 @@ fn generate_histogram(model: Model) -> json.Json {
     CharLowercase ->
       gen_histogram(qcheck.char_lowercase(), of: json.string, bin: False)
     CharDigit -> gen_histogram(qcheck.char_digit(), of: json.string, bin: False)
-    CharPrintUniform ->
-      gen_histogram(qcheck.char_print_uniform(), of: json.string, bin: False)
+    CharPrintableUniform ->
+      gen_histogram(
+        qcheck.char_printable_uniform(),
+        of: json.string,
+        bin: False,
+      )
     CharAlpha -> gen_histogram(qcheck.char_alpha(), of: json.string, bin: False)
     CharAlphaNumeric ->
       gen_histogram(qcheck.char_alpha_numeric(), of: json.string, bin: False)
     CharWhitespace ->
       gen_histogram(qcheck.char_whitespace(), of: json.string, bin: False)
-    CharPrint -> gen_histogram(qcheck.char_print(), of: json.string, bin: False)
+    CharPrintable ->
+      gen_histogram(qcheck.char_printable(), of: json.string, bin: False)
   }
 }
 
 fn gen_histogram(generator, of to_json, bin bin) {
-  gen(qcheck.default_config() |> qcheck.with_test_count(10_000), generator)
+  generator
+  |> qcheck.generate(10_000, qcheck.seed_random())
   |> histogram(of: to_json, bin:)
-}
-
-fn gen(config: qcheck.Config, generator: qcheck.Generator(a)) -> List(a) {
-  do_gen(config, generator, [], 0)
-}
-
-fn do_gen(
-  config: qcheck.Config,
-  generator: qcheck.Generator(a),
-  acc: List(a),
-  k: Int,
-) -> List(a) {
-  case k > config.test_count {
-    True -> acc
-    False -> {
-      let qcheck.Generator(generate) = generator
-      let #(tree, seed) = generate(config.random_seed)
-      let qcheck.Tree(value, _shrinks) = tree
-      do_gen(
-        qcheck.with_random_seed(config, seed),
-        generator,
-        [value, ..acc],
-        k + 1,
-      )
-    }
-  }
 }
