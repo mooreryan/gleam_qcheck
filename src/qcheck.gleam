@@ -13,7 +13,7 @@
 //// This module has functions for running and configuring property tests as
 //// well as generating random values (with shrinking) to drive those tests.
 ////
-//// For usage examples, see the project README.
+//// For full usage examples, see the project README.
 //// 
 //// 
 //// ## Running tests
@@ -34,6 +34,13 @@
 //// 
 //// 
 //// ## Generators
+//// 
+//// The exact distributions of individual generators are considered an 
+//// implementation detail, and may change without a major version update.  
+//// For example, if the `option` generator currently produced `None` 
+//// approximately 25% of the time, but that distribution was changed to produce 
+//// `None` 50% of the time instead, that would NOT be considered a breaking 
+//// change.
 //// 
 //// - The [Generator](#Generator) type
 //// 
@@ -101,6 +108,11 @@
 ////  - [string_with_length_from](#string_with_length_from)
 ////  - [string_non_empty_from](#string_non_empty_from)
 ////  - [string_generic](#string_generic)
+//// 
+//// Note that for the string generators, "length" refers to the number of 
+//// codepoints rather than the number of grapheme clusters as `string.length` 
+//// from the stdlib does.  This is a consequence of the current generation 
+//// strategy, and may change in the future.
 //// 
 //// ### Bit arrays
 //// 
@@ -1718,6 +1730,11 @@ fn do_gen_string(
 /// `string_with_length_from(gen, length)` generates strings of the given 
 /// `length` from the given generator.
 /// 
+/// Note that for the string generators, "length" refers to the number of 
+/// codepoints rather than the number of grapheme clusters as `string.length` 
+/// from the stdlib does.  This is a consequence of the current generation 
+/// strategy, and may change in the future.
+/// 
 pub fn string_with_length_from(
   generator: Generator(String),
   length: Int,
@@ -1777,6 +1794,11 @@ pub fn string_non_empty() -> Generator(String) {
 /// `string_with_length(length)` generates strings of the given `length` with the 
 /// default character generator.
 /// 
+/// Note that for the string generators, "length" refers to the number of 
+/// codepoints rather than the number of grapheme clusters as `string.length` 
+/// from the stdlib does.  This is a consequence of the current generation 
+/// strategy, and may change in the future.
+///
 pub fn string_with_length(length: Int) -> Generator(String) {
   string_with_length_from(char(), length)
 }
@@ -2198,7 +2220,7 @@ fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
 
 // MARK: Bit arrays
 
-fn byte() {
+fn byte() -> Generator(Int) {
   int_uniform_inclusive(0, 255)
 }
 
