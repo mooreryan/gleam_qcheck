@@ -204,6 +204,14 @@ pub fn bit_array_byte_aligned_with_size__makes_arrays_of_correct_size__test() {
   bit_array.byte_size(bytes) == expected_byte_size
 }
 
+pub fn bit_array_byte_aligned_generic__test() {
+  use bytes <- qcheck.given(qcheck.bit_array_byte_aligned_generic(
+    value_generator: qcheck.int_uniform_inclusive(0, 255),
+    byte_size_generator: qcheck.int_uniform_inclusive(0, 8),
+  ))
+  bit_array.byte_size(bytes) <= 8
+}
+
 // MARK: Negative sizes
 
 @external(javascript, "../qcheck_ffi.mjs", "do_nothing")

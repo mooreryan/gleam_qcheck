@@ -2214,8 +2214,6 @@ pub fn bit_array_generic(
   bit_size_generator |> bind(bit_array_with_size_from(value_generator, _))
 }
 
-// TODO: bit_size_generator -> size_generator (OR make what the "size" is explicit for all bit array generators)
-
 /// `bit_array()` generates `BitArrays`.
 /// 
 /// Note: This function will generate bit arrays that cause runtime crashes when 
@@ -2374,6 +2372,18 @@ pub fn bit_array_byte_aligned_with_size_from(
 ) -> Generator(BitArray) {
   let bit_size = byte_size * 8
   bit_array_with_size_from(value_generator, bit_size)
+}
+
+/// `bit_array_byte_aligned_generic(value_generator, byte_size_generator)` 
+/// generates bit_arrays with 
+/// values from `value_generator` and lengths from `byte_size_generator`.
+/// 
+pub fn bit_array_byte_aligned_generic(
+  value_generator value_generator: Generator(Int),
+  byte_size_generator byte_size_generator: Generator(Int),
+) -> Generator(BitArray) {
+  use byte_size <- bind(byte_size_generator)
+  bit_array_byte_aligned_with_size_from(value_generator, byte_size)
 }
 
 /// Generate a number from the sequence `[0, 8, 16, ..., 128]`.
