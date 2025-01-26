@@ -1283,11 +1283,26 @@ pub fn from_weighted_generators(
 
 // MARK: Sized generators
 
-/// TODO docs
+/// Represents a `Generator` with a size.
+/// 
 type SizedGenerator(a) =
   fn(Int) -> Generator(a)
 
-/// TODO docs
+/// Creates a generator from a sized generator by first generating a size
+/// using the `size_generator`, then passing the result to the 
+/// `sized_generator`.
+///
+/// Shrinks on the size first, then on the generator.
+/// 
+/// ### Example
+/// 
+/// Generate digit strings sized between 10 and 20 digits.
+/// 
+/// ```
+/// string_with_length_from(char_digit()) 
+/// |> sized_from(int_uniform_inclusive(10, 20))
+/// ```
+///
 pub fn sized_from(
   sized_generator: SizedGenerator(a),
   size_generator: Generator(Int),
@@ -2288,7 +2303,6 @@ pub fn bit_array_utf8_with_size(num_codepoints: Int) -> Generator(BitArray) {
   bit_array_from_codepoints(codepoints)
 }
 
-// TODO: min and max length again.....
 fn utf_codepoint_list(
   min_length: Int,
   max_length: Int,
