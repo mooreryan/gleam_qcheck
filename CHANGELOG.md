@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `generate`
 - `list_with_length_from`
 - `sized_from`
+- `then` (an alias for `bind`)
 
 ### Changed
 

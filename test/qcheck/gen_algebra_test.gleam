@@ -641,3 +641,22 @@ pub fn shrinking_works_with_apply__test() {
   numbers
   |> should.equal(#(4, 6, 51))
 }
+
+pub fn bind_and_then_are_aliases__test() {
+  let generator_with_bind = {
+    use length <- qcheck.bind(qcheck.int_small_strictly_positive())
+    qcheck.int_uniform_inclusive(0, length)
+  }
+
+  let generator_with_then = {
+    use length <- qcheck.then(qcheck.int_small_strictly_positive())
+    qcheck.int_uniform_inclusive(0, length)
+  }
+
+  use seed <- qcheck.given(qcheck.int_uniform())
+  let seed = qcheck.seed(seed)
+  let count = 10
+
+  qcheck.generate(generator_with_bind, count, seed)
+  == qcheck.generate(generator_with_then, count, seed)
+}

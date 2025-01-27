@@ -838,6 +838,12 @@ pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   })
 }
 
+/// `then` is an alias for `bind`.
+/// 
+pub fn then(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
+  bind(generator, f)
+}
+
 /// `apply(f, x)` applies a function generator, `f`, and an argument generator, 
 /// `x`, into a result generator.
 /// 
