@@ -6,9 +6,6 @@ import gleam/string
 import gleeunit/should
 import qcheck
 
-// TODO: a lot of the shrink tests could probably be simplified by inspecting
-//   the output of `qcheck.generate_tree` instead.
-
 // map
 // 
 //
@@ -442,7 +439,6 @@ pub fn apply__test() {
   )
 }
 
-/// TODO: consider replacing this with a `generate_tree` inspection.
 pub fn shrinking_works_with_apply__test() {
   let tuple3 =
     fn(a, b, c) { #(a, b, c) }

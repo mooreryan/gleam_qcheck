@@ -1,11 +1,12 @@
-//// Vendored or altered versions of functions from prng's `random` module.
+//// Random
+////
+//// The random module provides basic random value generators that can be used 
+//// to define Generators.
 //// 
-//// Mostly these functions replace float generation with integer generation
-//// where possible.  This provides a large increase in downstream generator
-//// speed.
-//// 
-//// This module is considered private.  Breaking changes may occur at any time 
-//// without a major version increase.
+//// They are mostly inteded for internal use or "advanced" manual construction 
+//// of generators.  In typical usage, you will probably not need to interact 
+//// with these functions much, if at all.  As such, they are currently mostly
+//// undocumented.
 //// 
 
 // TODO: need to harmonize this API with the rest of the qcheck api (labels, names, etc.)

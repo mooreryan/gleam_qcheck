@@ -127,7 +127,6 @@ pub fn bit_array_utf8_non_empty__generates_valid_non_empty_utf8_bit_arrays__test
 
 pub fn bit_array_utf8_with_size__generates_valid_utf8_bit_arrays_with_given_num_codepoints__test() {
   let generator = {
-    // TODO: this is where the "sized_from" comes in nicely.
     use num_codepoints <- qcheck.bind(qcheck.int_small_positive_or_zero())
     use bit_array <- qcheck.map(qcheck.bit_array_utf8_with_size(num_codepoints))
     #(bit_array, num_codepoints)
