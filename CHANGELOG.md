@@ -46,7 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Label names have been removed.
   - Reinstanted `map4`, `map5`, and `map6`.
     - Lower down in the changelog, it mentions it is better to use the applicative style, but sometimes it is convenient to just use these and be done with it.
-- Removed arg labels for `apply`
+- Removed arg labels for
+  - `apply`
+  - `bind`
 - Fix generic collection function signatures. They now follow the pattern of fully specifying element and size generators.
   - `dict_generic`
   - `list_generic`

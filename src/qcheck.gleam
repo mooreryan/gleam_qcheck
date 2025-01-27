@@ -821,10 +821,7 @@ pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
 /// `bind(generator, f)` generates a value of type `a` with `generator`, then 
 /// passes that value to `f`, which uses it to generate values of type `b`.
 /// 
-pub fn bind(
-  generator generator: Generator(a),
-  f f: fn(a) -> Generator(b),
-) -> Generator(b) {
+pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   let Generator(generate) = generator
 
   Generator(fn(seed) {
