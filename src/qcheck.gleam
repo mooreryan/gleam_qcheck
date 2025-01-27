@@ -2156,8 +2156,8 @@ fn utf_codepoint_list(
 /// bytes.
 /// 
 pub fn bit_array_utf8_with_size_from(
-  codepoint_generator: Generator(UtfCodepoint),
-  num_codepoints: Int,
+  codepoint_generator codepoint_generator: Generator(UtfCodepoint),
+  num_codepoints num_codepoints: Int,
 ) -> Generator(BitArray) {
   use codepoints <- map(list_with_length_from(
     element_generator: codepoint_generator,
@@ -2168,8 +2168,8 @@ pub fn bit_array_utf8_with_size_from(
 }
 
 pub fn bit_array_utf8_generic(
-  codepoint_generator: Generator(UtfCodepoint),
-  num_codepoints_generator: Generator(Int),
+  codepoint_generator codepoint_generator: Generator(UtfCodepoint),
+  num_codepoints_generator num_codepoints_generator: Generator(Int),
 ) {
   use length <- map(num_codepoints_generator)
   list_with_length_from(codepoint_generator, length)
@@ -2216,8 +2216,8 @@ pub fn bit_array_byte_aligned_with_size(num_bytes: Int) -> Generator(BitArray) {
 /// generator.
 /// 
 pub fn bit_array_byte_aligned_with_size_from(
-  value_generator: Generator(Int),
-  byte_size: Int,
+  value_generator value_generator: Generator(Int),
+  byte_size byte_size: Int,
 ) -> Generator(BitArray) {
   let bit_size = byte_size * 8
   bit_array_with_size_from(value_generator, bit_size)
