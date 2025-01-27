@@ -653,7 +653,7 @@ pub fn config(
 /// 
 /// If `test_count <= 0`, then it will be adjusted to a valid value.
 ///  
-pub fn with_test_count(config, test_count) {
+pub fn with_test_count(config: Config, test_count: Int) -> Config {
   let test_count = case test_count <= 0 {
     True -> default_test_count
     False -> test_count
@@ -666,7 +666,7 @@ pub fn with_test_count(config, test_count) {
 /// 
 /// If `max_retries < 0`, then it will be adjusted to a valid value.
 /// 
-pub fn with_max_retries(config, max_retries) {
+pub fn with_max_retries(config: Config, max_retries: Int) -> Config {
   let max_retries = case max_retries < 0 {
     True -> default_max_retries
     False -> max_retries
@@ -676,7 +676,7 @@ pub fn with_max_retries(config, max_retries) {
 }
 
 /// `with_seed()` returns a new configuration with the given random seed.
-pub fn with_seed(config, seed) {
+pub fn with_seed(config: Config, seed: Seed) -> Config {
   Config(..config, seed: seed)
 }
 
@@ -751,7 +751,7 @@ pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
 /// 
 /// It is an alias for `constant(a)`.
 /// 
-pub fn return(a) {
+pub fn return(a: a) -> Generator(a) {
   Generator(fn(seed) { #(tree.return(a), seed) })
 }
 
@@ -759,7 +759,7 @@ pub fn return(a) {
 /// 
 /// It is an alias for `return(a)`.
 ///
-pub fn constant(a) {
+pub fn constant(a: a) -> Generator(a) {
   return(a)
 }
 
