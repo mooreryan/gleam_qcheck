@@ -1357,10 +1357,8 @@ pub fn char_alpha_numeric() -> Generator(String) {
 /// single char must always be provided.
 /// 
 pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
-  let hd = unsafe_char_to_int(char)
-  // TODO: if you provide a multi-codepoint single-"character" grapheme, then
-  // this will panic.
-  let tl = list.map(chars, unsafe_char_to_int)
+  let hd = char_to_int(char)
+  let tl = list.map(chars, char_to_int)
 
   // Take the char with the minimum int representation as the shrink target.
   let shrink_target = list.fold(tl, hd, int.min)
@@ -2295,12 +2293,16 @@ fn int_to_char(n: Int, default default: Int) -> String {
   }
 }
 
-/// WARNING: only call this if you know that the string you are converting
-/// consists of a single codepoint.
-fn unsafe_char_to_int(c: String) -> Int {
-  let assert [codepoint] = string.to_utf_codepoints(c)
-
-  string.utf_codepoint_to_int(codepoint)
+/// Return the codepoint representation of the character.
+///
+/// If the given character is a multicodepoint grapheme cluster, only returns
+/// the first codepoint in the cluster.
+/// 
+fn char_to_int(char: String) -> Int {
+  case string.to_utf_codepoints(char) {
+    [] -> ascii_a_lowercase
+    [codepoint, ..] -> string.utf_codepoint_to_int(codepoint)
+  }
 }
 
 /// If `n <= 0` return `0`, else return `n`.

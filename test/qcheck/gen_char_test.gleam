@@ -233,7 +233,6 @@ pub fn char_uniform__failures_shink_ok__test() {
   should.be_true(
     int(s) == 1
     || int(s) == 254
-    // TODO
     // Technically, this comes from a bug in the `string.replace` function
     // above, OR potentially in the shrinking functions.  For now, we stick this
     // in.  See notes for more info.
@@ -345,6 +344,16 @@ pub fn char_from_list__failures_shrink_ok__test() {
   }
   qcheck.test_error_message_shrunk_value(msg)
   |> should.equal(expected)
+}
+
+pub fn char_from_list__doesnt_crash_on_multicodepoint_chars__test() {
+  let e_accent = "é"
+  let assert True = e_accent == "\u{0065}\u{0301}"
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.char_from_list(e_accent, [e_accent]),
+    property: fn(_) { True },
+  )
 }
 
 pub fn char_whitespace__test() {
