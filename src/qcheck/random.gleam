@@ -9,8 +9,6 @@
 //// undocumented.
 //// 
 
-// TODO: need to harmonize this API with the rest of the qcheck api (labels, names, etc.)
-
 import gleam/int
 import gleam/list
 import gleam/order.{Eq, Gt, Lt}
@@ -77,14 +75,18 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
   #(a, Seed(seed))
 }
 
-pub fn int(from: Int, to: Int) -> Generator(Int) {
+pub fn int(from from: Int, to to: Int) -> Generator(Int) {
   prng_random.int(from, to) |> Generator
 }
 
-pub fn float(from: Float, to: Float) -> Generator(Float) {
+pub fn float(from from: Float, to to: Float) -> Generator(Float) {
   prng_random.float(from, to) |> Generator
 }
 
+/// Like `weighted` but uses `Floats` to specify the weights.
+/// 
+/// Generally you should prefer `weighted` as it is faster.
+/// 
 pub fn float_weighted(
   first: #(Float, a),
   others: List(#(Float, a)),
@@ -104,7 +106,7 @@ pub fn uniform(first: a, others: List(a)) -> Generator(a) {
   weighted(#(1, first), list.map(others, pair.new(1, _)))
 }
 
-pub fn choose(one: a, or other: a) -> Generator(a) {
+pub fn choose(one: a, other: a) -> Generator(a) {
   uniform(one, [other])
 }
 
@@ -122,26 +124,27 @@ fn get_by_weight(first: #(Int, a), others: List(#(Int, a)), countdown: Int) -> a
   }
 }
 
-// TODO: need a bind to match our API (and probably need a then in our API to
-// better fit in with stdlib?)
-pub fn then(
-  generator: Generator(a),
-  do generator_from: fn(a) -> Generator(b),
-) -> Generator(b) {
+pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   prng_random.then(generator.generator, fn(a) {
     // We need to unwrap and wrap the values of this function since we're
     // "hiding" the prng.random implementation.
-    let generator = generator_from(a)
+    let generator = f(a)
     generator.generator
   })
   |> Generator
 }
 
-pub fn map(generator: Generator(a), with fun: fn(a) -> b) -> Generator(b) {
+/// `then` is an alias for `bind`.
+/// 
+pub fn then(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
+  bind(generator, f)
+}
+
+pub fn map(generator: Generator(a), fun: fn(a) -> b) -> Generator(b) {
   prng_random.map(generator.generator, fun) |> Generator
 }
 
-pub fn to_random_yielder(from generator: Generator(a)) -> Yielder(a) {
+pub fn to_random_yielder(generator: Generator(a)) -> Yielder(a) {
   prng_random.to_random_yielder(generator.generator)
 }
 
@@ -153,7 +156,7 @@ pub fn random_sample(generator: Generator(a)) -> a {
   prng_random.random_sample(generator.generator)
 }
 
-pub fn sample(from generator: Generator(a), with seed: Seed) -> a {
+pub fn sample(generator: Generator(a), seed: Seed) -> a {
   prng_random.sample(generator.generator, seed.seed)
 }
 
