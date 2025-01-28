@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `rescue_error`
 - These functions are now internal:
   - `rescue`
+- Type `TestErrorMessage` and its associated functions become internal. (No longer part of public API.)
 - These functions have been renamed:
   - `char_print` -> `char_printable`
   - `char_print_uniform` -> `char_printable_uniform`

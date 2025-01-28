@@ -1,6 +1,7 @@
 import gleam/string
 import gleeunit/should
 import qcheck
+import qcheck/test_error_message
 
 pub fn custom_type_passing_test() {
   qcheck.run(
@@ -15,7 +16,7 @@ pub fn custom_type_passing_test() {
 
 pub fn custom_type_failing_test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_small_positive_or_zero() |> qcheck.map(MyInt),
@@ -25,7 +26,7 @@ pub fn custom_type_failing_test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(MyInt(10)))
 }
 
@@ -64,7 +65,7 @@ pub fn either_failing_test() {
   }
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     run(fn(v) {
       case v {
         First(n) -> n % 2 == 1
@@ -72,13 +73,13 @@ pub fn either_failing_test() {
       }
     })
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(First(0)))
 
   // The n == 0 will prevent the First(0) from being a shrink that fails
   // the property.
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     run(fn(v) {
       case v {
         First(n) -> n == 0 || n % 2 == 1
@@ -86,13 +87,13 @@ pub fn either_failing_test() {
       }
     })
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(Second(1)))
 
   // The n == 1 will prevent the Second(1) from being a shrink that
   // fails the property.
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     run(fn(v) {
       case v {
         First(n) -> n == 0 || n % 2 == 1
@@ -100,7 +101,7 @@ pub fn either_failing_test() {
       }
     })
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(First(2)))
 }
 

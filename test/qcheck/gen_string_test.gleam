@@ -6,6 +6,7 @@ import gleam/string
 import gleam/yielder
 import gleeunit/should
 import qcheck
+import qcheck/test_error_message
 import qcheck/tree.{type Tree, Tree}
 
 const test_count: Int = 5000
@@ -36,7 +37,7 @@ pub fn string_generic__test() {
 
 pub fn string_generic__failure_doesnt_mess_up_shrinks__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
@@ -53,13 +54,13 @@ pub fn string_generic__failure_doesnt_mess_up_shrinks__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect("ccc"))
 }
 
 pub fn string_generic__shrinks_okay_2__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
@@ -73,13 +74,13 @@ pub fn string_generic__shrinks_okay_2__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect("bbbbbb"))
 }
 
 pub fn string_with_length_from__shrinks_okay__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
@@ -88,13 +89,13 @@ pub fn string_with_length_from__shrinks_okay__test() {
       property: fn(s) { !string.contains(s, "x") },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should_be_one_of(["ax", "xa"])
 }
 
 pub fn string_generic__shrinks_okay__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
@@ -108,7 +109,7 @@ pub fn string_generic__shrinks_okay__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect("aaaaaa"))
 }
 

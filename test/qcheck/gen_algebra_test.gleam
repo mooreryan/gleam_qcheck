@@ -5,6 +5,7 @@ import gleam/result
 import gleam/string
 import gleeunit/should
 import qcheck
+import qcheck/test_error_message
 
 // map
 // 
@@ -12,7 +13,7 @@ import qcheck
 
 pub fn map__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_small_positive_or_zero() |> qcheck.map(int.to_float),
@@ -20,7 +21,7 @@ pub fn map__test() {
     )
   }
 
-  let shrunk_value = qcheck.test_error_message_shrunk_value(msg)
+  let shrunk_value = test_error_message.test_error_message_shrunk_value(msg)
 
   // Value differs on Erlang and JS targets.
   should.be_true(shrunk_value == "1.0" || shrunk_value == "1")
@@ -300,7 +301,7 @@ type Either(a, b) {
 
 pub fn shrinking_works_with_bind_and_custom_types_test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform()
@@ -331,13 +332,13 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("First(14)")
 }
 
 pub fn shrinking_works_with_bind_and_custom_types_2_test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform()
@@ -367,7 +368,7 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
     )
   }
 
-  let shrunk_value = qcheck.test_error_message_shrunk_value(msg)
+  let shrunk_value = test_error_message.test_error_message_shrunk_value(msg)
 
   // Value differs on Erlang and JS targets.
   should.be_true(shrunk_value == "Second(94.0)" || shrunk_value == "Second(94)")
@@ -375,7 +376,7 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
 
 pub fn shrinking_works_with_bind_and_custom_types_3_test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform()
@@ -401,7 +402,7 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
     )
   }
 
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("First(14)")
 }
 
@@ -452,7 +453,7 @@ pub fn shrinking_works_with_apply__test() {
     |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
 
     qcheck.run(
       config: qcheck.default_config(),
@@ -467,11 +468,11 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(4, 0, 0)")
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: generator,
@@ -485,11 +486,11 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(-4, 0, 0)")
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: generator,
@@ -503,11 +504,11 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 6, 0)")
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: generator,
@@ -521,11 +522,11 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, -6, 0)")
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: generator,
@@ -539,11 +540,11 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 0, 51)")
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: generator,
@@ -557,11 +558,11 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 0, -51)")
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: generator,
@@ -575,11 +576,11 @@ pub fn shrinking_works_with_apply__test() {
       },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(4, 6, 51)")
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: generator,
@@ -635,7 +636,7 @@ pub fn shrinking_works_with_apply__test() {
   }
 
   let assert Ok(numbers) =
-    qcheck.test_error_message_shrunk_value(msg)
+    test_error_message.test_error_message_shrunk_value(msg)
     |> parse_numbers
 
   numbers

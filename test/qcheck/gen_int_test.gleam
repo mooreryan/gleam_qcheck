@@ -2,6 +2,7 @@ import gleam/int
 import gleam/string
 import gleeunit/should
 import qcheck
+import qcheck/test_error_message
 
 // int_small_positive_or_zero
 // 
@@ -14,25 +15,25 @@ pub fn int_small_positive_or_zero__test() {
 
 pub fn int_small_positive_or_zero__failures_shrink_to_zero__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     use n <- qcheck.given(qcheck.int_small_positive_or_zero())
     n + 1 != 1 + n
   }
 
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(0))
 }
 
 pub fn int_small_positive_or_zero__failures_shrink_to_smaller_values__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_small_positive_or_zero(),
       property: fn(n) { n == 0 || n > 1 },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(1))
 }
 
@@ -50,25 +51,25 @@ pub fn int_small_strictly_positive__test() {
 
 pub fn int_small_strictly_positive__failures_shrink_ok__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_small_strictly_positive(),
       property: fn(n) { n > 1 },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(1))
 
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_small_strictly_positive(),
       property: fn(n) { n == 1 || n > 2 },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(2))
 }
 
@@ -86,7 +87,7 @@ pub fn int_uniform__test() {
 
 pub fn int_uniform__failures_shrink_ok__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform(),
@@ -94,13 +95,13 @@ pub fn int_uniform__failures_shrink_ok__test() {
     )
   }
 
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(55_555))
 }
 
 pub fn int_uniform__negative_numbers_shrink_towards_zero__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform(),
@@ -108,7 +109,7 @@ pub fn int_uniform__negative_numbers_shrink_towards_zero__test() {
       property: fn(n) { n > -5 },
     )
   }
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(-5))
 }
 
@@ -118,7 +119,7 @@ pub fn int_uniform__negative_numbers_shrink_towards_zero__test() {
 
 pub fn int_uniform_range__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform_inclusive(-10, 10),
@@ -127,7 +128,7 @@ pub fn int_uniform_range__test() {
   }
 
   let assert Ok(n) =
-    qcheck.test_error_message_shrunk_value(msg)
+    test_error_message.test_error_message_shrunk_value(msg)
     |> int.parse
 
   should.be_true(n == -6 || n == 6)
@@ -144,7 +145,7 @@ pub fn int_uniform_range__test() {
 // include zero.
 pub fn positive_int_uniform_range_not_including_zero__shrinks_ok__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform_inclusive(5, 10),
@@ -152,7 +153,7 @@ pub fn positive_int_uniform_range_not_including_zero__shrinks_ok__test() {
     )
   }
 
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(5))
 }
 
@@ -160,7 +161,7 @@ pub fn positive_int_uniform_range_not_including_zero__shrinks_ok__test() {
 // include zero.
 pub fn negative_int_uniform_range_not_including_zero__shrinks_ok__test() {
   let assert Error(msg) = {
-    use <- qcheck.rescue
+    use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.int_uniform_inclusive(-10, -5),
@@ -168,7 +169,7 @@ pub fn negative_int_uniform_range_not_including_zero__shrinks_ok__test() {
     )
   }
 
-  qcheck.test_error_message_shrunk_value(msg)
+  test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(-5))
 }
 

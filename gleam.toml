@@ -1,7 +1,7 @@
 name = "qcheck"
 version = "0.0.8"
 
-internal_modules = ["qcheck/prng_random"]
+internal_modules = ["qcheck/test_error_message"]
 
 description = "QuickCheck-inspired property testing with integrated shrinking"
 licences = ["Apache-2.0", "MIT"]
