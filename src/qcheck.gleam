@@ -686,20 +686,30 @@ pub fn with_seed(config: Config, seed: Seed) -> Config {
 
 /// `Generator(a)` is a random generator for values of type `a`.
 /// 
-/// *Note:* It is likely that this type will become opaque in the future.
+/// While this type is not opaque (and has a public constructor), you should 
+/// generally prefer to use the built-in generators or combinators like `map`, 
+/// `bind`, etc.  Direct generator construction should rarely be done.
 /// 
 pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
 }
 
-fn make_primitive_generator(
-  random_generator random_generator: random.Generator(a),
-  make_tree make_tree: fn(a) -> Tree(a),
+/// `generator(random_generator, tree)` creates a new generator.
+/// 
+/// The `random_generator` produces random values of type `a`, while the `tree` 
+/// function takes those values and creates a shrink tree for them.
+/// 
+/// This is a low-level function for building custom generators. Most users 
+/// should use the built-in generators or combinators like `map`, `bind`, etc.
+/// 
+pub fn generator(
+  random_generator: random.Generator(a),
+  tree: fn(a) -> Tree(a),
 ) -> Generator(a) {
   Generator(fn(seed) {
     let #(generated_value, next_seed) = random.step(random_generator, seed)
 
-    #(make_tree(generated_value), next_seed)
+    #(tree(generated_value), next_seed)
   })
 }
 
@@ -1134,15 +1144,15 @@ pub fn sized_from(
 /// Shrinks towards `0`.
 /// 
 pub fn int_small_positive_or_zero() -> Generator(Int) {
-  make_primitive_generator(
-    random_generator: random.int(0, 100)
+  generator(
+    random.int(0, 100)
       |> random.then(fn(x) {
         case x < 75 {
           True -> random.int(0, 10)
           False -> random.int(0, 100)
         }
       }),
-    make_tree: fn(n) { tree.new(root: n, shrink: shrink.int_towards_zero()) },
+    fn(n) { tree.new(root: n, shrink: shrink.int_towards_zero()) },
   )
 }
 
@@ -1169,14 +1179,11 @@ pub fn int_uniform_inclusive(from low: Int, to high: Int) -> Generator(Int) {
     False -> #(high, low)
   }
 
-  make_primitive_generator(
-    random_generator: random.int(low, high),
-    make_tree: fn(n) {
-      let origin = pick_origin_within_range(low, high, goal: 0)
+  generator(random.int(low, high), fn(n) {
+    let origin = pick_origin_within_range(low, high, goal: 0)
 
-      tree.new(root: n, shrink: shrink.int_towards(origin))
-    },
-  )
+    tree.new(root: n, shrink: shrink.int_towards(origin))
+  })
 }
 
 // WARNING: doesn't hit the interesting cases very often.  Use something more like
@@ -1240,14 +1247,11 @@ pub fn float_uniform_inclusive(from low: Float, to high: Float) {
     False -> #(high, low)
   }
 
-  make_primitive_generator(
-    random_generator: random.float(low, high),
-    make_tree: fn(n) {
-      let origin = pick_origin_within_range_float(low, high, goal: 0.0)
+  generator(random.float(low, high), fn(n) {
+    let origin = pick_origin_within_range_float(low, high, goal: 0.0)
 
-      tree.new(root: n, shrink: shrink.float_towards(origin))
-    },
-  )
+    tree.new(root: n, shrink: shrink.float_towards(origin))
+  })
 }
 
 // MARK: Characters

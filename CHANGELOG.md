@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `bit_array_byte_aligned_generic`
 - `constant`: a synonym for `qcheck.return`
 - `generate`
+- `generator` to help with manually constructing custom generators
 - `list_with_length_from`
 - `sized_from`
 - `then` (an alias for `bind`)
