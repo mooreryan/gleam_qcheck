@@ -68,3 +68,11 @@ qv_setup_for_gh_pages:
 
   npm install
   gleam deps download
+
+# Find the `name` in the code.
+find name:
+  rg {{ name }} -g '*.gleam' src/ test/
+
+# You SHOULD have a clean working directory (git) and run `find name` first to verify.
+rename current_name new_name:
+  rg {{ current_name }} -l -0 -g '*.gleam' src/ test/ | xargs -0 sed -i 's/{{ current_name }}/{{ new_name }}/g'
