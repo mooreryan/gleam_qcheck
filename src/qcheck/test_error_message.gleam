@@ -1,5 +1,5 @@
 //// This is an internal module used for printing qcheck test errors.
-//// 
+////
 
 import gleam/option.{Some}
 import gleam/regexp
@@ -58,7 +58,7 @@ fn regexp_first_submatch(
 }
 
 /// Mainly for asserting values in qcheck internal tests.
-/// 
+///
 fn test_error_message_get_original_value(
   test_error_str: String,
 ) -> Result(String, String) {
@@ -66,7 +66,7 @@ fn test_error_message_get_original_value(
 }
 
 /// Mainly for asserting values in qcheck internal tests.
-/// 
+///
 fn test_error_message_get_shrunk_value(
   test_error_str: String,
 ) -> Result(String, String) {
@@ -74,7 +74,7 @@ fn test_error_message_get_shrunk_value(
 }
 
 /// Mainly for asserting values in qcheck internal tests.
-/// 
+///
 fn test_error_message_get_shrink_steps(
   test_error_str: String,
 ) -> Result(String, String) {
@@ -82,12 +82,12 @@ fn test_error_message_get_shrink_steps(
 }
 
 /// This function should only be called to rescue a function that may call
-/// `failwith` at some point to raise an exception.  It will likely 
+/// `failwith` at some point to raise an exception.  It will likely
 /// raise otherwise.
-/// 
-/// This function is internal.  Breaking changes may occur without a major 
+///
+/// This function is internal.  Breaking changes may occur without a major
 /// version update.
-/// 
+///
 pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
   case rescue_error(thunk) {
     Ok(a) -> Ok(a)

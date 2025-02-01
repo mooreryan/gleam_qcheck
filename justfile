@@ -27,7 +27,7 @@ bench_full:
   #!/usr/bin/env bash
   set -euxo pipefail
 
-  cd bench 
+  cd bench
 
   gleam run -m full_benchmark -- bench_out
 
@@ -75,4 +75,4 @@ find name:
 
 # You SHOULD have a clean working directory (git) and run `find name` first to verify.
 rename current_name new_name:
-  rg {{ current_name }} -l -0 -g '*.gleam' src/ test/ | xargs -0 sed -i 's/{{ current_name }}/{{ new_name }}/g'
+  rg {{ current_name }} -l -0 -g '*.gleam' src/ test/ | xargs -0 sed -i '' 's/{{ current_name }}/{{ new_name }}/g'

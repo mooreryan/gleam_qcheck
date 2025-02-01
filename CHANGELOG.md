@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `sized_from`
 - `then` (an alias for `bind`)
 
+### Renamed
+
+Most of the functions were renamed. Check the docs for specifics!
+
 ### Changed
 
 - Function signature changes in `from_generators`, `from_float_weighted_generators`, and `from_weighted_generators`.
@@ -61,10 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix some tests that were broken on JS target
-- Fix a bug in `int_small_positive_or_zero`
-- `char_uniform_inclusive` won't panic if the given range includes invalid unicode codepoints
-- `char_from_list` doesn't crash on mutli-codepoint characters
+- Fix some tests that were broken on JS target.
+- Fix a bug in `int_small_positive_or_zero` (now called `small_positive_or_zero_int`).
+- `char_uniform_inclusive` (now called `bounded_character`) won't panic if the given range includes invalid unicode codepoints.
+- `char_from_list` (now called `character_from`) doesn't crash on mutli-codepoint characters.
 
 ## [0.0.8] - 2024-12-31
 

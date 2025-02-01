@@ -8,7 +8,7 @@ import qcheck
 import qcheck/test_error_message
 
 // map
-// 
+//
 //
 
 pub fn map__test() {
@@ -16,7 +16,7 @@ pub fn map__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.int_small_positive_or_zero() |> qcheck.map(int.to_float),
+      generator: qcheck.small_positive_or_zero_int() |> qcheck.map(int.to_float),
       property: fn(n) { n == 0.0 || n >. 1.0 },
     )
   }
@@ -37,7 +37,7 @@ pub fn map2__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -56,7 +56,7 @@ pub fn map3__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -75,7 +75,7 @@ pub fn map4__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -96,7 +96,7 @@ pub fn map5__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -122,7 +122,7 @@ pub fn map6__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -154,7 +154,7 @@ pub fn map4_with_apply__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   let generator =
     qcheck.return({
@@ -186,7 +186,7 @@ pub fn tuple2__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -205,7 +205,7 @@ pub fn tuple3__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -224,7 +224,7 @@ pub fn tuple4__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -243,7 +243,7 @@ pub fn tuple5__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -262,7 +262,7 @@ pub fn tuple6__test() {
 
   let in_range = in_range(min, max)
 
-  let gen_int = qcheck.int_uniform_inclusive(min, max)
+  let gen_int = qcheck.bounded_int(min, max)
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -289,7 +289,7 @@ pub fn tuple6__test() {
 
 // bind
 //
-// The following tests exercise the shrinking behavior when using bind to 
+// The following tests exercise the shrinking behavior when using bind to
 // generate custom types.
 //
 //
@@ -304,22 +304,22 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.int_uniform()
+      generator: qcheck.uniform_int()
         |> qcheck.bind(fn(n) {
           // n >= 0 here will set the shrinker starting on the `First` case, as that
           // is what 0 will become.
           case n >= 0 {
             True ->
-              qcheck.int_uniform_inclusive(10, 19)
+              qcheck.bounded_int(10, 19)
               |> qcheck.map(First)
             False ->
-              qcheck.int_uniform_inclusive(90, 99)
+              qcheck.bounded_int(90, 99)
               |> qcheck.map(int.to_float)
               |> qcheck.map(Second)
           }
         }),
       property: fn(either) {
-        // Adding the two extra failing cases for First and Second to test the 
+        // Adding the two extra failing cases for First and Second to test the
         // shrinking.
         case either {
           First(15) -> False
@@ -341,16 +341,16 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.int_uniform()
+      generator: qcheck.uniform_int()
         |> qcheck.bind(fn(n) {
           // n > 0 here will set the shrinker starting on the `Second` case, as that
           // is what 0 will become.
           case n > 0 {
             True ->
-              qcheck.int_uniform_inclusive(10, 19)
+              qcheck.bounded_int(10, 19)
               |> qcheck.map(First)
             False ->
-              qcheck.int_uniform_inclusive(90, 99)
+              qcheck.bounded_int(90, 99)
               |> qcheck.map(int.to_float)
               |> qcheck.map(Second)
           }
@@ -379,14 +379,14 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.int_uniform()
+      generator: qcheck.uniform_int()
         |> qcheck.bind(fn(n) {
           case n > 0 {
             True ->
-              qcheck.int_uniform_inclusive(10, 19)
+              qcheck.bounded_int(10, 19)
               |> qcheck.map(First)
             False ->
-              qcheck.int_uniform_inclusive(90, 99)
+              qcheck.bounded_int(90, 99)
               |> qcheck.map(int.to_float)
               |> qcheck.map(Second)
           }
@@ -407,8 +407,8 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
 }
 
 // apply
-// 
-// 
+//
+//
 
 fn curry3(f) {
   fn(a) { fn(b) { fn(c) { f(a, b, c) } } }
@@ -422,9 +422,9 @@ pub fn apply__test() {
   let generator =
     tuple3
     |> qcheck.return
-    |> qcheck.apply(qcheck.int_uniform_inclusive(-5, 5))
-    |> qcheck.apply(qcheck.int_uniform_inclusive(-10, 10))
-    |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+    |> qcheck.apply(qcheck.bounded_int(-5, 5))
+    |> qcheck.apply(qcheck.bounded_int(-10, 10))
+    |> qcheck.apply(qcheck.bounded_int(-100, 100))
 
   qcheck.run(
     config: qcheck.default_config(),
@@ -448,9 +448,9 @@ pub fn shrinking_works_with_apply__test() {
   let generator =
     tuple3
     |> qcheck.return
-    |> qcheck.apply(qcheck.int_uniform_inclusive(-5, 5))
-    |> qcheck.apply(qcheck.int_uniform_inclusive(-10, 10))
-    |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+    |> qcheck.apply(qcheck.bounded_int(-5, 5))
+    |> qcheck.apply(qcheck.bounded_int(-10, 10))
+    |> qcheck.apply(qcheck.bounded_int(-100, 100))
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
@@ -621,7 +621,7 @@ pub fn shrinking_works_with_apply__test() {
     |> result.then(fn(tup) {
       let #(a, b, c) = tup
 
-      // The way this is set up, the failing values will either be positve or 
+      // The way this is set up, the failing values will either be positve or
       // negative for each "slot", so we must map the absolute value.
       case int.parse(a), int.parse(b), int.parse(c) {
         Ok(a), Ok(b), Ok(c) ->
@@ -645,16 +645,16 @@ pub fn shrinking_works_with_apply__test() {
 
 pub fn bind_and_then_are_aliases__test() {
   let generator_with_bind = {
-    use length <- qcheck.bind(qcheck.int_small_strictly_positive())
-    qcheck.int_uniform_inclusive(0, length)
+    use length <- qcheck.bind(qcheck.small_strictly_positive_int())
+    qcheck.bounded_int(0, length)
   }
 
   let generator_with_then = {
-    use length <- qcheck.then(qcheck.int_small_strictly_positive())
-    qcheck.int_uniform_inclusive(0, length)
+    use length <- qcheck.then(qcheck.small_strictly_positive_int())
+    qcheck.bounded_int(0, length)
   }
 
-  use seed <- qcheck.given(qcheck.int_uniform())
+  use seed <- qcheck.given(qcheck.uniform_int())
   let seed = qcheck.seed(seed)
   let count = 10
 

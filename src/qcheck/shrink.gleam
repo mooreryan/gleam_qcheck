@@ -1,15 +1,15 @@
 //// Shrinking helper functions
-//// 
+////
 //// This module contains helper functions that can be used to build custom generators (not by composing other generators).
-//// 
-//// They are mostly inteded for internal use or "advanced" manual construction 
-//// of generators.  In typical usage, you will probably not need to interact 
+////
+//// They are mostly inteded for internal use or "advanced" manual construction
+//// of generators.  In typical usage, you will probably not need to interact
 //// with these functions much, if at all.  As such, they are currently mostly
 //// undocumented.
-//// 
-//// In fact, if you are using these functions a lot, file a issue on GitHub 
+////
+//// In fact, if you are using these functions a lot, file a issue on GitHub
 //// and let me know if there are any generator combinators that you're missing.
-//// 
+////
 
 import gleam/yielder.{type Yielder}
 

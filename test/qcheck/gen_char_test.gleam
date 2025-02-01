@@ -4,10 +4,10 @@ import gleeunit/should
 import qcheck
 import qcheck/test_error_message
 
-pub fn char_uniform_inclusive__test() {
+pub fn bounded_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_uniform_inclusive(500, 1000),
+    generator: qcheck.bounded_character(500, 1000),
     property: fn(s) {
       let codepoints = string.to_utf_codepoints(s)
 
@@ -21,10 +21,10 @@ pub fn char_uniform_inclusive__test() {
   )
 }
 
-pub fn char_uniform_inclusive__ranges_that_include_invalid_codepoints__test() {
+pub fn bounded_character__ranges_that_include_invalid_codepoints__test() {
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: qcheck.char_uniform_inclusive(55_200, 58_000),
+    generator: qcheck.bounded_character(55_200, 58_000),
     property: fn(s) {
       let codepoints = string.to_utf_codepoints(s)
 
@@ -38,10 +38,10 @@ pub fn char_uniform_inclusive__ranges_that_include_invalid_codepoints__test() {
   )
 }
 
-pub fn char_uniform_inclusive__low_greater_than_hi__test() {
+pub fn bounded_character__low_greater_than_hi__test() {
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: qcheck.char_uniform_inclusive(70, 65),
+    generator: qcheck.bounded_character(70, 65),
     property: fn(s) {
       let codepoints = string.to_utf_codepoints(s)
 
@@ -55,10 +55,10 @@ pub fn char_uniform_inclusive__low_greater_than_hi__test() {
   )
 }
 
-pub fn char_uniform_inclusive__codepoints_out_of_range__test() {
+pub fn bounded_character__codepoints_out_of_range__test() {
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: qcheck.char_uniform_inclusive(-2_000_000, 2_000_000),
+    generator: qcheck.bounded_character(-2_000_000, 2_000_000),
     property: it_doesnt_crash,
   )
 }
@@ -67,7 +67,7 @@ fn it_doesnt_crash(_) {
   True
 }
 
-pub fn char_uniform_inclusive__failures_shink_ok__test() {
+pub fn bounded_character__failures_shink_ok__test() {
   let expected =
     500
     |> utf_codepoint_exn
@@ -79,7 +79,7 @@ pub fn char_uniform_inclusive__failures_shink_ok__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_uniform_inclusive(500, 1000),
+      generator: qcheck.bounded_character(500, 1000),
       property: fn(s) {
         let codepoints = string.to_utf_codepoints(s)
 
@@ -107,15 +107,15 @@ fn has_one_codepoint_in_range(s: String, low: Int, high: Int) -> Bool {
   low <= n && n <= high
 }
 
-pub fn char_uppercase__test() {
+pub fn uppercase_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_uppercase(),
+    generator: qcheck.uppercase_character(),
     property: has_one_codepoint_in_range(_, int("A"), int("Z")),
   )
 }
 
-pub fn char_uppercase__failures_shink_ok__test() {
+pub fn uppercase_character__failures_shink_ok__test() {
   // "Z" is less than "a" => "Z" is "closer" to "a" so that is the shrink
   // target.
   let expected = string.inspect("Z")
@@ -125,7 +125,7 @@ pub fn char_uppercase__failures_shink_ok__test() {
 
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_uppercase(),
+      generator: qcheck.uppercase_character(),
       property: has_one_codepoint_in_range(_, int("A") + 2, int("Z") - 2),
     )
   }
@@ -133,15 +133,15 @@ pub fn char_uppercase__failures_shink_ok__test() {
   |> should.equal(expected)
 }
 
-pub fn char_lowercase__test() {
+pub fn lowercase_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_lowercase(),
+    generator: qcheck.lowercase_character(),
     property: has_one_codepoint_in_range(_, int("a"), int("z")),
   )
 }
 
-pub fn char_lowercase__failures_shink_ok__test() {
+pub fn lowercase_character__failures_shink_ok__test() {
   // "Z" is less than "a" => "Z" is "closer" to "a" so that is the shrink
   // target.
   let expected = string.inspect("a")
@@ -151,7 +151,7 @@ pub fn char_lowercase__failures_shink_ok__test() {
 
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_lowercase(),
+      generator: qcheck.lowercase_character(),
       property: has_one_codepoint_in_range(_, int("a") + 2, int("z") - 2),
     )
   }
@@ -159,15 +159,15 @@ pub fn char_lowercase__failures_shink_ok__test() {
   |> should.equal(expected)
 }
 
-pub fn char_digit__test() {
+pub fn digit_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_digit(),
+    generator: qcheck.digit_character(),
     property: has_one_codepoint_in_range(_, int("0"), int("9")),
   )
 }
 
-pub fn char_digit__failures_shink_ok__test() {
+pub fn digit_character__failures_shink_ok__test() {
   // "9" is less than "a" => "9" is "closer" to "a" so that is the shrink
   // target.
   let expected = string.inspect("9")
@@ -177,7 +177,7 @@ pub fn char_digit__failures_shink_ok__test() {
 
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_digit(),
+      generator: qcheck.digit_character(),
       property: has_one_codepoint_in_range(_, int("0") + 2, int("9") - 2),
     )
   }
@@ -185,20 +185,20 @@ pub fn char_digit__failures_shink_ok__test() {
   |> should.equal(expected)
 }
 
-pub fn char_printable_uniform__test() {
+pub fn uniform_printable_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_printable_uniform(),
+    generator: qcheck.uniform_printable_character(),
     property: has_one_codepoint_in_range(_, int(" "), int("~")),
   )
 }
 
-pub fn char_printable_uniform__failures_shink_ok__test() {
+pub fn uniform_printable_character__failures_shink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_printable_uniform(),
+      generator: qcheck.uniform_printable_character(),
       property: has_one_codepoint_in_range(_, int(" ") + 2, int("~") - 2),
     )
   }
@@ -208,25 +208,25 @@ pub fn char_printable_uniform__failures_shink_ok__test() {
   |> should_be_one_of(["!", "}"])
 }
 
-pub fn char_uniform__test() {
+pub fn uniform_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_uniform(),
+    generator: qcheck.uniform_character(),
     property: has_one_codepoint_in_range(_, 0, 255),
   )
 }
 
-pub fn char_uniform__failures_shink_ok__test() {
+pub fn uniform_character__failures_shink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_uniform(),
+      generator: qcheck.uniform_character(),
       property: has_one_codepoint_in_range(_, 2, 253),
     )
   }
 
-  // `char_uniform` shrinks towards `"a"`, so either of these could be valid.
+  // `uniform_character` shrinks towards `"a"`, so either of these could be valid.
   let s =
     test_error_message.test_error_message_shrunk_value(msg)
     |> string.replace(each: "\"", with: "")
@@ -241,10 +241,10 @@ pub fn char_uniform__failures_shink_ok__test() {
   )
 }
 
-pub fn char_alpha__test() {
+pub fn alphabetic_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_alpha(),
+    generator: qcheck.alphabetic_character(),
     property: fn(s) {
       has_one_codepoint_in_range(s, int("A"), int("Z"))
       || has_one_codepoint_in_range(s, int("a"), int("z"))
@@ -252,7 +252,7 @@ pub fn char_alpha__test() {
   )
 }
 
-pub fn char_alpha__failures_shrink_ok__test() {
+pub fn alphabetic_character__failures_shrink_ok__test() {
   // If the property is false, then we know the lowercase generator was selected
   // and that shrinks to "a".
   let expected = string.inspect("a")
@@ -261,7 +261,7 @@ pub fn char_alpha__failures_shrink_ok__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_alpha(),
+      generator: qcheck.alphabetic_character(),
       property: fn(s) { has_one_codepoint_in_range(s, int("A"), int("Z")) },
     )
   }
@@ -270,7 +270,7 @@ pub fn char_alpha__failures_shrink_ok__test() {
   |> should.equal(expected)
 }
 
-pub fn char_alpha__failures_shrink_ok_2__test() {
+pub fn alphabetic_character__failures_shrink_ok_2__test() {
   // If the property is false, then we know the uppercase generator was selected
   // and that shrinks to "Z".
   let expected = string.inspect("Z")
@@ -279,7 +279,7 @@ pub fn char_alpha__failures_shrink_ok_2__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_alpha(),
+      generator: qcheck.alphabetic_character(),
       property: fn(s) { has_one_codepoint_in_range(s, int("a"), int("z")) },
     )
   }
@@ -287,10 +287,10 @@ pub fn char_alpha__failures_shrink_ok_2__test() {
   |> should.equal(expected)
 }
 
-pub fn char_alpha_numeric__test() {
+pub fn alphanumeric_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_alpha_numeric(),
+    generator: qcheck.alphanumeric_character(),
     property: fn(s) {
       has_one_codepoint_in_range(s, int("A"), int("Z"))
       || has_one_codepoint_in_range(s, int("a"), int("z"))
@@ -299,26 +299,26 @@ pub fn char_alpha_numeric__test() {
   )
 }
 
-pub fn char_alpha_numeric__failures_shrink_ok__test() {
+pub fn alphanumeric_character__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_alpha_numeric(),
+      generator: qcheck.alphanumeric_character(),
       property: fn(_) { False },
     )
   }
 
-  // Depending on the selected generator, any of these could be the shrink 
+  // Depending on the selected generator, any of these could be the shrink
   // target.
   test_error_message.test_error_message_shrunk_value(msg)
   |> should_be_one_of(["a", "Z", "9"])
 }
 
-pub fn char_from_list__test() {
+pub fn character_from__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_from_list("b", ["c", "x", "y", "z"]),
+    generator: qcheck.character_from("b", ["c", "x", "y", "z"]),
     property: fn(s) {
       case s {
         "b" -> True
@@ -332,14 +332,14 @@ pub fn char_from_list__test() {
   )
 }
 
-pub fn char_from_list__failures_shrink_ok__test() {
+pub fn character_from__failures_shrink_ok__test() {
   let expected = string.inspect("b")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_from_list("b", ["c", "x", "y", "z"]),
+      generator: qcheck.character_from("b", ["c", "x", "y", "z"]),
       property: fn(s) { s == "q" },
     )
   }
@@ -347,20 +347,20 @@ pub fn char_from_list__failures_shrink_ok__test() {
   |> should.equal(expected)
 }
 
-pub fn char_from_list__doesnt_crash_on_multicodepoint_chars__test() {
+pub fn character_from__doesnt_crash_on_multicodepoint_chars__test() {
   let e_accent = "é"
   let assert True = e_accent == "\u{0065}\u{0301}"
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_from_list(e_accent, [e_accent]),
+    generator: qcheck.character_from(e_accent, [e_accent]),
     property: fn(_) { True },
   )
 }
 
-pub fn char_whitespace__test() {
+pub fn whitespace_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_whitespace(),
+    generator: qcheck.whitespace_character(),
     property: fn(c) {
       case int(c) {
         // Horizontal tab
@@ -369,7 +369,7 @@ pub fn char_whitespace__test() {
         10 -> True
         // Vertical tab
         11 -> True
-        // Form feed 
+        // Form feed
         12 -> True
         // Carriage return
         13 -> True
@@ -381,12 +381,12 @@ pub fn char_whitespace__test() {
   )
 }
 
-pub fn char_whitespace__failures_shrink_ok__test() {
+pub fn whitespace_character__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_whitespace(),
+      generator: qcheck.whitespace_character(),
       property: fn(c) {
         case int(c) {
           // Horizontal tab
@@ -395,7 +395,7 @@ pub fn char_whitespace__failures_shrink_ok__test() {
           10 -> False
           // Vertical tab
           11 -> True
-          // Form feed 
+          // Form feed
           12 -> True
           // Carriage return
           13 -> False
@@ -411,10 +411,10 @@ pub fn char_whitespace__failures_shrink_ok__test() {
   |> should_be_one_of(["\n", "\r"])
 }
 
-pub fn char_printable__test() {
+pub fn printable_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char_printable(),
+    generator: qcheck.printable_character(),
     property: fn(s) {
       has_one_codepoint_in_range(s, int("A"), int("Z"))
       || has_one_codepoint_in_range(s, int("a"), int("z"))
@@ -424,24 +424,24 @@ pub fn char_printable__test() {
   )
 }
 
-pub fn char_printable__failures_shrink_ok__test() {
+pub fn printable_character__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char_printable(),
+      generator: qcheck.printable_character(),
       property: fn(_) { False },
     )
   }
 
-  // Depending on the selected generator, any of these could be the shrink 
+  // Depending on the selected generator, any of these could be the shrink
   // target.
   test_error_message.test_error_message_shrunk_value(msg)
   |> should_be_one_of(["a", "Z", "9", " "])
 }
 
-pub fn char_utf_codepoint__generates_a_char_with_a_single_codepoint__test() {
-  use char <- qcheck.given(qcheck.char_utf_codepoint())
+pub fn unicode_character__generates_a_char_with_a_single_codepoint__test() {
+  use char <- qcheck.given(qcheck.unicode_character())
   let codepoints = string.to_utf_codepoints(char)
   list.length(codepoints) == 1
 }
@@ -449,7 +449,7 @@ pub fn char_utf_codepoint__generates_a_char_with_a_single_codepoint__test() {
 pub fn char__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.char(),
+    generator: qcheck.character(),
     property: has_one_codepoint_in_range(_, 0, 255),
   )
 }
@@ -459,20 +459,20 @@ pub fn char__failures_shrink_ok__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.char(),
+      generator: qcheck.character(),
       property: fn(_) { False },
     )
   }
 
-  // Depending on the selected generator, any of these could be the shrink 
+  // Depending on the selected generator, any of these could be the shrink
   // target.
   test_error_message.test_error_message_shrunk_value(msg)
   |> should_be_one_of(["a", "Z", "9", " ", "\u{0000}", "\u{00FF}"])
 }
 
 // MARK: utils
-// 
-// 
+//
+//
 
 fn int(c) {
   string.to_utf_codepoints(c)

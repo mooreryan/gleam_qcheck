@@ -82,7 +82,7 @@ fn behaves_the_same(gen1: random.Generator(a), gen2: random.Generator(a)) -> Nil
 }
 
 /// Check that two distributions are similar.
-/// 
+///
 fn assert_similar_distributions(
   gen1: random.Generator(a),
   gen2: random.Generator(a),
@@ -110,7 +110,7 @@ fn assert_similar_distributions(
 }
 
 /// Count the number of times each element appears in a list.
-/// 
+///
 fn frequencies(lst: List(a)) -> Dict(a, Int) {
   list.fold(lst, dict.new(), fn(counts, item) {
     dict.upsert(counts, item, increment)
@@ -118,7 +118,7 @@ fn frequencies(lst: List(a)) -> Dict(a, Int) {
 }
 
 /// Given a dict of frequencies, return a dict of proportions.
-/// 
+///
 fn proportions(frequencies: Dict(a, Int)) -> Dict(a, Float) {
   let total = dict.values(frequencies) |> list.fold(0, int.add) |> int.to_float
 
@@ -126,7 +126,7 @@ fn proportions(frequencies: Dict(a, Int)) -> Dict(a, Float) {
 }
 
 /// Given a dict of proportions, sort it by the keys.
-/// 
+///
 fn sort_proportions(
   proportions: Dict(a, b),
   compare_elem: fn(a, a) -> Order,
@@ -141,10 +141,10 @@ fn sort_proportions(
 }
 
 /// Given two dicts of proportions, check that they are similar.
-/// 
+///
 /// The proportions are considered similar if the keys are the same and the
 /// proportions are within 1% of each other.
-/// 
+///
 fn proportions_are_loosely_equal(
   proportions1: Dict(a, Float),
   proportions2: Dict(a, Float),

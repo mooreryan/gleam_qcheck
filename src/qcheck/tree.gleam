@@ -1,18 +1,18 @@
 //// Trees
-//// 
+////
 //// This module contains functions for creating and manipulating shrink trees.
-//// 
-//// They are mostly inteded for internal use or "advanced" manual construction 
-//// of generators.  In typical usage, you will probably not need to interact 
+////
+//// They are mostly inteded for internal use or "advanced" manual construction
+//// of generators.  In typical usage, you will probably not need to interact
 //// with these functions much, if at all.  As such, they are currently mostly
 //// undocumented.
-//// 
-//// In fact, if you are using these functions a lot, file a issue on GitHub 
+////
+//// In fact, if you are using these functions a lot, file a issue on GitHub
 //// and let me know if there are any generator combinators that you're missing.
 ////
-//// There are functions for dealing with the [Tree](#Tree) type directly, but 
-//// they are low-level and you should not need to use them much. 
-//// 
+//// There are functions for dealing with the [Tree](#Tree) type directly, but
+//// they are low-level and you should not need to use them much.
+////
 //// - The [Tree](#Tree) type
 //// - [new](#new)
 //// - [return](#return)
@@ -25,7 +25,7 @@
 //// - [option](#option)
 //// - [to_string](#to_string)
 //// - [to_string_with_max_depth](#to_string_with_max_depth)
-//// 
+////
 
 import gleam/option.{type Option, None, Some}
 import gleam/string
@@ -95,7 +95,7 @@ pub fn map2(a: Tree(a), b: Tree(b), f: fn(a, b) -> c) -> Tree(c) {
 }
 
 /// `sequence_trees(list_of_trees)` sequences a list of trees into a tree of lists.
-/// 
+///
 pub fn sequence_trees(l: List(Tree(a))) -> Tree(List(a)) {
   case l {
     [] -> return([])
@@ -120,9 +120,9 @@ pub fn option(tree: Tree(a)) -> Tree(Option(a)) {
 
 // Debugging trees
 
-/// Collect values of the tree into a list, while processing them with the 
+/// Collect values of the tree into a list, while processing them with the
 /// mapping given function `f`.
-/// 
+///
 pub fn collect(tree: Tree(a), f: fn(a) -> b) -> List(b) {
   do_collect(tree, f, [])
 }
@@ -139,15 +139,15 @@ fn do_collect(tree: Tree(a), f: fn(a) -> b, acc: List(b)) -> List(b) {
 }
 
 /// `to_string(tree, element_to_string)` converts a tree into an unspecified string representation.
-/// 
+///
 /// - `element_to_string`: a function that converts individual elements of the tree to strings.
-/// 
+///
 pub fn to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
   do_to_string(tree, a_to_string, level: 0, max_level: 99_999_999, acc: [])
 }
 
 /// Like `to_string` but with a configurable `max_depth`.
-/// 
+///
 pub fn to_string_with_max_depth(
   tree: Tree(a),
   a_to_string: fn(a) -> String,

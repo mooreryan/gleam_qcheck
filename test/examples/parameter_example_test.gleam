@@ -12,10 +12,10 @@ fn box_generator() {
     use h <- qcheck.parameter
     Box(x:, y:, w:, h:)
   })
-  |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
-  |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
-  |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
-  |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+  |> qcheck.apply(qcheck.bounded_int(-100, 100))
+  |> qcheck.apply(qcheck.bounded_int(-100, 100))
+  |> qcheck.apply(qcheck.bounded_int(1, 100))
+  |> qcheck.apply(qcheck.bounded_int(1, 100))
 }
 
 pub fn parameter_example__test() {

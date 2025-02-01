@@ -5,7 +5,7 @@ const test_count: Int = 2500
 
 pub fn using_use__test() {
   let generator = {
-    use n <- qcheck.map(qcheck.int_small_positive_or_zero())
+    use n <- qcheck.map(qcheck.small_positive_or_zero_int())
     n + 10
   }
 
@@ -36,8 +36,8 @@ fn make_person(name, age) {
 }
 
 fn valid_name_and_age_generator() {
-  let name_generator = qcheck.string_non_empty()
-  let age_generator = qcheck.int_uniform_inclusive(from: 0, to: 129)
+  let name_generator = qcheck.non_empty_string()
+  let age_generator = qcheck.bounded_int(from: 0, to: 129)
 
   use name, age <- qcheck.map2(name_generator, age_generator)
   #(name, age)
@@ -58,11 +58,11 @@ pub fn bind_with_use__test() {
 
     case bool {
       True -> {
-        use n <- qcheck.map(qcheck.int_small_positive_or_zero())
+        use n <- qcheck.map(qcheck.small_positive_or_zero_int())
         Ok(n)
       }
       False -> {
-        use s <- qcheck.map(qcheck.string_non_empty())
+        use s <- qcheck.map(qcheck.non_empty_string())
         Error(s)
       }
     }

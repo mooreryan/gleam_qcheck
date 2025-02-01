@@ -5,13 +5,13 @@ import gleam/list
 import qcheck
 import qcheck/tree
 
-pub fn dict_generic__generates_valid_values__test() {
+pub fn generic_dict__generates_valid_values__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.dict_generic(
-      qcheck.int_uniform_inclusive(0, 2),
-      qcheck.int_uniform_inclusive(10, 12),
-      qcheck.int_uniform_inclusive(0, 5),
+    generator: qcheck.generic_dict(
+      qcheck.bounded_int(0, 2),
+      qcheck.bounded_int(10, 12),
+      qcheck.bounded_int(0, 5),
     ),
     property: fn(d) {
       let size_is_good = dict.size(d) <= 5
@@ -56,10 +56,10 @@ fn int_int_dict_to_string(dict: dict.Dict(Int, Int)) -> String {
 pub fn dict_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
-      qcheck.dict_generic(
-        key_generator: qcheck.int_uniform_inclusive(0, 2),
-        value_generator: qcheck.int_uniform_inclusive(10, 12),
-        size_generator: qcheck.int_uniform_inclusive(0, 3),
+      qcheck.generic_dict(
+        key_generator: qcheck.bounded_int(0, 2),
+        value_generator: qcheck.bounded_int(10, 12),
+        size_generator: qcheck.bounded_int(0, 3),
       ),
       qcheck.seed(12),
     )
@@ -69,10 +69,10 @@ pub fn dict_generators_shrink_on_size_then_on_elements__test() {
   |> birdie.snap("dict_generators_shrink_on_size_then_on_elements__test")
 }
 
-pub fn dict_generic__allows_empty_dict__test() {
-  use _ <- qcheck.given(qcheck.dict_generic(
-    qcheck.int_uniform_inclusive(0, 2),
-    qcheck.int_uniform_inclusive(10, 12),
+pub fn generic_dict__allows_empty_dict__test() {
+  use _ <- qcheck.given(qcheck.generic_dict(
+    qcheck.bounded_int(0, 2),
+    qcheck.bounded_int(10, 12),
     qcheck.constant(0),
   ))
   True

@@ -1,13 +1,13 @@
 //// Random
 ////
-//// The random module provides basic random value generators that can be used 
+//// The random module provides basic random value generators that can be used
 //// to define Generators.
-//// 
-//// They are mostly inteded for internal use or "advanced" manual construction 
-//// of generators.  In typical usage, you will probably not need to interact 
+////
+//// They are mostly inteded for internal use or "advanced" manual construction
+//// of generators.  In typical usage, you will probably not need to interact
 //// with these functions much, if at all.  As such, they are currently mostly
 //// undocumented.
-//// 
+////
 
 import gleam/int
 import gleam/list
@@ -20,7 +20,7 @@ import prng/seed as prng_seed
 // MARK: Seeds
 
 /// An opaque type representing a seed value used to initialize random generators.
-/// 
+///
 pub opaque type Seed {
   Seed(seed: prng_seed.Seed)
 }
@@ -28,42 +28,42 @@ pub opaque type Seed {
 /// `seed(n) creates a new seed from the given integer, `n`.
 ///
 /// ### Example
-/// 
+///
 /// Use a specific seed for the `Config`.
-/// 
+///
 /// ```
-/// let config = 
-///   qcheck.default_config() 
+/// let config =
+///   qcheck.default_config()
 ///   |> qcheck.with_seed(qcheck.seed(124))
 /// ```
-/// 
+///
 pub fn seed(n: Int) -> Seed {
   prng_seed.new(n) |> Seed
 }
 
-/// `seed_random()` creates a new randomly-generated seed.  You can use it when
+/// `random_seed()` creates a new randomly-generated seed.  You can use it when
 /// you don't care about having specifically reproducible results.
 ///
 /// ### Example
-/// 
+///
 /// Use a random seed for the `Config`.
-/// 
+///
 /// ```
-/// let config = 
-///   qcheck.default_config() 
-///   |> qcheck.with_seed(qcheck.seed_random())
+/// let config =
+///   qcheck.default_config()
+///   |> qcheck.with_seed(qcheck.random_seed())
 /// ```
-/// 
-pub fn seed_random() -> Seed {
+///
+pub fn random_seed() -> Seed {
   prng_seed.random() |> Seed
 }
 
 /// Attempting to generate values below this limit will not lead to good random results.
-/// 
+///
 pub const min_int = prng_random.min_int
 
 /// Attempting to generate values below this limit will not lead to good random results.
-/// 
+///
 pub const max_int = prng_random.max_int
 
 pub opaque type Generator(a) {
@@ -84,9 +84,9 @@ pub fn float(from from: Float, to to: Float) -> Generator(Float) {
 }
 
 /// Like `weighted` but uses `Floats` to specify the weights.
-/// 
+///
 /// Generally you should prefer `weighted` as it is faster.
-/// 
+///
 pub fn float_weighted(
   first: #(Float, a),
   others: List(#(Float, a)),
@@ -135,7 +135,7 @@ pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
 }
 
 /// `then` is an alias for `bind`.
-/// 
+///
 pub fn then(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   bind(generator, f)
 }

@@ -4,11 +4,7 @@ import qcheck
 
 pub fn generate__test() {
   let numbers =
-    qcheck.generate(
-      qcheck.int_uniform_inclusive(-10, 10),
-      100,
-      qcheck.seed_random(),
-    )
+    qcheck.generate(qcheck.bounded_int(-10, 10), 100, qcheck.random_seed())
 
   let result = {
     use number <- list.all(numbers)

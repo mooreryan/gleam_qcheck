@@ -11,7 +11,7 @@ import qcheck/tree.{type Tree, Tree}
 
 const test_count: Int = 5000
 
-pub fn string_generic__test() {
+pub fn generic_string__test() {
   let assert Ok(all_letters) =
     regexp.compile(
       "^[a-z]+$",
@@ -23,9 +23,9 @@ pub fn string_generic__test() {
   qcheck.run(
     config: qcheck.default_config(),
     // a - z
-    generator: qcheck.string_generic(
-      qcheck.char_uniform_inclusive(97, 122),
-      qcheck.int_uniform_inclusive(1, 10),
+    generator: qcheck.generic_string(
+      qcheck.bounded_character(97, 122),
+      qcheck.bounded_int(1, 10),
     ),
     property: fn(s) {
       let s_len = string.length(s)
@@ -35,17 +35,17 @@ pub fn string_generic__test() {
   )
 }
 
-pub fn string_generic__failure_doesnt_mess_up_shrinks__test() {
+pub fn generic_string__failure_doesnt_mess_up_shrinks__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
-      generator: qcheck.string_generic(
-        qcheck.char_uniform_inclusive(97, 122),
+      generator: qcheck.generic_string(
+        qcheck.bounded_character(97, 122),
         // The empty string should not be generated because it is outside of the
         // possible generated lengths.
-        qcheck.int_uniform_inclusive(3, 6),
+        qcheck.bounded_int(3, 6),
       ),
       property: fn(s) {
         string.contains(s, "a")
@@ -58,15 +58,15 @@ pub fn string_generic__failure_doesnt_mess_up_shrinks__test() {
   |> should.equal(string.inspect("ccc"))
 }
 
-pub fn string_generic__shrinks_okay_2__test() {
+pub fn generic_string__shrinks_okay_2__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
-      generator: qcheck.string_generic(
-        qcheck.char_uniform_inclusive(97, 122),
-        qcheck.int_uniform_inclusive(1, 10),
+      generator: qcheck.generic_string(
+        qcheck.bounded_character(97, 122),
+        qcheck.bounded_int(1, 10),
       ),
       property: fn(s) {
         let len = string.length(s)
@@ -78,14 +78,14 @@ pub fn string_generic__shrinks_okay_2__test() {
   |> should.equal(string.inspect("bbbbbb"))
 }
 
-pub fn string_with_length_from__shrinks_okay__test() {
+pub fn fixed_length_string_from__shrinks_okay__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
-      generator: qcheck.char_uniform_inclusive(97, 122)
-        |> qcheck.string_with_length_from(2),
+      generator: qcheck.bounded_character(97, 122)
+        |> qcheck.fixed_length_string_from(2),
       property: fn(s) { !string.contains(s, "x") },
     )
   }
@@ -93,15 +93,15 @@ pub fn string_with_length_from__shrinks_okay__test() {
   |> should_be_one_of(["ax", "xa"])
 }
 
-pub fn string_generic__shrinks_okay__test() {
+pub fn generic_string__shrinks_okay__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
       // a - z
-      generator: qcheck.string_generic(
-        qcheck.char_uniform_inclusive(97, 122),
-        qcheck.int_uniform_inclusive(1, 10),
+      generator: qcheck.generic_string(
+        qcheck.bounded_character(97, 122),
+        qcheck.bounded_int(1, 10),
       ),
       property: fn(s) {
         let len = string.length(s)
@@ -116,10 +116,10 @@ pub fn string_generic__shrinks_okay__test() {
 pub fn string_generators_shrink_on_size_then_on_characters__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
-      qcheck.string_generic(
+      qcheck.generic_string(
         // Shrinks to `a`
-        qcheck.char_uniform_inclusive(97, 99),
-        qcheck.int_uniform_inclusive(2, 5),
+        qcheck.bounded_character(97, 99),
+        qcheck.bounded_int(2, 5),
       ),
       qcheck.seed(3),
     )
@@ -159,13 +159,13 @@ pub fn string_generators_with_specific_length_dont_shrink_on_length__test() {
 
   let #(tree, _seed) =
     qcheck.generate_tree(
-      qcheck.string_with_length_from(
+      qcheck.fixed_length_string_from(
         // Shrinks to `a`
-        qcheck.char_uniform_inclusive(97, 99),
+        qcheck.bounded_character(97, 99),
         length,
       ),
       // Use a random seed here so it tests a new tree each run.
-      qcheck.seed_random(),
+      qcheck.random_seed(),
     )
 
   tree
@@ -187,18 +187,18 @@ pub fn string_smoke_test() {
   )
 }
 
-pub fn string_non_empty_generates_non_empty_strings__test() {
+pub fn non_empty_string_generates_non_empty_strings__test() {
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: qcheck.string_non_empty(),
+    generator: qcheck.non_empty_string(),
     property: fn(s) { string.length(s) > 0 },
   )
 }
 
-pub fn string_with_length__generates_length_n_strings__test() {
+pub fn fixed_length_string__generates_length_n_strings__test() {
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: qcheck.string_with_length(3),
+    generator: qcheck.fixed_length_string(3),
     // We use at most here because string.length will "merge" some values it
     // considers a single grapheme (e.g., `\r\n`), but we generate strings that
     // have the given number of codepoints.
@@ -216,14 +216,14 @@ pub fn string_from__generates_correct_values__test() {
   qcheck.run(
     config: qcheck.default_config()
       |> qcheck.with_test_count(test_count),
-    generator: qcheck.string_from(qcheck.char_lowercase()),
+    generator: qcheck.string_from(qcheck.lowercase_character()),
     property: fn(s) {
       string.is_empty(s) || regexp.check(all_ascii_lowercase, s)
     },
   )
 }
 
-pub fn string_non_empty_from__generates_correct_values__test() {
+pub fn non_empty_string_from__generates_correct_values__test() {
   let assert Ok(all_ascii_lowercase) =
     regexp.compile(
       "^[a-z]+$",
@@ -232,7 +232,7 @@ pub fn string_non_empty_from__generates_correct_values__test() {
 
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: qcheck.string_non_empty_from(qcheck.char_lowercase()),
+    generator: qcheck.non_empty_string_from(qcheck.lowercase_character()),
     property: fn(s) { regexp.check(all_ascii_lowercase, s) },
   )
 }

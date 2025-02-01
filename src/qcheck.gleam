@@ -1,53 +1,53 @@
 //// QuickCheck-inspired property-based testing with integrated shrinking
-//// 
-//// 
+////
+////
 //// ## Overview
-//// 
+////
 //// Rather than specifying test cases manually, you describe the invariants
 //// that values of a given type must satisfy ("properties"). Then, generators
 //// generate lots of values (test cases) on which the properties are checked.
 //// Finally, if a value is found for which a given property does not hold, that
-//// value is "shrunk" in order to find an nice, informative counter-example 
+//// value is "shrunk" in order to find an nice, informative counter-example
 //// that is presented to you.
-//// 
+////
 //// This module has functions for running and configuring property tests as
 //// well as generating random values (with shrinking) to drive those tests.
 ////
 //// For full usage examples, see the project README.
-//// 
-//// 
+////
+////
 //// ## Running tests
-//// 
+////
 //// - [given](#given)
 //// - [given_result](#given_result)
 //// - [run](#run)
 //// - [run_result](#run_result)
-//// 
-//// 
+////
+////
 //// ## Configuring test runs
-//// 
+////
 //// - The [Config](#Config) type
 //// - [default_config](#default_config)
 //// - [with_test_count](#with_test_count)
 //// - [with_max_retries](#with_max_retries)
 //// - [with_seed](#with_seed)
-//// 
-//// 
+////
+////
 //// ## Generators
-//// 
-//// The exact distributions of individual generators are considered an 
-//// implementation detail, and may change without a major version update.  
-//// For example, if the `option` generator currently produced `None` 
-//// approximately 25% of the time, but that distribution was changed to produce 
-//// `None` 50% of the time instead, that would NOT be considered a breaking 
+////
+//// The exact distributions of individual generators are considered an
+//// implementation detail, and may change without a major version update.
+//// For example, if the `option` generator currently produced `None`
+//// approximately 25% of the time, but that distribution was changed to produce
+//// `None` 50% of the time instead, that would NOT be considered a breaking
 //// change.
-//// 
+////
 //// - The [Generator](#Generator) type
-//// 
+////
 //// Here is a list of generator functions grouped by category.
-//// 
+////
 //// ### Combinators
-//// 
+////
 //// - [return](#return)
 //// - [parameter](#parameter)
 //// - [map](#map)
@@ -66,145 +66,145 @@
 //// - [from_generators](#from_generators)
 //// - [from_weighted_generators](#from_weighted_generators)
 //// - [from_float_weighted_generators](#from_weighted_generators)
-//// 
+////
 //// ### Ints
-//// 
-////  - [int_uniform](#int_uniform)
-////  - [int_uniform_inclusive](#int_uniform_inclusive)
-////  - [int_small_positive_or_zero](#int_small_positive_or_zero)
-////  - [int_small_strictly_positive](#int_small_strictly_positive)
-//// 
+////
+////  - [uniform_int](#uniform_int)
+////  - [bounded_int](#bounded_int)
+////  - [small_positive_or_zero_int](#small_positive_or_zero_int)
+////  - [small_strictly_positive_int](#small_strictly_positive_int)
+////
 //// ### Unicode codepoints (`UtfCodepoint`)
-//// 
+////
 //// - [utf_codepoint](#utf_codepoint)
-//// 
+////
 //// ### Floats
-//// 
+////
 ////  - [float](#float)
 ////  - [float_uniform_inclusive](#float_uniform_inclusive)
-//// 
+////
 //// ### Characters
-//// 
-//// These are "characters" in the sense that they might be understood when 
-//// reading the Unicode docs.  
-//// 
-//// For example "Similarly, an accented character could be represented by a 
-//// single glyph, or by separate component glyphs positioned appropriately. 
-//// In addition, any of the accents can also be considered characters in their 
-//// own right, in which case a sequence of characters can also correspond to 
-//// different possible glyph representations...." or this: "Combining characters 
-//// are shown with a dotted circle. This dotted circle is not part of the 
-//// representative glyph and it would not ordinarily be included as part of any 
-//// actual glyph for that character in a font. Instead, the relative position 
-//// of the dotted circle indicates an approximate location of the base character 
+////
+//// These are "characters" in the sense that they might be understood when
+//// reading the Unicode docs.
+////
+//// For example "Similarly, an accented character could be represented by a
+//// single glyph, or by separate component glyphs positioned appropriately.
+//// In addition, any of the accents can also be considered characters in their
+//// own right, in which case a sequence of characters can also correspond to
+//// different possible glyph representations...." or this: "Combining characters
+//// are shown with a dotted circle. This dotted circle is not part of the
+//// representative glyph and it would not ordinarily be included as part of any
+//// actual glyph for that character in a font. Instead, the relative position
+//// of the dotted circle indicates an approximate location of the base character
 //// in relation to the combining mark."
-//// 
-//// Anyway, it is not always aligned with what a user might think of as a 
+////
+//// Anyway, it is not always aligned with what a user might think of as a
 //// "character", but neither is a character the same thing as a "grapheme".
-//// 
-//// The problem is that there are also "noncharacter" codepoints, which may be 
-//// generated by `char_utf_codepoint`.  This may be a bit counterintuitive--a 
+////
+//// The problem is that there are also "noncharacter" codepoints, which may be
+//// generated by `unicode_character`.  This may be a bit counterintuitive--a
 //// generater that generates "characters" may generate "noncharacters".
-//// 
-//// All this to say that "character" may not be the best name, rather, something 
+////
+//// All this to say that "character" may not be the best name, rather, something
 //// like "codepoint" might be more accurate.
-//// 
+////
 ////  - [char](#char)
-////  - [char_uniform_inclusive](#char_uniform_inclusive)
-////  - [char_utf_codepoint](#char_utf_codepoint)
-////  - [char_uppercase](#char_uppercase)
-////  - [char_lowercase](#char_lowercase)
-////  - [char_digit](#char_digit)
-////  - [char_printable_uniform](#char_printable_uniform)
-////  - [char_uniform](#char_uniform)
-////  - [char_alpha](#char_alpha)
-////  - [char_alpha_numeric](#char_alpha_numeric)
-////  - [char_from_list](#char_from_list)
-////  - [char_whitespace](#char_whitespace)
-////  - [char_printable](#char_printable)
-//// 
+////  - [bounded_character](#bounded_character)
+////  - [unicode_character](#unicode_character)
+////  - [uppercase_character](#uppercase_character)
+////  - [lowercase_character](#lowercase_character)
+////  - [digit_character](#digit_character)
+////  - [uniform_printable_character](#uniform_printable_character)
+////  - [uniform_character](#uniform_character)
+////  - [alphabetic_character](#alphabetic_character)
+////  - [alphanumeric_character](#alphanumeric_character)
+////  - [character_from](#character_from)
+////  - [whitespace_character](#whitespace_character)
+////  - [printable_character](#printable_character)
+////
 //// ### Strings
-//// 
+////
 ////  - [string](#string)
 ////  - [string_from](#string_from)
-////  - [string_non_empty](#string_non_empty)
-////  - [string_with_length](#string_with_length)
-////  - [string_with_length_from](#string_with_length_from)
-////  - [string_non_empty_from](#string_non_empty_from)
-////  - [string_generic](#string_generic)
-//// 
-//// Note that for the string generators, "length" refers to the number of 
-//// codepoints rather than the number of grapheme clusters as `string.length` 
-//// from the stdlib does.  This is a consequence of the current generation 
+////  - [non_empty_string](#non_empty_string)
+////  - [fixed_length_string](#fixed_length_string)
+////  - [fixed_length_string_from](#fixed_length_string_from)
+////  - [non_empty_string_from](#non_empty_string_from)
+////  - [generic_string](#generic_string)
+////
+//// Note that for the string generators, "length" refers to the number of
+//// codepoints rather than the number of grapheme clusters as `string.length`
+//// from the stdlib does.  This is a consequence of the current generation
 //// strategy, and may change in the future.
-//// 
+////
 //// ### Bit arrays
-//// 
-//// Bit array shrinking is a bit wonky compared to shrinking of the other types.  
-//// 
-//// These functions will generate bit arrays that cause runtime crashes when 
+////
+//// Bit array shrinking is a bit wonky compared to shrinking of the other types.
+////
+//// These functions will generate bit arrays that cause runtime crashes when
 //// targeting JavaScript.
-//// 
+////
 //// - [bit_array](#bit_array)
-//// - [bit_array_non_empty](#bit_array_non_empty)
-//// - [bit_array_with_size_from](#bit_array_with_size_from)
-//// - [bit_array_with_size](#bit_array_with_size)
-//// 
+//// - [non_empty_bit_array](#non_empty_bit_array)
+//// - [fixed_size_bit_array_from](#fixed_size_bit_array_from)
+//// - [fixed_size_bit_array](#fixed_size_bit_array)
+////
 //// #### Bit arrays (UTF-8 encoded)
-//// 
-//// These functions will not generate bit arrays that cause runtime crashes when 
+////
+//// These functions will not generate bit arrays that cause runtime crashes when
 //// targeting JavaScript.
 ////
-//// - [bit_array_utf8](#bit_array_utf8)
-//// - [bit_array_utf8_non_empty](#bit_array_utf8_non_empty)
-//// - [bit_array_utf8_with_size](#bit_array_utf8_with_size)
-//// - [bit_array_utf8_with_size_from](#bit_array_utf8_with_size_from)
-//// 
+//// - [utf8_bit_array](#utf8_bit_array)
+//// - [non_empty_utf8_bit_array](#non_empty_utf8_bit_array)
+//// - [fixed_size_utf8_bit_array](#fixed_size_utf8_bit_array)
+//// - [fixed_size_utf8_bit_array_from](#fixed_size_utf8_bit_array_from)
+////
 //// #### Bit arrays (Byte-aligned)
-//// 
-//// These functions will not generate bit arrays that cause runtime crashes when 
+////
+//// These functions will not generate bit arrays that cause runtime crashes when
 //// targeting JavaScript.
 ////
-//// - [bit_array_byte_aligned](#bit_array_byte_aligned)
-//// - [bit_array_byte_aligned_non_empty](#bit_array_byte_aligned_non_empty)
-//// - [bit_array_byte_aligned_with_size](#bit_array_byte_aligned_with_size)
-//// - [bit_array_byte_aligned_with_size_from](#bit_array_byte_aligned_with_size_from)
-//// 
+//// - [byte_aligned_bit_array](#byte_aligned_bit_array)
+//// - [non_empty_byte_aligned_bit_array](#non_empty_byte_aligned_bit_array)
+//// - [fixed_size_byte_aligned_bit_array](#fixed_size_byte_aligned_bit_array)
+//// - [fixed_size_byte_aligned_bit_array_from](#fixed_size_byte_aligned_bit_array_from)
+////
 //// ### Lists
-//// 
-////  - [list_generic](#list_generic)
-//// 
+////
+////  - [generic_list](#generic_list)
+////
 //// ### Dicts
-//// 
-//// - [dict_generic](#dict_generic)
+////
+//// - [generic_dict](#generic_dict)
 ////
 //// ### Sets
-//// 
-////  - [set_generic](#set_generic)
+////
+////  - [generic_set](#generic_set)
 ////
 //// ### Other
-//// 
+////
 //// - [bool](#bool)
 //// - [nil](#nil)
 //// - [option](#option)
-//// 
+////
 //// ## Debug Generators
-//// 
-//// These functions aren't meant to be used directly in tests.  They are 
-//// provided to help debug or investigate what values and shrinks that a 
+////
+//// These functions aren't meant to be used directly in tests.  They are
+//// provided to help debug or investigate what values and shrinks that a
 //// generator produces.
-//// 
+////
 //// - [generate](#generate)
 //// - [generate_tree](#generate_tree)
-//// 
+////
 //// ## Seeding generators
-//// 
+////
 //// - The [Seed](#Seed) type
 //// - [seed_new](#seed_new)
-//// - [seed_random](#seed_random)
-//// 
+//// - [random_seed](#random_seed)
+////
 //// ## Shrinking
-//// 
+////
 //// There are some public functions for dealing with shrinks and shrinking.
 //// Similar to the Tree functions, you often won't need to use these directly.
 ////
@@ -214,19 +214,19 @@
 //// - [shrink.float_towards](#shrink.float_towards)
 //// - [shrink.float_towards_zero](#shrink.float_towards_zero)
 ////
-//// 
+////
 //// ## Notes
-//// 
+////
 //// - If something is marked as being “unspecified”, do not depend on it, as it
-////   may change at any time without a major version bump. This mainly applies 
+////   may change at any time without a major version bump. This mainly applies
 ////   to the various `*_to_string` functions.
-//// - `TestError`, `TestErrorMessage`, and association functions will likely 
-////   become private as they are mainly internal machinery for displaying 
+//// - `TestError`, `TestErrorMessage`, and association functions will likely
+////   become private as they are mainly internal machinery for displaying
 ////   errors.
-//// - `failwith`, `try`, and `rescue` will also likely become private as they 
+//// - `failwith`, `try`, and `rescue` will also likely become private as they
 ////   deal with internal property test running machinery.
-//// 
-//// 
+////
+////
 
 // MARK: Imports
 
@@ -267,18 +267,18 @@ const min_valid_codepoint: Int = 0
 const max_valid_codepoint: Int = 0x10FFFF
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Running tests 
+// MARK: Running tests
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /// `run(config, generator, property)` runs the `property` function against some
-/// test cases generated by the `generator` function according to the specified 
+/// test cases generated by the `generator` function according to the specified
 /// `config`
-/// 
-/// The `run` function returns `Nil` if the property holds (i.e., return 
-/// `True` for all test cases), or panics if the property does not 
+///
+/// The `run` function returns `Nil` if the property holds (i.e., return
+/// `True` for all test cases), or panics if the property does not
 /// hold for some test case `a` (i.e., returns `False` or `panic`s).
-/// 
-/// 
+///
+///
 pub fn run(
   config config: Config,
   generator generator: Generator(a),
@@ -288,8 +288,8 @@ pub fn run(
 }
 
 /// A specialized version of `run` that uses the default configuration.
-/// 
-/// 
+///
+///
 pub fn given(
   generator generator: Generator(a),
   property property: fn(a) -> Bool,
@@ -299,7 +299,7 @@ pub fn given(
 
 /// `run_result(config, generator, property)` is like `run` but the property
 /// function returns a `Result` instead of a `Bool`.
-/// 
+///
 ///
 pub fn run_result(
   config config: Config,
@@ -310,8 +310,8 @@ pub fn run_result(
 }
 
 /// A specialized version of `run_result` that uses the default configuration.
-/// 
-/// 
+///
+///
 pub fn given_result(
   generator generator: Generator(a),
   property property: fn(a) -> Result(b, error),
@@ -586,55 +586,55 @@ fn do_filter_map(
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Seeds 
+// MARK: Seeds
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /// A type representing a seed value used to initialize random generators.
-/// 
+///
 pub type Seed =
   random.Seed
 
 /// `seed(n) creates a new seed from the given integer, `n`.
 ///
 /// ### Example
-/// 
+///
 /// Use a specific seed for the `Config`.
-/// 
+///
 /// ```
-/// let config = 
-///   qcheck.default_config() 
+/// let config =
+///   qcheck.default_config()
 ///   |> qcheck.with_seed(qcheck.seed(124))
 /// ```
-/// 
+///
 pub fn seed(n: Int) -> Seed {
   random.seed(n)
 }
 
-/// `seed_random()` creates a new randomly-generated seed.  You can use it when
+/// `random_seed()` creates a new randomly-generated seed.  You can use it when
 /// you don't care about having specifically reproducible results.
 ///
 /// ### Example
-/// 
+///
 /// Use a random seed for the `Config`.
-/// 
+///
 /// ```
-/// let config = 
-///   qcheck.default_config() 
-///   |> qcheck.with_seed(qcheck.seed_random())
+/// let config =
+///   qcheck.default_config()
+///   |> qcheck.with_seed(qcheck.random_seed())
 /// ```
-/// 
-pub fn seed_random() -> Seed {
-  random.seed_random()
+///
+pub fn random_seed() -> Seed {
+  random.random_seed()
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Test config 
+// MARK: Test config
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /// Configuration for the property-based testing.
-/// 
+///
 /// - `test_count`: The number of tests to run for each property.
-/// - `max_retries`: The number of times to retry the tested property while 
+/// - `max_retries`: The number of times to retry the tested property while
 ///   shrinking.
 /// - `seed`: The seed for the random generator.
 pub opaque type Config {
@@ -646,19 +646,19 @@ const default_test_count: Int = 1000
 const default_max_retries: Int = 1
 
 /// `default()` returns the default configuration for the property-based testing.
-/// 
+///
 pub fn default_config() -> Config {
   Config(
     test_count: default_test_count,
     max_retries: default_max_retries,
-    seed: seed_random(),
+    seed: random_seed(),
   )
 }
 
 /// `config(test_count, max_retries, seed)` builds a new `Config`.
-/// 
+///
 /// Any invalid arguments will be replaced with reasonable defaults.
-/// 
+///
 pub fn config(
   test_count test_count: Int,
   max_retries max_retries: Int,
@@ -672,9 +672,9 @@ pub fn config(
 }
 
 /// `with_test_count()` returns a new configuration with the given test count.
-/// 
+///
 /// If `test_count <= 0`, then it will be adjusted to a valid value.
-///  
+///
 pub fn with_test_count(config: Config, test_count: Int) -> Config {
   let test_count = case test_count <= 0 {
     True -> default_test_count
@@ -685,9 +685,9 @@ pub fn with_test_count(config: Config, test_count: Int) -> Config {
 }
 
 /// `with_max_retries()` returns a new configuration with the given max retries.
-/// 
+///
 /// If `max_retries < 0`, then it will be adjusted to a valid value.
-/// 
+///
 pub fn with_max_retries(config: Config, max_retries: Int) -> Config {
   let max_retries = case max_retries < 0 {
     True -> default_max_retries
@@ -703,27 +703,27 @@ pub fn with_seed(config: Config, seed: Seed) -> Config {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Generators 
+// MARK: Generators
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /// `Generator(a)` is a random generator for values of type `a`.
-/// 
-/// While this type is not opaque (and has a public constructor), you should 
-/// generally prefer to use the built-in generators or combinators like `map`, 
+///
+/// While this type is not opaque (and has a public constructor), you should
+/// generally prefer to use the built-in generators or combinators like `map`,
 /// `bind`, etc.  Direct generator construction should rarely be done.
-/// 
+///
 pub type Generator(a) {
   Generator(fn(Seed) -> #(Tree(a), Seed))
 }
 
 /// `generator(random_generator, tree)` creates a new generator.
-/// 
-/// The `random_generator` produces random values of type `a`, while the `tree` 
+///
+/// The `random_generator` produces random values of type `a`, while the `tree`
 /// function takes those values and creates a shrink tree for them.
-/// 
-/// This is a low-level function for building custom generators. Most users 
+///
+/// This is a low-level function for building custom generators. Most users
 /// should use the built-in generators or combinators like `map`, `bind`, etc.
-/// 
+///
 pub fn generator(
   random_generator: random.Generator(a),
   tree: fn(a) -> Tree(a),
@@ -737,9 +737,9 @@ pub fn generator(
 
 // MARK: Debug Generators
 
-/// `generate(generator, n, seed)` generates `n` values using `generator` and 
+/// `generate(generator, n, seed)` generates `n` values using `generator` and
 /// the starting `seed`.
-/// 
+///
 ///   Discards any shrinks.
 pub fn generate(
   generator: Generator(a),
@@ -767,10 +767,10 @@ fn do_gen(
   }
 }
 
-/// `generate_tree(generator, seed)` generates a value of type `a` and its 
-/// shrinks using 
+/// `generate_tree(generator, seed)` generates a value of type `a` and its
+/// shrinks using
 /// the generator `generator`.
-/// 
+///
 pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
   let Generator(generate) = generator
 
@@ -780,33 +780,33 @@ pub fn generate_tree(generator: Generator(a), seed: Seed) -> #(Tree(a), Seed) {
 // MARK: Combinators
 
 /// `return(a)` creates a generator that always returns `a` and does not shrink.
-/// 
+///
 /// It is an alias for `constant(a)`.
-/// 
+///
 pub fn return(a: a) -> Generator(a) {
   Generator(fn(seed) { #(tree.return(a), seed) })
 }
 
 /// `constant(a)` creates a generator that always returns `a` and does not shrink.
-/// 
+///
 /// It is an alias for `return(a)`.
 ///
 pub fn constant(a: a) -> Generator(a) {
   return(a)
 }
 
-/// `parameter(f)` is used in constructing curried functions for the applicative 
+/// `parameter(f)` is used in constructing curried functions for the applicative
 /// style of building generators.
-/// 
+///
 /// ### Example
-/// 
+///
 /// ```
 /// import qcheck
-/// 
+///
 /// type Box {
 ///   Box(x: Int, y: Int, w: Int, h: Int)
 /// }
-/// 
+///
 /// fn box_generator() {
 ///   qcheck.return({
 ///     use x <- qcheck.parameter
@@ -815,29 +815,29 @@ pub fn constant(a: a) -> Generator(a) {
 ///     use h <- qcheck.parameter
 ///     Box(x:, y:, w:, h:)
 ///   })
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
-///   |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+///   |> qcheck.apply(qcheck.bounded_int(-100, 100))
+///   |> qcheck.apply(qcheck.bounded_int(-100, 100))
+///   |> qcheck.apply(qcheck.bounded_int(1, 100))
+///   |> qcheck.apply(qcheck.bounded_int(1, 100))
 /// }
-/// 
+///
 /// pub fn parameter_example__test() {
 ///   use _box <- qcheck.given(box_generator())
-/// 
+///
 ///   // Test some interesting property of boxes here.
-/// 
+///
 ///   // (This `True` is a standin for your property.)
 ///   True
 /// }
 /// ```
-/// 
+///
 pub fn parameter(f: fn(x) -> y) -> fn(x) -> y {
   f
 }
 
-/// `map(generator, f)` transforms the generator `generator` by applying `f` to 
+/// `map(generator, f)` transforms the generator `generator` by applying `f` to
 /// each generated value.  Shrinks as `generator` shrinks, but with `f` applied.
-/// 
+///
 pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   let Generator(generate) = generator
 
@@ -850,9 +850,9 @@ pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
   })
 }
 
-/// `bind(generator, f)` generates a value of type `a` with `generator`, then 
+/// `bind(generator, f)` generates a value of type `a` with `generator`, then
 /// passes that value to `f`, which uses it to generate values of type `b`.
-/// 
+///
 pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   let Generator(generate) = generator
 
@@ -871,14 +871,14 @@ pub fn bind(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
 }
 
 /// `then` is an alias for `bind`.
-/// 
+///
 pub fn then(generator: Generator(a), f: fn(a) -> Generator(b)) -> Generator(b) {
   bind(generator, f)
 }
 
-/// `apply(f, x)` applies a function generator, `f`, and an argument generator, 
+/// `apply(f, x)` applies a function generator, `f`, and an argument generator,
 /// `x`, into a result generator.
-/// 
+///
 pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   let Generator(f) = f
   let Generator(x) = x
@@ -892,9 +892,9 @@ pub fn apply(f: Generator(fn(a) -> b), x: Generator(a)) -> Generator(b) {
   })
 }
 
-/// `map2(g1, g2, f)` transforms two generators, `g1` and `g2`, by applying `f` 
+/// `map2(g1, g2, f)` transforms two generators, `g1` and `g2`, by applying `f`
 /// to each pair of generated values.
-/// 
+///
 pub fn map2(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -911,7 +911,7 @@ pub fn map2(
 
 /// `map3(g1, g2, g3, f)` transforms three generators, `g1`, `g2`, and `g3`, by
 /// applying `f` to each triple of generated values.
-/// 
+///
 pub fn map3(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -931,7 +931,7 @@ pub fn map3(
 
 /// `map4(g1, g2, g3, g4, f)` transforms four generators, `g1`, `g2`, `g3`, and
 /// `g4`, by applying `f` to each quadruple of generated values.
-/// 
+///
 pub fn map4(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -954,7 +954,7 @@ pub fn map4(
 
 /// `map5(g1, g2, g3, g4, g5, f)` transforms five generators, `g1`, `g2`, `g3`,
 /// `g4`, and `g5`, by applying `f` to each quintuple of generated values.
-/// 
+///
 pub fn map5(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -980,7 +980,7 @@ pub fn map5(
 
 /// `map6(g1, g2, g3, g4, g5, g6, f)` transforms six generators, `g1`, `g2`, `g3`,
 /// `g4`, `g5`, and `g6`, by applying `f` to each sextuple of generated values.
-/// 
+///
 pub fn map6(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -1007,9 +1007,9 @@ pub fn map6(
   |> apply(g6)
 }
 
-/// `tuple2(g1, g2)` generates a tuple of two values, one each from generators 
+/// `tuple2(g1, g2)` generates a tuple of two values, one each from generators
 /// `g1` and `g2`.
-/// 
+///
 pub fn tuple2(g1: Generator(x1), g2: Generator(x2)) -> Generator(#(x1, x2)) {
   use x1, x2 <- map2(g1, g2)
   #(x1, x2)
@@ -1017,7 +1017,7 @@ pub fn tuple2(g1: Generator(x1), g2: Generator(x2)) -> Generator(#(x1, x2)) {
 
 /// `tuple3(g1, g2, g3)` generates a tuple of three values, one each from
 /// generators `g1`, `g2`, and `g3`.
-/// 
+///
 pub fn tuple3(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -1029,7 +1029,7 @@ pub fn tuple3(
 
 /// `tuple4(g1, g2, g3, g4)` generates a tuple of four values, one each from
 /// generators `g1`, `g2`, `g3`, and `g4`.
-/// 
+///
 pub fn tuple4(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -1042,7 +1042,7 @@ pub fn tuple4(
 
 /// `tuple5(g1, g2, g3, g4, g5)` generates a tuple of five values, one each from
 /// generators `g1`, `g2`, `g3`, `g4`, and `g5`.
-/// 
+///
 pub fn tuple5(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -1054,9 +1054,9 @@ pub fn tuple5(
   #(x1, x2, x3, x4, x5)
 }
 
-/// `tuple6(g1, g2, g3, g4, g5, g6)` generates a tuple of six values, one each 
+/// `tuple6(g1, g2, g3, g4, g5, g6)` generates a tuple of six values, one each
 /// from generators `g1`, `g2`, `g3`, `g4`, `g5`, and `g6`.
-/// 
+///
 pub fn tuple6(
   g1: Generator(x1),
   g2: Generator(x2),
@@ -1069,12 +1069,12 @@ pub fn tuple6(
   #(x1, x2, x3, x4, x5, x6)
 }
 
-/// `from_generators(generator, generators)` chooses a generator from the given 
-/// generators, then chooses a value from that generator. 
-/// 
-/// This generator will always produce values, since at least one generator must 
+/// `from_generators(generator, generators)` chooses a generator from the given
+/// generators, then chooses a value from that generator.
+///
+/// This generator will always produce values, since at least one generator must
 /// always be provided.
-/// 
+///
 pub fn from_generators(
   generator: Generator(a),
   generators: List(Generator(a)),
@@ -1088,12 +1088,12 @@ pub fn from_generators(
   })
 }
 
-/// `from_float_weighted_generators(generator, generators)` chooses a generator 
-/// from the given generators weighted by the given float weights, then chooses 
+/// `from_float_weighted_generators(generator, generators)` chooses a generator
+/// from the given generators weighted by the given float weights, then chooses
 /// a value from that generator.
-/// 
+///
 /// You should generally prefer `from_weighted_generators` as it is much faster.
-/// 
+///
 pub fn from_float_weighted_generators(
   generator: #(Float, Generator(a)),
   generators: List(#(Float, Generator(a))),
@@ -1107,13 +1107,13 @@ pub fn from_float_weighted_generators(
   })
 }
 
-/// `from_float_generators(generator, generators)` chooses a generator from the 
-/// given generators weighted by the integer weights, then chooses a value from 
+/// `from_float_generators(generator, generators)` chooses a generator from the
+/// given generators weighted by the integer weights, then chooses a value from
 /// that generator.
-/// 
-/// You should generally prefer this function over 
+///
+/// You should generally prefer this function over
 /// `from_float_weighted_generators` as this function is faster.
-/// 
+///
 pub fn from_weighted_generators(
   generator: #(Int, Generator(a)),
   generators: List(#(Int, Generator(a))),
@@ -1130,23 +1130,23 @@ pub fn from_weighted_generators(
 // MARK: Sized generators
 
 /// Represents a `Generator` with a size.
-/// 
+///
 type SizedGenerator(a) =
   fn(Int) -> Generator(a)
 
 /// Creates a generator from a sized generator by first generating a size
-/// using the `size_generator`, then passing the result to the 
+/// using the `size_generator`, then passing the result to the
 /// `sized_generator`.
 ///
 /// Shrinks on the size first, then on the generator.
-/// 
+///
 /// ### Example
-/// 
+///
 /// Generate digit strings sized between 10 and 20 digits.
-/// 
+///
 /// ```
-/// string_with_length_from(char_digit()) 
-/// |> sized_from(int_uniform_inclusive(10, 20))
+/// fixed_length_string_from(digit_character())
+/// |> sized_from(bounded_int(10, 20))
 /// ```
 ///
 pub fn sized_from(
@@ -1158,14 +1158,14 @@ pub fn sized_from(
 
 // MARK: Ints
 
-/// `int_small_positive_or_zero()` generates small integers well suited for 
+/// `small_positive_or_zero_int()` generates small integers well suited for
 /// modeling the sizes of sized elements like lists or strings.
-/// 
+///
 /// Smaller numbers are more likely than larger numbers.
-/// 
+///
 /// Shrinks towards `0`.
-/// 
-pub fn int_small_positive_or_zero() -> Generator(Int) {
+///
+pub fn small_positive_or_zero_int() -> Generator(Int) {
   generator(
     random.int(0, 100)
       |> random.then(fn(x) {
@@ -1178,24 +1178,24 @@ pub fn int_small_positive_or_zero() -> Generator(Int) {
   )
 }
 
-/// `int_small_strictly_positive()` generates small integers strictly greater
+/// `small_strictly_positive_int()` generates small integers strictly greater
 /// than `0`.
-/// 
-pub fn int_small_strictly_positive() -> Generator(Int) {
-  int_small_positive_or_zero()
+///
+pub fn small_strictly_positive_int() -> Generator(Int) {
+  small_positive_or_zero_int()
   |> map(int.add(_, 1))
 }
 
-/// `int_uniform_inclusive(from, to)` generates integers uniformly distributed
+/// `bounded_int(from, to)` generates integers uniformly distributed
 /// between `from` and `to`, inclusive.
-/// 
+///
 /// Shrinks towards `0`, but won't shrink outside of the range `[from, to]`.
-/// 
-/// Note: If you pass the parameters backwards, e.g., 
-/// `int_uniform_inclusive(5, 2)` it will be treated the same as 
-/// `int_uniform_inclusive(2, 5)`.
-/// 
-pub fn int_uniform_inclusive(from low: Int, to high: Int) -> Generator(Int) {
+///
+/// Note: If you pass the parameters backwards, e.g.,
+/// `bounded_int(5, 2)` it will be treated the same as
+/// `bounded_int(2, 5)`.
+///
+pub fn bounded_int(from low: Int, to high: Int) -> Generator(Int) {
   let #(low, high) = case low <= high {
     True -> #(low, high)
     False -> #(high, low)
@@ -1210,18 +1210,18 @@ pub fn int_uniform_inclusive(from low: Int, to high: Int) -> Generator(Int) {
 
 // WARNING: doesn't hit the interesting cases very often.  Use something more like
 //   qcheck2 or base_quickcheck.
-/// `int_uniform()` generates uniformly distributed integers across a large 
+/// `uniform_int()` generates uniformly distributed integers across a large
 /// range and shrinks towards `0`.
-/// 
+///
 /// Note: this generator does not hit interesting or corner cases very often.
-/// 
-pub fn int_uniform() -> Generator(Int) {
-  int_uniform_inclusive(random.min_int, random.max_int)
+///
+pub fn uniform_int() -> Generator(Int) {
+  bounded_int(random.min_int, random.max_int)
 }
 
 // MARK: Floats
 //
-// 
+//
 
 fn exp(x: Float) -> Float {
   // Gleam's float.power will return an Error if the base is negative, but here
@@ -1235,9 +1235,9 @@ fn exp(x: Float) -> Float {
 // Note: The base_quickcheck float generators are much fancier.  Should consider
 // using their generation method.
 //
-/// `float()` generates floats with a bias towards smaller values and shrinks 
+/// `float()` generates floats with a bias towards smaller values and shrinks
 /// towards `0.0`.
-/// 
+///
 pub fn float() -> Generator(Float) {
   Generator(fn(seed) {
     let #(x, seed) = random.float(0.0, 15.0) |> random.step(seed)
@@ -1256,13 +1256,13 @@ pub fn float() -> Generator(Float) {
 
 /// `float_uniform_inclusive(from, to)` generates floats uniformly distributed
 /// between `from` and `to`, inclusive.
-/// 
+///
 /// Shrinks towards `0.0`, but won't shrink outside of the range `[from, to]`.
-/// 
-/// Note: If you pass the parameters backwards, e.g., 
-/// `float_uniform_inclusive(5.0, 2.0)` it will be treated the same as 
+///
+/// Note: If you pass the parameters backwards, e.g.,
+/// `float_uniform_inclusive(5.0, 2.0)` it will be treated the same as
 /// `float_uniform_inclusive(2.0, 5.0)`.
-/// 
+///
 pub fn float_uniform_inclusive(from low: Float, to high: Float) {
   let #(low, high) = case low <=. high {
     True -> #(low, high)
@@ -1285,23 +1285,23 @@ const char_min_value: Int = 0
 
 const char_max_value: Int = 255
 
-/// `char_uniform_inclusive(low, high)` generates "characters" uniformly
-/// distributed between `low` and `high`, inclusive.  Here, "characters" are 
+/// `bounded_character(low, high)` generates "characters" uniformly
+/// distributed between `low` and `high`, inclusive.  Here, "characters" are
 /// strings of a single codepoint.
-/// 
-/// *Note*: this function is slightly weird in that it takes the integer 
-/// representation of the range of codepoints, not the strings themselves.  
+///
+/// *Note*: this function is slightly weird in that it takes the integer
+/// representation of the range of codepoints, not the strings themselves.
 /// This behavior will likely change.
-/// 
-/// These `char_*` functions are mainly used for setting up the string 
+///
+/// These `char_*` functions are mainly used for setting up the string
 /// generators.
-/// 
+///
 /// Shrinks towards `a` when possible, but won't go outside of the range.
-/// 
-/// Note: if you provide a range that it outside the range of valid codepoints, 
+///
+/// Note: if you provide a range that it outside the range of valid codepoints,
 /// a default range will be chosen for you.
-/// 
-pub fn char_uniform_inclusive(from low: Int, to high: Int) -> Generator(String) {
+///
+pub fn bounded_character(from low: Int, to high: Int) -> Generator(String) {
   let #(low, high) = case low <= high {
     True -> #(low, high)
     False -> #(high, low)
@@ -1329,63 +1329,63 @@ pub fn char_uniform_inclusive(from low: Int, to high: Int) -> Generator(String) 
   })
 }
 
-/// `char_uppercase()` generates uppercase (ASCII) letters.
-/// 
-pub fn char_uppercase() -> Generator(String) {
-  char_uniform_inclusive(ascii_a_uppercase, ascii_z_uppercase)
+/// `uppercase_character()` generates uppercase (ASCII) letters.
+///
+pub fn uppercase_character() -> Generator(String) {
+  bounded_character(ascii_a_uppercase, ascii_z_uppercase)
 }
 
-/// `char_lowercase()` generates lowercase (ASCII) letters.
-/// 
-pub fn char_lowercase() -> Generator(String) {
-  char_uniform_inclusive(ascii_a_lowercase, ascii_z_lowercase)
+/// `lowercase_character()` generates lowercase (ASCII) letters.
+///
+pub fn lowercase_character() -> Generator(String) {
+  bounded_character(ascii_a_lowercase, ascii_z_lowercase)
 }
 
-/// `char_digit()` generates digits from `0` to `9`, inclusive.
-/// 
-pub fn char_digit() -> Generator(String) {
-  char_uniform_inclusive(ascii_zero, ascii_nine)
+/// `digit_character()` generates digits from `0` to `9`, inclusive.
+///
+pub fn digit_character() -> Generator(String) {
+  bounded_character(ascii_zero, ascii_nine)
 }
 
-/// `char_printable_uniform()` generates printable ASCII characters.
-/// 
+/// `uniform_printable_character()` generates printable ASCII characters.
+///
 /// Shrinks to `"a"`.
-/// 
-pub fn char_printable_uniform() -> Generator(String) {
-  char_uniform_inclusive(ascii_space, ascii_tilde)
+///
+pub fn uniform_printable_character() -> Generator(String) {
+  bounded_character(ascii_space, ascii_tilde)
 }
 
-/// `char_uniform()` generates characters uniformly distributed across the 
+/// `uniform_character()` generates characters uniformly distributed across the
 /// default range.
-/// 
-pub fn char_uniform() -> Generator(String) {
-  char_uniform_inclusive(char_min_value, char_max_value)
+///
+pub fn uniform_character() -> Generator(String) {
+  bounded_character(char_min_value, char_max_value)
 }
 
-/// `char_alpha()` generates alphabetic (ASCII) characters.
-/// 
-pub fn char_alpha() -> Generator(String) {
-  from_generators(char_uppercase(), [char_lowercase()])
+/// `alphabetic_character()` generates alphabetic (ASCII) characters.
+///
+pub fn alphabetic_character() -> Generator(String) {
+  from_generators(uppercase_character(), [lowercase_character()])
 }
 
-/// `char_alpha_numeric()` generates alphanumeric (ASCII) characters.
-/// 
-pub fn char_alpha_numeric() -> Generator(String) {
-  from_weighted_generators(#(26, char_uppercase()), [
-    #(26, char_lowercase()),
-    #(10, char_digit()),
+/// `alphanumeric_character()` generates alphanumeric (ASCII) characters.
+///
+pub fn alphanumeric_character() -> Generator(String) {
+  from_weighted_generators(#(26, uppercase_character()), [
+    #(26, lowercase_character()),
+    #(10, digit_character()),
   ])
 }
 
-/// `char_from_list(char, chars)` generates characters from the given list of
+/// `character_from(char, chars)` generates characters from the given list of
 /// characters.
-/// 
-/// The name is slightly weird since there is a single argument plus the list, 
-/// but doing it this way avoids the case of an empty list crashing your 
-/// program.  E.g., `char_from_list([])` would crash your test suite, so a 
+///
+/// The name is slightly weird since there is a single argument plus the list,
+/// but doing it this way avoids the case of an empty list crashing your
+/// program.  E.g., `character_from([])` would crash your test suite, so a
 /// single char must always be provided.
-/// 
-pub fn char_from_list(char: String, chars: List(String)) -> Generator(String) {
+///
+pub fn character_from(char: String, chars: List(String)) -> Generator(String) {
   let hd = char_to_int(char)
   let tl = list.map(chars, char_to_int)
 
@@ -1412,7 +1412,7 @@ fn char_is_whitespace(c) {
     10 -> True
     // Vertical tab
     11 -> True
-    // Form feed 
+    // Form feed
     12 -> True
     // Carriage return
     13 -> True
@@ -1422,9 +1422,9 @@ fn char_is_whitespace(c) {
   }
 }
 
-/// `char_whitespace()` generates whitespace (ASCII) characters.
-/// 
-pub fn char_whitespace() -> Generator(String) {
+/// `whitespace_character()` generates whitespace (ASCII) characters.
+///
+pub fn whitespace_character() -> Generator(String) {
   // If this assert fails, then we have an implementation bug in the min and max
   // char values.
   let assert [char, ..chars] =
@@ -1432,39 +1432,39 @@ pub fn char_whitespace() -> Generator(String) {
     |> list.filter(char_is_whitespace)
     |> list.map(int_to_char(_, default: ascii_space))
 
-  char_from_list(char, chars)
+  character_from(char, chars)
 }
 
-/// `char_printable()` generates printable ASCII characters, with a bias towards
+/// `printable_character()` generates printable ASCII characters, with a bias towards
 /// alphanumeric characters.
-/// 
-pub fn char_printable() -> Generator(String) {
-  from_weighted_generators(#(381, char_uppercase()), [
-    #(381, char_lowercase()),
-    #(147, char_digit()),
-    #(91, char_printable_uniform()),
+///
+pub fn printable_character() -> Generator(String) {
+  from_weighted_generators(#(381, uppercase_character()), [
+    #(381, lowercase_character()),
+    #(147, digit_character()),
+    #(91, uniform_printable_character()),
   ])
 }
 
-pub fn char_utf_codepoint() -> Generator(String) {
+pub fn unicode_character() -> Generator(String) {
   use codepoint <- map(utf_codepoint())
   string.from_utf_codepoints([codepoint])
 }
 
-/// `char()` generates characters with a bias towards printable ASCII 
+/// `char()` generates characters with a bias towards printable ASCII
 /// characters, while still hitting some edge cases.
-/// 
-pub fn char() {
+///
+pub fn character() {
   // If these fail, then char_min/max_value are incorrect (implementation bug).
   let assert Ok(min_value) = string.utf_codepoint(char_min_value)
   let assert Ok(max_value) = string.utf_codepoint(char_max_value)
 
   // TODO add in some charaters in the higher unicode ranges.
-  from_weighted_generators(#(340, char_uppercase()), [
-    #(340, char_lowercase()),
-    #(131, char_digit()),
-    #(81, char_printable_uniform()),
-    #(89, char_uniform()),
+  from_weighted_generators(#(340, uppercase_character()), [
+    #(340, lowercase_character()),
+    #(131, digit_character()),
+    #(81, uniform_printable_character()),
+    #(89, uniform_character()),
     #(09, return(string.from_utf_codepoints([min_value]))),
     #(09, return(string.from_utf_codepoints([max_value]))),
   ])
@@ -1502,15 +1502,15 @@ fn do_gen_string(
 // This is the base string generator. The others are implemented in terms of
 // this one.
 //
-/// `string_with_length_from(gen, length)` generates strings of the given 
+/// `fixed_length_string_from(gen, length)` generates strings of the given
 /// `length` from the given generator.
-/// 
-/// Note that for the string generators, "length" refers to the number of 
-/// codepoints rather than the number of grapheme clusters as `string.length` 
-/// from the stdlib does.  This is a consequence of the current generation 
+///
+/// Note that for the string generators, "length" refers to the number of
+/// codepoints rather than the number of grapheme clusters as `string.length`
+/// from the stdlib does.  This is a consequence of the current generation
 /// strategy, and may change in the future.
-/// 
-pub fn string_with_length_from(
+///
+pub fn fixed_length_string_from(
   generator: Generator(String),
   length: Int,
 ) -> Generator(String) {
@@ -1537,70 +1537,70 @@ pub fn string_with_length_from(
   })
 }
 
-/// `string_generic(char_generator, length_generator)` generates strings with 
+/// `generic_string(char_generator, length_generator)` generates strings with
 /// characters from `char_generator` and lengths from `length_generator`.
-/// 
-pub fn string_generic(
+///
+pub fn generic_string(
   char_generator: Generator(String),
   length_generator: Generator(Int),
 ) -> Generator(String) {
   length_generator
-  |> bind(string_with_length_from(char_generator, _))
+  |> bind(fixed_length_string_from(char_generator, _))
 }
 
-/// `string() generates strings with the default character generator and the 
+/// `string() generates strings with the default character generator and the
 /// default length generator.
-/// 
+///
 pub fn string() -> Generator(String) {
-  bind(int_small_positive_or_zero(), fn(length) {
-    string_with_length_from(char(), length)
+  bind(small_positive_or_zero_int(), fn(length) {
+    fixed_length_string_from(character(), length)
   })
 }
 
-/// `string_non_empty()` generates non-empty strings with the default character 
+/// `non_empty_string()` generates non-empty strings with the default character
 /// generator and the default length generator.
-/// 
-pub fn string_non_empty() -> Generator(String) {
-  bind(int_small_strictly_positive(), fn(length) {
-    string_with_length_from(char(), length)
+///
+pub fn non_empty_string() -> Generator(String) {
+  bind(small_strictly_positive_int(), fn(length) {
+    fixed_length_string_from(character(), length)
   })
 }
 
-/// `string_with_length(length)` generates strings of the given `length` with the 
+/// `fixed_length_string(length)` generates strings of the given `length` with the
 /// default character generator.
-/// 
-/// Note that for the string generators, "length" refers to the number of 
-/// codepoints rather than the number of grapheme clusters as `string.length` 
-/// from the stdlib does.  This is a consequence of the current generation 
+///
+/// Note that for the string generators, "length" refers to the number of
+/// codepoints rather than the number of grapheme clusters as `string.length`
+/// from the stdlib does.  This is a consequence of the current generation
 /// strategy, and may change in the future.
 ///
-pub fn string_with_length(length: Int) -> Generator(String) {
-  string_with_length_from(char(), length)
+pub fn fixed_length_string(length: Int) -> Generator(String) {
+  fixed_length_string_from(character(), length)
 }
 
-/// `string_from(char_generator)` generates strings from the given character generator 
+/// `string_from(char_generator)` generates strings from the given character generator
 /// using the default length generator.
-/// 
+///
 pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
-  bind(int_small_positive_or_zero(), fn(length) {
-    string_with_length_from(char_generator, length)
+  bind(small_positive_or_zero_int(), fn(length) {
+    fixed_length_string_from(char_generator, length)
   })
 }
 
-/// `string_non_empty_from(char_generator)` generates non-empty strings from the given 
+/// `non_empty_string_from(char_generator)` generates non-empty strings from the given
 /// character generator using the default length generator.
-/// 
-pub fn string_non_empty_from(
+///
+pub fn non_empty_string_from(
   char_generator: Generator(String),
 ) -> Generator(String) {
-  bind(int_small_strictly_positive(), fn(length) {
-    string_with_length_from(char_generator, length)
+  bind(small_strictly_positive_int(), fn(length) {
+    fixed_length_string_from(char_generator, length)
   })
 }
 
 // MARK: Lists
 
-fn list_generic_loop(
+fn generic_list_loop(
   n: Int,
   acc: Tree(List(a)),
   element_generator: Generator(a),
@@ -1612,7 +1612,7 @@ fn list_generic_loop(
       let Generator(generate) = element_generator
       let #(tree, seed) = generate(seed)
 
-      list_generic_loop(
+      generic_list_loop(
         n - 1,
         tree.map2(tree, acc, list_cons),
         element_generator,
@@ -1622,55 +1622,55 @@ fn list_generic_loop(
   }
 }
 
-/// `list_generic(element_generator, length_generator)` generates lists of 
+/// `generic_list(element_generator, length_generator)` generates lists of
 /// elements from `element_generator` with lengths from `length_generator`.
-///  
+///
 /// Shrinks first on the number of elements, then on the elements themselves.
 /// Will not generate shrinks whose length is  outside of the range specified
 /// by the `length_generator`.
-/// 
-pub fn list_generic(
+///
+pub fn generic_list(
   element_generator element_generator: Generator(a),
   length_generator length_generator: Generator(Int),
 ) -> Generator(List(a)) {
   use length <- bind(length_generator)
-  list_with_length_from(element_generator, length)
+  fixed_length_list_from(element_generator, length)
 }
 
-/// `list_with_length_from(element_generator, length)` generates lists of 
+/// `fixed_length_list_from(element_generator, length)` generates lists of
 /// elements from `element_generator` of length `length`.
-/// 
-pub fn list_with_length_from(
+///
+pub fn fixed_length_list_from(
   element_generator element_generator: Generator(a),
   length length: Int,
 ) -> Generator(List(a)) {
   use seed <- Generator
-  list_generic_loop(length, tree.return([]), element_generator, seed)
+  generic_list_loop(length, tree.return([]), element_generator, seed)
 }
 
 // MARK: Dicts
 
-/// `dict_generic(key_generator, value_generator, length_generator)` generates 
+/// `generic_dict(key_generator, value_generator, length_generator)` generates
 /// dictionaries with keys
-/// from `key_generator`, values from `value_generator`, and sizes from 
+/// from `key_generator`, values from `value_generator`, and sizes from
 /// `size_generator`.
-/// 
+///
 /// Shrinks on size then on elements.
-/// 
+///
 /// Note: If the size generator generates a size of 5 for an example, then for
-/// that example `5` is taken as the upper bound on the size of the 
+/// that example `5` is taken as the upper bound on the size of the
 /// dictionary.
 /// The current implementation will generate 5 key-value pairs, but it does NOT
 /// guarantee that each of the 5 keys is unique.  So, depending on your
 /// `key_generator`, the actual size may be less than 5.  (This is considered
 /// to be an implementation detail that you should not rely upon.)
-/// 
-pub fn dict_generic(
+///
+pub fn generic_dict(
   key_generator key_generator: Generator(key),
   value_generator value_generator: Generator(value),
   size_generator size_generator: Generator(Int),
 ) -> Generator(Dict(key, value)) {
-  use association_list <- map(list_generic(
+  use association_list <- map(generic_list(
     element_generator: tuple2(key_generator, value_generator),
     length_generator: size_generator,
   ))
@@ -1679,25 +1679,25 @@ pub fn dict_generic(
 
 // MARK: Sets
 
-/// `set_generic(element_generator, max_len)` generates sets of elements from 
+/// `generic_set(element_generator, max_len)` generates sets of elements from
 /// `element_generator`.
-/// 
+///
 /// Shrinks first on the number of elements, then on the elements themselves.
-/// 
+///
 /// Note: If the size generator generates a size of 5 for an example, then for
-/// that example `5` is taken as the upper bound on the size of the 
+/// that example `5` is taken as the upper bound on the size of the
 /// set.
 /// The current implementation will generate 5 key-value pairs, but it does NOT
 /// guarantee that each of the 5 keys is unique.  So, depending on your
-/// `element_generator`, the actual size may be less than 5.  (This is 
+/// `element_generator`, the actual size may be less than 5.  (This is
 /// considered
 /// to be an implementation detail that you should not rely upon.)
-/// 
-pub fn set_generic(
+///
+pub fn generic_set(
   element_generator element_generator: Generator(a),
   size_generator size_generator: Generator(Int),
 ) -> Generator(set.Set(a)) {
-  use elements <- map(list_generic(
+  use elements <- map(generic_list(
     element_generator:,
     length_generator: size_generator,
   ))
@@ -1715,10 +1715,10 @@ fn generate_option() -> random.Generator(GenerateOption) {
   random.weighted(#(15, GenerateNone), [#(85, GenerateSome)])
 }
 
-/// `option(gen)` is an `Option` generator that uses `gen` to generate `Some` 
+/// `option_from(generator)` is an `Option` generator that uses `gen` to generate `Some`
 /// values.  Shrinks towards `None` then towards shrinks of `gen`.
-/// 
-pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
+///
+pub fn option_from(generator: Generator(a)) -> Generator(Option(a)) {
   let Generator(generate) = generator
 
   Generator(fn(seed) {
@@ -1736,13 +1736,13 @@ pub fn option(generator: Generator(a)) -> Generator(Option(a)) {
 }
 
 /// `nil()` is the `Nil` generator. It always returns `Nil` and does not shrink.
-/// 
+///
 pub fn nil() -> Generator(Nil) {
   Generator(fn(seed) { #(tree.return(Nil), seed) })
 }
 
 /// `bool()` generates booleans and shrinks towards `False`.
-/// 
+///
 pub fn bool() -> Generator(Bool) {
   Generator(fn(seed) {
     let #(bool, seed) =
@@ -1845,9 +1845,9 @@ fn try(f: fn() -> a) -> Try(a) {
 // MARK: Unicode
 
 /// `utf_codepoint()` generates valid Unicode codepoints.
-/// 
+///
 pub fn utf_codepoint() -> Generator(UtfCodepoint) {
-  use int <- map(int_uniform_inclusive(0x0000, 0x10FFFF))
+  use int <- map(bounded_int(0x0000, 0x10FFFF))
   case int {
     // This is to work around the broken implementation of
     // `string.utf_codepoint` currently in the stdlib.  Once that fix is
@@ -1871,16 +1871,16 @@ fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
 // MARK: Bit arrays
 
 fn byte() -> Generator(Int) {
-  int_uniform_inclusive(0, 255)
+  bounded_int(0, 255)
 }
 
-/// `bit_array_with_size_from(bit_generator, bit_size)` generates bit arrays of 
-/// the given number of bits (bit_size) where elements are generated according 
+/// `fixed_size_bit_array_from(bit_generator, bit_size)` generates bit arrays of
+/// the given number of bits (bit_size) where elements are generated according
 /// to the given `bit_generator`.
 ///
 /// Shrinks on values, not on length.
-/// 
-pub fn bit_array_with_size_from(
+///
+pub fn fixed_size_bit_array_from(
   value_generator value_generator: Generator(Int),
   bit_size bit_size: Int,
 ) -> Generator(BitArray) {
@@ -1957,83 +1957,83 @@ fn do_gen_bit_array(
   }
 }
 
-/// `bit_array_generic(value_generator, bit_size_generator)` generates bit_arrays with 
+/// `generic_bit_array(value_generator, bit_size_generator)` generates bit_arrays with
 /// characters from `value_generator` and lengths from `bit_size_generator`.
-/// 
-pub fn bit_array_generic(
+///
+pub fn generic_bit_array(
   value_generator value_generator: Generator(Int),
   bit_size_generator bit_size_generator: Generator(Int),
 ) -> Generator(BitArray) {
-  bit_size_generator |> bind(bit_array_with_size_from(value_generator, _))
+  bit_size_generator |> bind(fixed_size_bit_array_from(value_generator, _))
 }
 
 /// `bit_array()` generates `BitArrays`.
-/// 
-/// Note: This function will generate bit arrays that cause runtime crashes when 
+///
+/// Note: This function will generate bit arrays that cause runtime crashes when
 /// targeting JavaScript.
-/// 
+///
 pub fn bit_array() -> Generator(BitArray) {
-  bit_array_generic(
+  generic_bit_array(
     value_generator: byte(),
-    bit_size_generator: int_small_positive_or_zero(),
+    bit_size_generator: small_positive_or_zero_int(),
   )
 }
 
 /// `bit_array()` generates non-empty `BitArrays`.
-/// 
-/// Note: This function will generate bit arrays that cause runtime crashes when 
+///
+/// Note: This function will generate bit arrays that cause runtime crashes when
 /// targeting JavaScript.
-/// 
-pub fn bit_array_non_empty() -> Generator(BitArray) {
-  bit_array_generic(
+///
+pub fn non_empty_bit_array() -> Generator(BitArray) {
+  generic_bit_array(
     value_generator: byte(),
-    bit_size_generator: int_small_strictly_positive(),
+    bit_size_generator: small_strictly_positive_int(),
   )
 }
 
-/// `bit_array_with_size(size)` generates `BitArrays` of the given `size`.
-/// 
+/// `fixed_size_bit_array(size)` generates `BitArrays` of the given `size`.
+///
 /// Note:
 /// - If `size > 1023`, then size will be `1023`.
 /// - If `size < 0`, then size will be `0`.
-/// 
-/// Note: This function will generate bit arrays that cause runtime crashes when 
-/// targeting JavaScript, since the JS target only supports byte aligned bit 
+///
+/// Note: This function will generate bit arrays that cause runtime crashes when
+/// targeting JavaScript, since the JS target only supports byte aligned bit
 /// arrays. TODO this note needs to go on all the ones that don't work on JS
-/// 
-pub fn bit_array_with_size(size: Int) -> Generator(BitArray) {
-  bit_array_with_size_from(byte(), size)
+///
+pub fn fixed_size_bit_array(size: Int) -> Generator(BitArray) {
+  fixed_size_bit_array_from(byte(), size)
 }
 
 // MARK: Bit arrays (UTF-8)
 
-/// `bit_array_utf8()` generates `BitArrays` of valid UTF-8 bytes.
-/// 
-pub fn bit_array_utf8() -> Generator(BitArray) {
-  use max_length <- bind(int_small_strictly_positive())
+/// `utf8_bit_array()` generates `BitArrays` of valid UTF-8 bytes.
+///
+pub fn utf8_bit_array() -> Generator(BitArray) {
+  use max_length <- bind(small_strictly_positive_int())
   use codepoints <- map(utf_codepoint_list(0, max_length))
 
   bit_array_from_codepoints(codepoints)
 }
 
-/// `bit_array_utf8()` generates non-empty `BitArrays` of valid UTF-8
+/// `utf8_bit_array()` generates non-empty `BitArrays` of valid UTF-8
 /// bytes.
-/// 
-pub fn bit_array_utf8_non_empty() -> Generator(BitArray) {
-  use max_length <- bind(int_small_strictly_positive())
+///
+pub fn non_empty_utf8_bit_array() -> Generator(BitArray) {
+  use max_length <- bind(small_strictly_positive_int())
   use codepoints <- map(utf_codepoint_list(1, max_length))
 
   bit_array_from_codepoints(codepoints)
 }
 
-/// `bit_array_utf8_with_size(num_codepoints)` generates non-empty `BitArrays` 
-/// of valid UTF-8 bytes.  
-/// 
-/// The "size" specified by `num_codepoints` is the number of codepoints 
-/// represented by the generated `BitArray` rather than the number of bits or 
+/// `fixed_size_utf8_bit_array(num_codepoints)` generates non-empty `BitArrays`
+/// of valid UTF-8 bytes.
+///
+/// The "size" specified by `num_codepoints` is the number of codepoints
+/// represented by the generated `BitArray` rather than the number of bits or
 /// bytes.
-/// 
-pub fn bit_array_utf8_with_size(num_codepoints: Int) -> Generator(BitArray) {
+///
+pub fn fixed_size_utf8_bit_array(num_codepoints: Int) -> Generator(BitArray) {
   let num_codepoints = ensure_positive_or_zero(num_codepoints)
 
   use codepoints <- map(utf_codepoint_list(num_codepoints, num_codepoints))
@@ -2045,24 +2045,24 @@ fn utf_codepoint_list(
   min_length: Int,
   max_length: Int,
 ) -> Generator(List(UtfCodepoint)) {
-  list_generic(
+  generic_list(
     element_generator: utf_codepoint(),
-    length_generator: int_uniform_inclusive(min_length, max_length),
+    length_generator: bounded_int(min_length, max_length),
   )
 }
 
-/// `bit_array_utf8_with_size_from(num_codepoints_generator)` generates 
-/// non-empty `BitArrays` of valid UTF-8 bytes.  
-/// 
+/// `fixed_size_utf8_bit_array_from(num_codepoints_generator)` generates
+/// non-empty `BitArrays` of valid UTF-8 bytes.
+///
 /// The "size" distribution is specified by `num_codepoints_generator` and
-/// represents the number of codepoints rather than the number of bits or 
+/// represents the number of codepoints rather than the number of bits or
 /// bytes.
-/// 
-pub fn bit_array_utf8_with_size_from(
+///
+pub fn fixed_size_utf8_bit_array_from(
   codepoint_generator codepoint_generator: Generator(UtfCodepoint),
   num_codepoints num_codepoints: Int,
 ) -> Generator(BitArray) {
-  use codepoints <- map(list_with_length_from(
+  use codepoints <- map(fixed_length_list_from(
     element_generator: codepoint_generator,
     length: num_codepoints,
   ))
@@ -2070,12 +2070,12 @@ pub fn bit_array_utf8_with_size_from(
   bit_array_from_codepoints(codepoints)
 }
 
-pub fn bit_array_utf8_generic(
+pub fn generic_utf8_bit_array(
   codepoint_generator codepoint_generator: Generator(UtfCodepoint),
   num_codepoints_generator num_codepoints_generator: Generator(Int),
 ) {
   use length <- map(num_codepoints_generator)
-  list_with_length_from(codepoint_generator, length)
+  fixed_length_list_from(codepoint_generator, length)
 }
 
 fn bit_array_from_codepoints(codepoints: List(UtfCodepoint)) -> BitArray {
@@ -2086,68 +2086,68 @@ fn bit_array_from_codepoints(codepoints: List(UtfCodepoint)) -> BitArray {
 
 // MARK: Bit arrays (byte-aligned)
 
-/// `bit_array_byte_aligned()` generates byte-aligned `BitArrays`.
-/// 
-pub fn bit_array_byte_aligned() -> Generator(BitArray) {
-  bit_array_generic(
+/// `byte_aligned_bit_array()` generates byte-aligned `BitArrays`.
+///
+pub fn byte_aligned_bit_array() -> Generator(BitArray) {
+  generic_bit_array(
     value_generator: byte(),
     bit_size_generator: byte_aligned_bit_size_generator(0),
   )
 }
 
-/// `bit_array_byte_aligned_non_empty()` generates byte-aligned `BitArrays`.
-/// 
-pub fn bit_array_byte_aligned_non_empty() -> Generator(BitArray) {
-  bit_array_generic(
+/// `non_empty_byte_aligned_bit_array()` generates byte-aligned `BitArrays`.
+///
+pub fn non_empty_byte_aligned_bit_array() -> Generator(BitArray) {
+  generic_bit_array(
     value_generator: byte(),
     bit_size_generator: byte_aligned_bit_size_generator(1),
   )
 }
 
-/// `bit_array_byte_aligned_with_size(num_bytes)` generates byte-aligned 
+/// `fixed_size_byte_aligned_bit_array(num_bytes)` generates byte-aligned
 /// `BitArrays` with the given number of bytes.
-/// 
-/// Note: the `num_bytes` will be adjusted 
-/// 
-pub fn bit_array_byte_aligned_with_size(num_bytes: Int) -> Generator(BitArray) {
+///
+/// Note: the `num_bytes` will be adjusted
+///
+pub fn fixed_size_byte_aligned_bit_array(num_bytes: Int) -> Generator(BitArray) {
   let num_bits = ensure_positive_or_zero(num_bytes) * 8
-  bit_array_with_size(num_bits)
+  fixed_size_bit_array(num_bits)
 }
 
-/// `bit_array_byte_aligned_with_size_from(num_bytes_generator)` generates 
-/// byte-aligned `BitArrays` with number of bytes specified by the given 
+/// `fixed_size_byte_aligned_bit_array_from(num_bytes_generator)` generates
+/// byte-aligned `BitArrays` with number of bytes specified by the given
 /// generator.
-/// 
-pub fn bit_array_byte_aligned_with_size_from(
+///
+pub fn fixed_size_byte_aligned_bit_array_from(
   value_generator value_generator: Generator(Int),
   byte_size byte_size: Int,
 ) -> Generator(BitArray) {
   let bit_size = byte_size * 8
-  bit_array_with_size_from(value_generator, bit_size)
+  fixed_size_bit_array_from(value_generator, bit_size)
 }
 
-/// `bit_array_byte_aligned_generic(value_generator, byte_size_generator)` 
-/// generates bit_arrays with 
+/// `generic_byte_aligned_bit_array(value_generator, byte_size_generator)`
+/// generates bit_arrays with
 /// values from `value_generator` and lengths from `byte_size_generator`.
-/// 
-pub fn bit_array_byte_aligned_generic(
+///
+pub fn generic_byte_aligned_bit_array(
   value_generator value_generator: Generator(Int),
   byte_size_generator byte_size_generator: Generator(Int),
 ) -> Generator(BitArray) {
   use byte_size <- bind(byte_size_generator)
-  bit_array_byte_aligned_with_size_from(value_generator, byte_size)
+  fixed_size_byte_aligned_bit_array_from(value_generator, byte_size)
 }
 
 /// Generate a number from the sequence `[0, 8, 16, ..., 128]`.
-/// 
+///
 fn byte_aligned_bit_size_generator(min: Int) -> Generator(Int) {
-  use num_bytes <- map(int_uniform_inclusive(min, 16))
+  use num_bytes <- map(bounded_int(min, 16))
   let num_bits = 8 * num_bytes
   num_bits
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Utils 
+// MARK: Utils
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 fn list_cons(x, xs) {
@@ -2178,16 +2178,16 @@ fn pick_origin_within_range_float(low: Float, high: Float, goal goal: Float) {
   }
 }
 
-/// Convert and int to a single character string.  
-/// 
-/// If the given int does not 
-/// represent a valid codepoint, returns try to convert `default` into a valid 
+/// Convert and int to a single character string.
+///
+/// If the given int does not
+/// represent a valid codepoint, returns try to convert `default` into a valid
 /// codepoint.
-/// 
-/// If that too doesn't work, then just return `"a"` -- but you should ensure 
-/// that `default` will be a valid codepoint or you may mess up the expected 
+///
+/// If that too doesn't work, then just return `"a"` -- but you should ensure
+/// that `default` will be a valid codepoint or you may mess up the expected
 /// shrinking behavior.
-/// 
+///
 fn int_to_char(n: Int, default default: Int) -> String {
   case string.utf_codepoint(n) {
     Ok(cp) -> string.from_utf_codepoints([cp])
@@ -2203,7 +2203,7 @@ fn int_to_char(n: Int, default default: Int) -> String {
 ///
 /// If the given character is a multicodepoint grapheme cluster, only returns
 /// the first codepoint in the cluster.
-/// 
+///
 fn char_to_int(char: String) -> Int {
   case string.to_utf_codepoints(char) {
     [] -> ascii_a_lowercase

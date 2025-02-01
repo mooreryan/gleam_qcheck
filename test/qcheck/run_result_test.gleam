@@ -7,7 +7,7 @@ import qcheck/test_error_message
 pub fn run_result__propery_ok_means_pass__test() {
   qcheck.run_result(
     config: qcheck.default_config(),
-    generator: qcheck.int_uniform(),
+    generator: qcheck.uniform_int(),
     property: fn(n) {
       // Integer->String->Integer round tripping.
       n
@@ -22,7 +22,7 @@ pub fn run_result__property_error_means_fail__test() {
     use <- test_error_message.rescue
     qcheck.run_result(
       config: qcheck.default_config(),
-      generator: qcheck.int_small_positive_or_zero(),
+      generator: qcheck.small_positive_or_zero_int(),
       property: int.divide(1, _),
     )
   }
