@@ -21,6 +21,14 @@ pub fn generic_list__generates_valid_values__test() {
   )
 }
 
+pub fn list_from__generates_valid_values__test() {
+  qcheck.run(
+    config: qcheck.default_config(),
+    generator: qcheck.list_from(qcheck.bounded_int(-1000, 1000)),
+    property: fn(l) { list.all(l, fn(n) { -1000 <= n && n <= 1000 }) },
+  )
+}
+
 fn int_list_to_string(l) {
   "["
   <> {

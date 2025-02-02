@@ -1648,6 +1648,15 @@ pub fn fixed_length_list_from(
   generic_list_loop(length, tree.return([]), element_generator, seed)
 }
 
+/// `list_from(element_generator)` generates list of elements from
+/// `element_generator` of a reasonable size.
+///
+/// Shrinks on size, then on values.
+///
+pub fn list_from(element_generator: Generator(a)) -> Generator(List(a)) {
+  generic_list(element_generator, small_positive_or_zero_int())
+}
+
 // MARK: Dicts
 
 /// `generic_dict(key_generator, value_generator, length_generator)` generates
