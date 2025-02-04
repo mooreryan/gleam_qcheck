@@ -1,3 +1,5 @@
+⚠️ v1.0 preparation work is in progress with significant API changes -- see development on the `v1.0-prep` branch for details.
+
 # qcheck
 
 QuickCheck-inspired property-based testing with integrated shrinking for [Gleam](https://gleam.run/).
