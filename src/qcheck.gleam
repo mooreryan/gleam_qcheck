@@ -63,9 +63,9 @@
 //// - [tuple4](#tuple4)
 //// - [tuple5](#tuple5)
 //// - [tuple6](#tuple6)
-//// - [from_generators](#from_generators)
-//// - [from_weighted_generators](#from_weighted_generators)
-//// - [from_float_weighted_generators](#from_weighted_generators)
+//// - [from_generators](#from_generators) TODO: from
+//// - [from_weighted_generators](#from_weighted_generators) TODO: from_weighted
+//// - [from_float_weighted_generators](#from_weighted_generators) TODO from_float_weighted actually just remove this
 ////
 //// ### Ints
 ////
@@ -240,7 +240,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/order
 import gleam/set
 import gleam/string
-import gleam/string_tree.{type StringTree}
+
 import gleam/yielder
 import qcheck/random
 import qcheck/shrink
@@ -1182,8 +1182,7 @@ pub fn small_positive_or_zero_int() -> Generator(Int) {
 /// than `0`.
 ///
 pub fn small_strictly_positive_int() -> Generator(Int) {
-  small_positive_or_zero_int()
-  |> map(int.add(_, 1))
+  small_positive_or_zero_int() |> map(int.add(_, 1))
 }
 
 /// `bounded_int(from, to)` generates integers uniformly distributed
@@ -1203,6 +1202,24 @@ pub fn bounded_int(from low: Int, to high: Int) -> Generator(Int) {
 
   generator(random.int(low, high), fn(n) {
     let origin = pick_origin_within_range(low, high, goal: 0)
+
+    tree.new(root: n, shrink: shrink.int_towards(origin))
+  })
+}
+
+// This is only used to ensure that codepoint generators shrink to "a" if possible.
+fn bounded_int_with_shrink_target(
+  from low: Int,
+  to high: Int,
+  shrink_target shrink_target: Int,
+) -> Generator(Int) {
+  let #(low, high) = case low <= high {
+    True -> #(low, high)
+    False -> #(high, low)
+  }
+
+  generator(random.int(low, high), fn(n) {
+    let origin = pick_origin_within_range(low, high, goal: shrink_target)
 
     tree.new(root: n, shrink: shrink.int_towards(origin))
   })
@@ -1276,14 +1293,10 @@ pub fn float_uniform_inclusive(from low: Float, to high: Float) {
   })
 }
 
-// MARK: Characters
+// TODO: from_generators -> one_of
+// TODO: from_weighted_generators -> weighted
 
-// Though gleam doesn't have a `Char` type, we need these one-character string
-// generators so that we can shrink the `Generator(String)` type properly.
-
-const char_min_value: Int = 0
-
-const char_max_value: Int = 255
+// MARK: Codepoints
 
 /// `bounded_character(low, high)` generates "characters" uniformly
 /// distributed between `low` and `high`, inclusive.  Here, "characters" are
@@ -1301,7 +1314,7 @@ const char_max_value: Int = 255
 /// Note: if you provide a range that it outside the range of valid codepoints,
 /// a default range will be chosen for you.
 ///
-pub fn bounded_character(from low: Int, to high: Int) -> Generator(String) {
+pub fn bounded_codepoint(from low: Int, to high: Int) -> Generator(UtfCodepoint) {
   let #(low, high) = case low <= high {
     True -> #(low, high)
     False -> #(high, low)
@@ -1314,66 +1327,79 @@ pub fn bounded_character(from low: Int, to high: Int) -> Generator(String) {
   let origin = pick_origin_within_range(low, high, goal: ascii_a_lowercase)
   let shrink = shrink.int_towards(origin)
 
-  Generator(fn(seed) {
-    let #(n, seed) = random.int(low, high) |> random.step(seed)
+  use seed <- Generator
+  let #(n, seed) = random.int(low, high) |> random.step(seed)
 
-    let tree =
-      tree.new(n, shrink)
-      // If user crafts a range that generates lots of invalid codepoints, then
-      // the nice shrinking will get a bit weird.  But origin should be valid
-      // unless there is an implementation error, since the "goal" above should
-      // always be valid.
-      |> tree.map(int_to_char(_, default: origin))
+  let tree =
+    tree.new(n, shrink)
+    // If user crafts a range that generates lots of invalid codepoints, then
+    // the nice shrinking will get a bit weird.  But origin should be valid
+    // unless there is an implementation error, since the "goal" above should
+    // always be valid.
+    |> tree.map(int_to_codepoint(_, on_error: origin))
 
-    #(tree, seed)
-  })
+  #(tree, seed)
 }
 
-/// `uppercase_character()` generates uppercase (ASCII) letters.
+/// `uppercase_codepoint()` generates uppercase (ASCII) letters.
 ///
-pub fn uppercase_character() -> Generator(String) {
-  bounded_character(ascii_a_uppercase, ascii_z_uppercase)
+pub fn uppercase_ascii_codepoint() -> Generator(UtfCodepoint) {
+  bounded_codepoint(from: ascii_a_uppercase, to: ascii_z_uppercase)
 }
 
-/// `lowercase_character()` generates lowercase (ASCII) letters.
+/// `lowercase_codepoint()` generates lowercase (ASCII) letters.
 ///
-pub fn lowercase_character() -> Generator(String) {
-  bounded_character(ascii_a_lowercase, ascii_z_lowercase)
+pub fn lowercase_ascii_codepoint() -> Generator(UtfCodepoint) {
+  bounded_codepoint(from: ascii_a_lowercase, to: ascii_z_lowercase)
 }
 
-/// `digit_character()` generates digits from `0` to `9`, inclusive.
+/// `digit_codepoint()` generates digits from `0` to `9`, inclusive.
 ///
-pub fn digit_character() -> Generator(String) {
-  bounded_character(ascii_zero, ascii_nine)
+pub fn ascii_digit_codepoint() -> Generator(UtfCodepoint) {
+  bounded_codepoint(from: ascii_zero, to: ascii_nine)
 }
 
 /// `uniform_printable_character()` generates printable ASCII characters.
 ///
 /// Shrinks to `"a"`.
 ///
-pub fn uniform_printable_character() -> Generator(String) {
-  bounded_character(ascii_space, ascii_tilde)
-}
-
-/// `uniform_character()` generates characters uniformly distributed across the
-/// default range.
-///
-pub fn uniform_character() -> Generator(String) {
-  bounded_character(char_min_value, char_max_value)
+pub fn uniform_printable_ascii_codepoint() -> Generator(UtfCodepoint) {
+  bounded_codepoint(from: ascii_space, to: ascii_tilde)
 }
 
 /// `alphabetic_character()` generates alphabetic (ASCII) characters.
 ///
-pub fn alphabetic_character() -> Generator(String) {
-  from_generators(uppercase_character(), [lowercase_character()])
+pub fn alphabetic_ascii_codepoint() -> Generator(UtfCodepoint) {
+  from_generators(uppercase_ascii_codepoint(), [lowercase_ascii_codepoint()])
 }
 
 /// `alphanumeric_character()` generates alphanumeric (ASCII) characters.
 ///
-pub fn alphanumeric_character() -> Generator(String) {
-  from_weighted_generators(#(26, uppercase_character()), [
-    #(26, lowercase_character()),
-    #(10, digit_character()),
+pub fn alphanumeric_ascii_codepoint() -> Generator(UtfCodepoint) {
+  from_weighted_generators(#(26, uppercase_ascii_codepoint()), [
+    #(26, lowercase_ascii_codepoint()),
+    #(10, ascii_digit_codepoint()),
+  ])
+}
+
+/// `printable_character()` generates printable ASCII characters, with a bias towards
+/// alphanumeric characters.
+///
+pub fn printable_ascii_codepoint() -> Generator(UtfCodepoint) {
+  from_weighted_generators(#(381, uppercase_ascii_codepoint()), [
+    #(381, lowercase_ascii_codepoint()),
+    #(147, ascii_digit_codepoint()),
+    #(91, uniform_printable_ascii_codepoint()),
+  ])
+}
+
+pub fn codepoint() -> Generator(UtfCodepoint) {
+  // TODO: originally this had some generation of the min/max character value
+  from_weighted_generators(#(340, uppercase_ascii_codepoint()), [
+    #(340, lowercase_ascii_codepoint()),
+    #(131, ascii_digit_codepoint()),
+    #(81, uniform_printable_ascii_codepoint()),
+    #(89, uniform_codepoint()),
   ])
 }
 
@@ -1385,112 +1411,94 @@ pub fn alphanumeric_character() -> Generator(String) {
 /// program.  E.g., `character_from([])` would crash your test suite, so a
 /// single char must always be provided.
 ///
-pub fn character_from(char: String, chars: List(String)) -> Generator(String) {
-  let hd = char_to_int(char)
-  let tl = list.map(chars, char_to_int)
+pub fn codepoint_from_ints(
+  char: Int,
+  chars: List(Int),
+) -> Generator(UtfCodepoint) {
+  let hd = char
+  let tl = chars
 
   // Take the char with the minimum int representation as the shrink target.
   let shrink_target = list.fold(tl, hd, int.min)
 
-  Generator(fn(seed) {
-    let #(n, seed) = random.uniform(hd, tl) |> random.step(seed)
+  use seed <- Generator
+  let #(n, seed) = random.uniform(hd, tl) |> random.step(seed)
 
-    let tree =
-      tree.new(n, shrink.int_towards(shrink_target))
-      |> tree.map(int_to_char(_, default: shrink_target))
+  let tree =
+    tree.new(n, shrink.int_towards(shrink_target))
+    |> tree.map(int_to_codepoint(_, on_error: shrink_target))
 
-    #(tree, seed)
-  })
+  #(tree, seed)
 }
 
-// This is from OCaml Stdlib.Char module
-fn char_is_whitespace(c) {
-  case c {
-    // Horizontal tab
-    9 -> True
-    // Line feed
-    10 -> True
-    // Vertical tab
-    11 -> True
-    // Form feed
-    12 -> True
-    // Carriage return
-    13 -> True
-    // Space
-    32 -> True
-    _ -> False
+pub fn codepoint_from_strings(
+  head: String,
+  tail: List(String),
+) -> Generator(UtfCodepoint) {
+  let head = char_to_int(head)
+  let tail = list.map(tail, char_to_int)
+
+  codepoint_from_ints(head, tail)
+}
+
+/// Return the codepoint representation of the character.
+///
+/// If the given character is a multicodepoint grapheme cluster, only returns
+/// the first codepoint in the cluster.
+///
+fn char_to_int(char: String) -> Int {
+  case string.to_utf_codepoints(char) {
+    [] -> ascii_a_lowercase
+    [codepoint, ..] -> string.utf_codepoint_to_int(codepoint)
   }
 }
 
 /// `whitespace_character()` generates whitespace (ASCII) characters.
 ///
-pub fn whitespace_character() -> Generator(String) {
-  // If this assert fails, then we have an implementation bug in the min and max
-  // char values.
-  let assert [char, ..chars] =
-    list.range(char_min_value, char_max_value)
-    |> list.filter(char_is_whitespace)
-    |> list.map(int_to_char(_, default: ascii_space))
-
-  character_from(char, chars)
-}
-
-/// `printable_character()` generates printable ASCII characters, with a bias towards
-/// alphanumeric characters.
-///
-pub fn printable_character() -> Generator(String) {
-  from_weighted_generators(#(381, uppercase_character()), [
-    #(381, lowercase_character()),
-    #(147, digit_character()),
-    #(91, uniform_printable_character()),
-  ])
-}
-
-pub fn unicode_character() -> Generator(String) {
-  use codepoint <- map(utf_codepoint())
-  string.from_utf_codepoints([codepoint])
-}
-
-/// `char()` generates characters with a bias towards printable ASCII
-/// characters, while still hitting some edge cases.
-///
-pub fn character() {
-  // If these fail, then char_min/max_value are incorrect (implementation bug).
-  let assert Ok(min_value) = string.utf_codepoint(char_min_value)
-  let assert Ok(max_value) = string.utf_codepoint(char_max_value)
-
-  // TODO add in some charaters in the higher unicode ranges.
-  from_weighted_generators(#(340, uppercase_character()), [
-    #(340, lowercase_character()),
-    #(131, digit_character()),
-    #(81, uniform_printable_character()),
-    #(89, uniform_character()),
-    #(09, return(string.from_utf_codepoints([min_value]))),
-    #(09, return(string.from_utf_codepoints([max_value]))),
-  ])
+pub fn whitespace_ascii_codepoint() -> Generator(UtfCodepoint) {
+  codepoint_from_ints(
+    // Horizontal tab
+    9,
+    [
+      // Line feed
+      10,
+      // Vertical tab
+      11,
+      // Form feed
+      12,
+      // Carriage return
+      13,
+      // Space
+      32,
+    ],
+  )
 }
 
 // MARK: Strings
 
 fn do_gen_string(
   i: Int,
-  string_tree: StringTree,
-  char_gen: Generator(String),
-  char_trees_rev: List(Tree(String)),
+  acc: List(UtfCodepoint),
+  char_gen: Generator(UtfCodepoint),
+  char_trees_rev: List(Tree(UtfCodepoint)),
   seed: Seed,
-) -> #(String, List(Tree(String)), Seed) {
+) -> #(String, List(Tree(UtfCodepoint)), Seed) {
   let Generator(gen_char_tree) = char_gen
 
   let #(char_tree, seed) = gen_char_tree(seed)
 
   case i <= 0 {
-    True -> #(string_tree.to_string(string_tree), char_trees_rev, seed)
+    True -> #(
+      list.reverse(acc) |> string.from_utf_codepoints,
+      char_trees_rev,
+      seed,
+    )
     False -> {
       let Tree(root, _) = char_tree
 
       do_gen_string(
         i - 1,
-        string_tree |> string_tree.append(root),
+        [root, ..acc],
         char_gen,
         [char_tree, ..char_trees_rev],
         seed,
@@ -1511,22 +1519,22 @@ fn do_gen_string(
 /// strategy, and may change in the future.
 ///
 pub fn fixed_length_string_from(
-  generator: Generator(String),
+  generator: Generator(UtfCodepoint),
   length: Int,
 ) -> Generator(String) {
   Generator(fn(seed) {
-    let #(generated_string, char_trees_rev, seed) =
-      do_gen_string(length, string_tree.new(), generator, [], seed)
+    let #(generated_string, reversed_codepoint_trees, seed) =
+      do_gen_string(length, [], generator, [], seed)
 
     let shrink = fn() {
-      let char_trees: List(Tree(String)) = list.reverse(char_trees_rev)
-      let char_list_tree: Tree(List(String)) = tree.sequence_trees(char_trees)
+      let codepoint_list_tree =
+        list.reverse(reversed_codepoint_trees) |> tree.sequence_trees
 
       // Technically `Tree(_root, children)` is the whole tree, but we create it
       // eagerly above.
       let Tree(_root, children) =
-        char_list_tree
-        |> tree.map(fn(char_list) { string.join(char_list, "") })
+        codepoint_list_tree
+        |> tree.map(fn(char_list) { string.from_utf_codepoints(char_list) })
 
       children
     }
@@ -1541,20 +1549,19 @@ pub fn fixed_length_string_from(
 /// characters from `char_generator` and lengths from `length_generator`.
 ///
 pub fn generic_string(
-  char_generator: Generator(String),
+  codepoint_generator: Generator(UtfCodepoint),
   length_generator: Generator(Int),
 ) -> Generator(String) {
-  length_generator
-  |> bind(fixed_length_string_from(char_generator, _))
+  use length <- bind(length_generator)
+  fixed_length_string_from(codepoint_generator, length)
 }
 
 /// `string() generates strings with the default character generator and the
 /// default length generator.
 ///
 pub fn string() -> Generator(String) {
-  bind(small_positive_or_zero_int(), fn(length) {
-    fixed_length_string_from(character(), length)
-  })
+  use length <- bind(small_positive_or_zero_int())
+  fixed_length_string_from(codepoint(), length)
 }
 
 /// `non_empty_string()` generates non-empty strings with the default character
@@ -1562,28 +1569,18 @@ pub fn string() -> Generator(String) {
 ///
 pub fn non_empty_string() -> Generator(String) {
   bind(small_strictly_positive_int(), fn(length) {
-    fixed_length_string_from(character(), length)
+    fixed_length_string_from(codepoint(), length)
   })
-}
-
-/// `fixed_length_string(length)` generates strings of the given `length` with the
-/// default character generator.
-///
-/// Note that for the string generators, "length" refers to the number of
-/// codepoints rather than the number of grapheme clusters as `string.length`
-/// from the stdlib does.  This is a consequence of the current generation
-/// strategy, and may change in the future.
-///
-pub fn fixed_length_string(length: Int) -> Generator(String) {
-  fixed_length_string_from(character(), length)
 }
 
 /// `string_from(char_generator)` generates strings from the given character generator
 /// using the default length generator.
 ///
-pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
+pub fn string_from(
+  codepoint_generator: Generator(UtfCodepoint),
+) -> Generator(String) {
   bind(small_positive_or_zero_int(), fn(length) {
-    fixed_length_string_from(char_generator, length)
+    fixed_length_string_from(codepoint_generator, length)
   })
 }
 
@@ -1591,10 +1588,10 @@ pub fn string_from(char_generator: Generator(String)) -> Generator(String) {
 /// character generator using the default length generator.
 ///
 pub fn non_empty_string_from(
-  char_generator: Generator(String),
+  codepoint_generator: Generator(UtfCodepoint),
 ) -> Generator(String) {
   bind(small_strictly_positive_int(), fn(length) {
-    fixed_length_string_from(char_generator, length)
+    fixed_length_string_from(codepoint_generator, length)
   })
 }
 
@@ -1853,14 +1850,19 @@ fn try(f: fn() -> a) -> Try(a) {
 
 // MARK: Unicode
 
-/// `utf_codepoint()` generates valid Unicode codepoints.
+/// `uniform_codepoint()` generates valid Unicode codepoints.
 ///
-pub fn utf_codepoint() -> Generator(UtfCodepoint) {
-  use int <- map(bounded_int(0x0000, 0x10FFFF))
+pub fn uniform_codepoint() -> Generator(UtfCodepoint) {
+  use int <- map(bounded_int_with_shrink_target(
+    from: 0x0000,
+    to: 0x10FFFF,
+    shrink_target: ascii_a_lowercase,
+  ))
   case int {
     // This is to work around the broken implementation of
     // `string.utf_codepoint` currently in the stdlib.  Once that fix is
     // upstreamed, you should remove this branch.
+    // TODO
     n if n == 0xFFFE || n == 0xFFFF -> utf_codepoint_exn(ascii_a_lowercase)
     // [0, 55295]
     n if 0 <= n && n <= 0xD7FF -> utf_codepoint_exn(n)
@@ -2055,7 +2057,7 @@ fn utf_codepoint_list(
   max_length: Int,
 ) -> Generator(List(UtfCodepoint)) {
   generic_list(
-    element_generator: utf_codepoint(),
+    element_generator: uniform_codepoint(),
     length_generator: bounded_int(min_length, max_length),
   )
 }
@@ -2197,29 +2199,39 @@ fn pick_origin_within_range_float(low: Float, high: Float, goal goal: Float) {
 /// that `default` will be a valid codepoint or you may mess up the expected
 /// shrinking behavior.
 ///
-fn int_to_char(n: Int, default default: Int) -> String {
+/// Convert an int to a codepoint.
+///
+/// If the given int does not
+/// represent a valid codepoint, returns try to convert `default` into a valid
+/// codepoint.
+///
+/// If that too doesn't work, then just return `"a"` -- but you should ensure
+/// that `default` will be a valid codepoint or you may mess up the expected
+/// shrinking behavior.
+///
+fn int_to_codepoint(n: Int, on_error default: Int) -> UtfCodepoint {
   case string.utf_codepoint(n) {
-    Ok(cp) -> string.from_utf_codepoints([cp])
-    Error(Nil) ->
+    Ok(cp) -> cp
+    Error(Nil) -> {
       case string.utf_codepoint(default) {
-        Ok(cp) -> string.from_utf_codepoints([cp])
-        Error(Nil) -> "a"
+        Ok(cp) -> cp
+        Error(Nil) -> {
+          // This assert is safe as long as ascii_a_lowercase constant is
+          // defined correctly.
+          let assert Ok(cp) = string.utf_codepoint(ascii_a_lowercase)
+          cp
+        }
       }
+    }
   }
 }
 
+/// Return the first codepoint of a given string, or if the string is empty return the codepoint for `a`.
 /// Return the codepoint representation of the character.
 ///
 /// If the given character is a multicodepoint grapheme cluster, only returns
 /// the first codepoint in the cluster.
 ///
-fn char_to_int(char: String) -> Int {
-  case string.to_utf_codepoints(char) {
-    [] -> ascii_a_lowercase
-    [codepoint, ..] -> string.utf_codepoint_to_int(codepoint)
-  }
-}
-
 /// If `n <= 0` return `0`, else return `n`.
 fn ensure_positive_or_zero(n: Int) -> Int {
   case int.compare(n, 0) {

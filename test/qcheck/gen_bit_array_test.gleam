@@ -232,10 +232,7 @@ pub fn fixed_size_byte_aligned_bit_array_from__negative_sizes_yield_empty_bit_ar
 pub fn fixed_size_utf8_bit_array_from__negative_sizes_yield_empty_bit_arrays__test() {
   use bytes <- qcheck.given({
     use num_codepoints <- qcheck.bind(negative_numbers())
-    qcheck.fixed_size_utf8_bit_array_from(
-      qcheck.utf_codepoint(),
-      num_codepoints,
-    )
+    qcheck.fixed_size_utf8_bit_array_from(qcheck.codepoint(), num_codepoints)
   })
 
   bit_array.bit_size(bytes) == 0

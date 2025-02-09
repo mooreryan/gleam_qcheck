@@ -7,3 +7,6 @@ _*
 
 /*.trace
 /*.fprof
+
+/bench2
+/codebook.toml

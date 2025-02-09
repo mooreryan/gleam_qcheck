@@ -31,6 +31,14 @@ bench_full:
 
   gleam run -m full_benchmark -- bench_out
 
+bench_x:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  cd bench2
+
+  gleam run -- bench_x_out
+
 qv_dev:
   #!/usr/bin/env bash
   set -euxo pipefail

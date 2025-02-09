@@ -4,6 +4,6 @@ import qcheck
 // exceptions:  once Gleam returns us a value if type `UtfCodepoint`, we know
 // that it is valid.
 pub fn utf_codepoint__smoke_test() {
-  use _ <- qcheck.given(qcheck.utf_codepoint())
+  use _ <- qcheck.given(qcheck.uniform_codepoint())
   True
 }
