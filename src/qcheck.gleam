@@ -63,9 +63,8 @@
 //// - [tuple4](#tuple4)
 //// - [tuple5](#tuple5)
 //// - [tuple6](#tuple6)
-//// - [from_generators](#from_generators) TODO: from
-//// - [from_weighted_generators](#from_weighted_generators) TODO: from_weighted
-//// - [from_float_weighted_generators](#from_weighted_generators) TODO from_float_weighted actually just remove this
+//// - [from_generators](#from_generators)
+//// - [from_weighted_generators](#from_weighted_generators)
 ////
 //// ### Ints
 ////
@@ -1088,31 +1087,9 @@ pub fn from_generators(
   })
 }
 
-/// `from_float_weighted_generators(generator, generators)` chooses a generator
-/// from the given generators weighted by the given float weights, then chooses
-/// a value from that generator.
-///
-/// You should generally prefer `from_weighted_generators` as it is much faster.
-///
-pub fn from_float_weighted_generators(
-  generator: #(Float, Generator(a)),
-  generators: List(#(Float, Generator(a))),
-) -> Generator(a) {
-  Generator(fn(seed) {
-    let #(Generator(generator), seed) =
-      random.float_weighted(generator, generators)
-      |> random.step(seed)
-
-    generator(seed)
-  })
-}
-
-/// `from_float_generators(generator, generators)` chooses a generator from the
+/// `from_weighted_generators(generator, generators)` chooses a generator from the
 /// given generators weighted by the integer weights, then chooses a value from
 /// that generator.
-///
-/// You should generally prefer this function over
-/// `from_float_weighted_generators` as this function is faster.
 ///
 pub fn from_weighted_generators(
   generator: #(Int, Generator(a)),
