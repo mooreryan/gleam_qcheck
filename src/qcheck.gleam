@@ -1394,12 +1394,13 @@ pub fn printable_ascii_codepoint() -> Generator(UtfCodepoint) {
 }
 
 pub fn codepoint() -> Generator(UtfCodepoint) {
-  // TODO: originally this had some generation of the min/max character value
-  from_weighted_generators(#(340, uppercase_ascii_codepoint()), [
-    #(340, lowercase_ascii_codepoint()),
-    #(131, ascii_digit_codepoint()),
-    #(81, uniform_printable_ascii_codepoint()),
-    #(89, uniform_codepoint()),
+  // This is based on the base_quickcheck library. They have some generation of
+  // the min and max char values, which we do not do here.
+  from_weighted_generators(#(30, uppercase_ascii_codepoint()), [
+    #(30, lowercase_ascii_codepoint()),
+    #(10, ascii_digit_codepoint()),
+    #(15, uniform_printable_ascii_codepoint()),
+    #(15, uniform_codepoint()),
   ])
 }
 
