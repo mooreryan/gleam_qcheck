@@ -26,7 +26,7 @@ pub fn float_uniform_range__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.float_uniform_inclusive(-10.0, 10.0),
+      generator: qcheck.bounded_float(-10.0, 10.0),
       property: fn(x) { -5.0 <=. x && x <=. 5.0 },
     )
   }
@@ -45,7 +45,7 @@ pub fn positive_float_uniform_range_not_including_zero__shrinks_ok__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.float_uniform_inclusive(5.0, 10.0),
+      generator: qcheck.bounded_float(5.0, 10.0),
       property: fn(x) { 7.0 <=. x && x <=. 8.0 },
     )
   }
@@ -61,7 +61,7 @@ pub fn negative_float_uniform_range_not_including_zero__shrinks_ok__test() {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.float_uniform_inclusive(-10.0, -5.0),
+      generator: qcheck.bounded_float(-10.0, -5.0),
       property: fn(x) { -8.0 >=. x && x >=. -7.0 },
     )
   }
@@ -71,7 +71,7 @@ pub fn negative_float_uniform_range_not_including_zero__shrinks_ok__test() {
 }
 
 pub fn float_uniform_inclusive__high_less_than_low_ok__test() {
-  use n <- qcheck.given(qcheck.float_uniform_inclusive(10.0, -10.0))
+  use n <- qcheck.given(qcheck.bounded_float(10.0, -10.0))
 
   -10.0 <=. n && n <=. 10.0
 }

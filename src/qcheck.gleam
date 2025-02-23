@@ -1734,17 +1734,30 @@ pub fn float() -> Generator(Float) {
   })
 }
 
-// TODO: rename to bounded float?
-/// `float_uniform_inclusive(from, to)` generates floats uniformly distributed
-/// between `from` and `to`, inclusive.
+/// Generate floats uniformly distributed between `from` and `to`, inclusive.
 ///
-/// Shrinks towards `0.0`, but won't shrink outside of the range `[from, to]`.
+/// ### Arguments
 ///
-/// Note: If you pass the parameters backwards, e.g.,
-/// `float_uniform_inclusive(5.0, 2.0)` it will be treated the same as
-/// `float_uniform_inclusive(2.0, 5.0)`.
+/// - `from`: Lower bound of the range (inclusive)
+/// - `to`: Upper bound of the range (inclusive)
 ///
-pub fn float_uniform_inclusive(from low: Float, to high: Float) {
+/// ### Returns
+///
+/// A generator producing floats within the specified range.
+///
+/// ### Behavior
+///
+/// - Shrinks towards `0`, but won't shrink outside of the range `[from, to]`
+/// - Automatically orders parameters if `from` > `to`
+///
+/// ### Example
+///
+/// Generate floats between -10 and 10.
+///
+/// ```
+/// bounded_float(-10, 10)
+/// ```
+pub fn bounded_float(from low: Float, to high: Float) {
   let #(low, high) = case low <=. high {
     True -> #(low, high)
     False -> #(high, low)
@@ -1756,9 +1769,6 @@ pub fn float_uniform_inclusive(from low: Float, to high: Float) {
     tree.new(root: n, shrink: shrink.float_towards(origin))
   })
 }
-
-// TODO: from_generators -> one_of
-// TODO: from_weighted_generators -> weighted
 
 // MARK: Codepoints
 
