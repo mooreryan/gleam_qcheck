@@ -875,8 +875,7 @@ pub fn generate(
   generator: Generator(a),
   number_to_generate: Int,
   seed: Seed,
-) -> List(a) {
-  // TODO: this should return the next seed
+) -> #(List(a), Seed) {
   do_gen(generator, number_to_generate, seed, [], 0)
 }
 
@@ -886,9 +885,9 @@ fn do_gen(
   seed: Seed,
   acc: List(a),
   k: Int,
-) -> List(a) {
+) -> #(List(a), Seed) {
   case k >= number_to_generate {
-    True -> acc
+    True -> #(acc, seed)
     False -> {
       let Generator(generate) = generator
       let #(tree, seed) = generate(seed)

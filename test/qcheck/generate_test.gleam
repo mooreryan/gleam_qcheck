@@ -3,7 +3,7 @@ import gleeunit/should
 import qcheck
 
 pub fn generate__test() {
-  let numbers =
+  let #(numbers, _seed) =
     qcheck.generate(qcheck.bounded_int(-10, 10), 100, qcheck.random_seed())
 
   let result = {
