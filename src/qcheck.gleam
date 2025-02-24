@@ -1836,6 +1836,50 @@ pub fn bounded_codepoint(from low: Int, to high: Int) -> Generator(UtfCodepoint)
   #(tree, seed)
 }
 
+/// Generate Unicode codepoints.
+///
+/// ### Returns
+///
+/// A generator that creates Unicode codepoints across the valid range
+///
+/// ### Notes
+///
+/// - Generates codepoints from U+0000 to U+10FFFF
+/// - Uses ASCII lowercase 'a' as a shrink target
+///
+/// ### Example
+///
+/// ```
+/// string_from(uniform_codepoint())
+/// ```
+///
+pub fn uniform_codepoint() -> Generator(UtfCodepoint) {
+  use int <- map(bounded_int_with_shrink_target(
+    from: 0x0000,
+    to: 0x10FFFF,
+    shrink_target: ascii_a_lowercase,
+  ))
+  case int {
+    // This is to work around the broken implementation of
+    // `string.utf_codepoint` currently in the stdlib.  Once that fix is
+    // upstreamed, you should remove this branch.
+    // TODO
+    n if n == 0xFFFE || n == 0xFFFF -> utf_codepoint_exn(ascii_a_lowercase)
+    // [0, 55295]
+    n if 0 <= n && n <= 0xD7FF -> utf_codepoint_exn(n)
+    // [57344, 1114111], other than 0xFFFE and 0xFFFF.
+    n if 0xE000 <= n && n <= 0x10FFFF -> utf_codepoint_exn(n)
+    _ -> utf_codepoint_exn(ascii_a_lowercase)
+  }
+}
+
+fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
+  case string.utf_codepoint(int) {
+    Ok(cp) -> cp
+    Error(Nil) -> panic as { "ERROR utf_codepoint_exn: " <> int.to_string(int) }
+  }
+}
+
 /// Generate uppercase ASCII letters.
 ///
 /// ### Returns
@@ -2451,21 +2495,36 @@ pub fn generic_dict(
 
 // MARK: Sets
 
-/// `generic_set(element_generator, max_len)` generates sets of elements from
-/// `element_generator`.
+/// Generates sets with values from a value generator, and sizes from a size
+/// generator.
 ///
-/// Shrinks first on the number of elements, then on the elements themselves.
+/// ### Arguments
 ///
-/// Note: If the size generator generates a size of 5 for an example, then for
-/// that example `5` is taken as the upper bound on the size of the
-/// set.
-/// The current implementation will generate 5 key-value pairs, but it does NOT
-/// guarantee that each of the 5 keys is unique.  So, depending on your
-/// `element_generator`, the actual size may be less than 5.  (This is
-/// considered
-/// to be an implementation detail that you should not rely upon.)
+/// - `value_generator`: Generator for dictionary values
+/// - `size_generator`: Generator for dictionary size
+///
+/// ### Returns
+///
+/// A generator that produces sets
+///
+/// ### Notes
+///
+/// - The size generator limits the maximum number elements
+/// - The actual size may be less than the generated size due to potential
+///   duplicates
+/// - Shrinks on size first, then on individual elements
+///
+/// ### Example
+///
+/// ```
+/// generic_set(
+///   value_generator: string(),
+///   size_generator: small_strictly_positive_int()
+/// )
+/// ```
 ///
 pub fn generic_set(
+  // TODO elements, sizes
   element_generator element_generator: Generator(a),
   size_generator size_generator: Generator(Int),
 ) -> Generator(set.Set(a)) {
@@ -2487,8 +2546,22 @@ fn generate_option() -> random.Generator(GenerateOption) {
   random.weighted(#(15, GenerateNone), [#(85, GenerateSome)])
 }
 
-/// `option_from(generator)` is an `Option` generator that uses `gen` to generate `Some`
-/// values.  Shrinks towards `None` then towards shrinks of `gen`.
+/// Create a generator for `Option` values.
+///
+/// ### Arguments
+///
+/// - `generator`: Generator for the inner value type
+///
+/// ### Returns
+///
+/// A generator that produces `Option` values, shrinking towards `None` first,
+/// then towards the shrinks of the input generator
+///
+/// ### Example
+///
+/// ```
+/// option_from(string())
+/// ```
 ///
 pub fn option_from(generator: Generator(a)) -> Generator(Option(a)) {
   let Generator(generate) = generator
@@ -2507,13 +2580,21 @@ pub fn option_from(generator: Generator(a)) -> Generator(Option(a)) {
   })
 }
 
-/// `nil()` is the `Nil` generator. It always returns `Nil` and does not shrink.
+/// Generate a constant `Nil` value.
+///
+/// ### Returns
+///
+/// A `Generator` that always returns `Nil` and does not shrink
 ///
 pub fn nil() -> Generator(Nil) {
   Generator(fn(seed) { #(tree.return(Nil), seed) })
 }
 
-/// `bool()` generates booleans and shrinks towards `False`.
+/// Generate boolean values.
+///
+/// ### Returns
+///
+/// A generator that generates boolean values and shrinks towards `False`
 ///
 pub fn bool() -> Generator(Bool) {
   Generator(fn(seed) {
@@ -2528,121 +2609,6 @@ pub fn bool() -> Generator(Bool) {
 
     #(tree, seed)
   })
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: TestError
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-type TestError(a) {
-  TestError(
-    original_value: a,
-    shrunk_value: a,
-    shrink_steps: Int,
-    error_msg: String,
-  )
-}
-
-fn new_test_error(
-  original_value orig: a,
-  shrunk_value shrunk: a,
-  shrink_steps steps: Int,
-  error_msg error_msg: String,
-) -> TestError(a) {
-  TestError(
-    original_value: orig,
-    shrunk_value: shrunk,
-    shrink_steps: steps,
-    error_msg: error_msg,
-  )
-}
-
-fn test_error_to_string(test_error: TestError(a)) -> String {
-  "TestError[original_value: "
-  <> string.inspect(test_error.original_value)
-  <> "; shrunk_value: "
-  <> string.inspect(test_error.shrunk_value)
-  <> "; shrink_steps: "
-  <> string.inspect(test_error.shrink_steps)
-  <> "; error: "
-  <> test_error.error_msg
-  <> ";]"
-}
-
-@external(erlang, "qcheck_ffi", "fail")
-@external(javascript, "./qcheck_ffi.mjs", "fail")
-fn do_fail(msg: String) -> a
-
-fn fail(test_error_display: String) -> a {
-  do_fail(test_error_display)
-}
-
-fn failwith(
-  original_value original_value: a,
-  shrunk_value shrunk_value: a,
-  shrink_steps shrink_steps: Int,
-  error_msg error_msg: String,
-) -> b {
-  // If this returned an opaque Exn type then you couldn't mess up the
-  // `test_error_message.rescue` call later, but it could potentially conflict
-  // with non-gleeunit test frameworks, depending on how they deal with
-  // exceptions.
-
-  new_test_error(
-    original_value: original_value,
-    shrunk_value: shrunk_value,
-    shrink_steps: shrink_steps,
-    error_msg: error_msg,
-  )
-  |> test_error_to_string
-  |> fail
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MARK: Try
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-type Try(a) {
-  NoPanic(a)
-  Panic(exception.Exception)
-}
-
-fn try(f: fn() -> a) -> Try(a) {
-  case exception.rescue(fn() { f() }) {
-    Ok(y) -> NoPanic(y)
-    Error(exn) -> Panic(exn)
-  }
-}
-
-// MARK: Unicode
-
-/// `uniform_codepoint()` generates valid Unicode codepoints.
-///
-pub fn uniform_codepoint() -> Generator(UtfCodepoint) {
-  use int <- map(bounded_int_with_shrink_target(
-    from: 0x0000,
-    to: 0x10FFFF,
-    shrink_target: ascii_a_lowercase,
-  ))
-  case int {
-    // This is to work around the broken implementation of
-    // `string.utf_codepoint` currently in the stdlib.  Once that fix is
-    // upstreamed, you should remove this branch.
-    // TODO
-    n if n == 0xFFFE || n == 0xFFFF -> utf_codepoint_exn(ascii_a_lowercase)
-    // [0, 55295]
-    n if 0 <= n && n <= 0xD7FF -> utf_codepoint_exn(n)
-    // [57344, 1114111], other than 0xFFFE and 0xFFFF.
-    n if 0xE000 <= n && n <= 0x10FFFF -> utf_codepoint_exn(n)
-    _ -> utf_codepoint_exn(ascii_a_lowercase)
-  }
-}
-
-fn utf_codepoint_exn(int: Int) -> UtfCodepoint {
-  case string.utf_codepoint(int) {
-    Ok(cp) -> cp
-    Error(Nil) -> panic as { "ERROR utf_codepoint_exn: " <> int.to_string(int) }
-  }
 }
 
 // MARK: Bit arrays
@@ -2924,9 +2890,87 @@ fn byte_aligned_bit_size_generator(min: Int) -> Generator(Int) {
   num_bits
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MARK: TestError
+
+type TestError(a) {
+  TestError(
+    original_value: a,
+    shrunk_value: a,
+    shrink_steps: Int,
+    error_msg: String,
+  )
+}
+
+fn new_test_error(
+  original_value orig: a,
+  shrunk_value shrunk: a,
+  shrink_steps steps: Int,
+  error_msg error_msg: String,
+) -> TestError(a) {
+  TestError(
+    original_value: orig,
+    shrunk_value: shrunk,
+    shrink_steps: steps,
+    error_msg: error_msg,
+  )
+}
+
+fn test_error_to_string(test_error: TestError(a)) -> String {
+  "TestError[original_value: "
+  <> string.inspect(test_error.original_value)
+  <> "; shrunk_value: "
+  <> string.inspect(test_error.shrunk_value)
+  <> "; shrink_steps: "
+  <> string.inspect(test_error.shrink_steps)
+  <> "; error: "
+  <> test_error.error_msg
+  <> ";]"
+}
+
+@external(erlang, "qcheck_ffi", "fail")
+@external(javascript, "./qcheck_ffi.mjs", "fail")
+fn do_fail(msg: String) -> a
+
+fn fail(test_error_display: String) -> a {
+  do_fail(test_error_display)
+}
+
+fn failwith(
+  original_value original_value: a,
+  shrunk_value shrunk_value: a,
+  shrink_steps shrink_steps: Int,
+  error_msg error_msg: String,
+) -> b {
+  // If this returned an opaque Exn type then you couldn't mess up the
+  // `test_error_message.rescue` call later, but it could potentially conflict
+  // with non-gleeunit test frameworks, depending on how they deal with
+  // exceptions.
+
+  new_test_error(
+    original_value: original_value,
+    shrunk_value: shrunk_value,
+    shrink_steps: shrink_steps,
+    error_msg: error_msg,
+  )
+  |> test_error_to_string
+  |> fail
+}
+
+// MARK: Try
+
+type Try(a) {
+  NoPanic(a)
+  Panic(exception.Exception)
+}
+
+fn try(f: fn() -> a) -> Try(a) {
+  case exception.rescue(fn() { f() }) {
+    Ok(y) -> NoPanic(y)
+    Error(exn) -> Panic(exn)
+  }
+}
+
 // MARK: Utils
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 fn list_cons(x, xs) {
   [x, ..xs]
