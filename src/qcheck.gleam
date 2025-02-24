@@ -1815,9 +1815,6 @@ pub fn bounded_codepoint(from low: Int, to high: Int) -> Generator(UtfCodepoint)
   let low = int.clamp(low, min: min_valid_codepoint, max: max_valid_codepoint)
   let high = int.clamp(high, min: min_valid_codepoint, max: max_valid_codepoint)
 
-  // TODO: double check that there is a test for bad ints in the middle of the
-  // cp range.
-
   let origin = pick_origin_within_range(low, high, goal: ascii_a_lowercase)
   let shrink = shrink.int_towards(origin)
 

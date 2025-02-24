@@ -17,7 +17,7 @@ pub fn bounded_codepoint__test() {
   )
 }
 
-pub fn bounded_codepoint__ranges_that_include_invalid_codepoints__test() {
+pub fn bounded_codepoint__ranges_that_include_invalid_codepoints_are_okay__test() {
   qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(10_000),
     generator: qcheck.bounded_codepoint(55_200, 58_000),
@@ -25,6 +25,17 @@ pub fn bounded_codepoint__ranges_that_include_invalid_codepoints__test() {
       let n = string.utf_codepoint_to_int(codepoint)
 
       55_200 <= n && n <= 58_000
+    },
+  )
+}
+
+pub fn bounded_codepoint__ranges_that_include_only_invalid_codepoints_are_corrected__test() {
+  qcheck.run(
+    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
+    generator: qcheck.bounded_codepoint(55_296, 57_343),
+    property: fn(codepoint) {
+      let n = string.utf_codepoint_to_int(codepoint)
+      n == 97
     },
   )
 }
