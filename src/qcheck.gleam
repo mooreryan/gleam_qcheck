@@ -2613,11 +2613,11 @@ pub fn bool() -> Generator(Bool) {
 
 // MARK: Bit arrays
 
+// TODO: this should probably be public
 fn byte() -> Generator(Int) {
   bounded_int(0, 255)
 }
 
-// TODO why named arguments??
 /// `fixed_size_bit_array_from(bit_generator, bit_size)` generates bit arrays of
 /// the given number of bits (bit_size) where elements are generated according
 /// to the given `bit_generator`.
@@ -2625,8 +2625,8 @@ fn byte() -> Generator(Int) {
 /// Shrinks on values, not on length.
 ///
 pub fn fixed_size_bit_array_from(
-  value_generator value_generator: Generator(Int),
-  bit_size bit_size: Int,
+  value_generator: Generator(Int),
+  bit_size: Int,
 ) -> Generator(BitArray) {
   use seed <- Generator
 

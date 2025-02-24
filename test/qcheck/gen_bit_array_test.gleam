@@ -25,7 +25,7 @@ pub fn fixed_size_bit_array_from__makes_arrays_with_valid_size_and_values__test(
   use bits <- qcheck.given(qcheck.fixed_size_bit_array_from(
     // Bit size 5 can encode 0-31
     qcheck.bounded_int(1, 30),
-    bit_size:,
+    5,
   ))
   let assert <<value:size(bit_size)>> = bits
   let value_okay = 1 <= value && value <= 30
