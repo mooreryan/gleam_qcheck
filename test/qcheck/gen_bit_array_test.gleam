@@ -65,6 +65,8 @@ pub fn fixed_size_bit_array__makes_arrays_with_valid_size__test() -> Nil {
 //
 // The other shrinks follow a similar pattern.
 //
+// TODO: need to add this to the docs
+//
 @external(javascript, "../qcheck_ffi.mjs", "do_nothing")
 pub fn bit_array_shrinking__test() -> Nil {
   let generator =

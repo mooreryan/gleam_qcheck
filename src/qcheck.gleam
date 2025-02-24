@@ -2241,7 +2241,8 @@ pub fn fixed_length_string_from(
   })
 }
 
-/// Generate a fixed-length string from the given codepoint generator.
+/// Generate a string from the given codepoint generator and the given length
+/// generator.
 ///
 /// ### Arguments
 ///
@@ -2613,16 +2614,37 @@ pub fn bool() -> Generator(Bool) {
 
 // MARK: Bit arrays
 
-// TODO: this should probably be public
-fn byte() -> Generator(Int) {
+// TODO: rename to unsigned byte
+pub fn byte() -> Generator(Int) {
   bounded_int(0, 255)
 }
 
-/// `fixed_size_bit_array_from(bit_generator, bit_size)` generates bit arrays of
-/// the given number of bits (bit_size) where elements are generated according
-/// to the given `bit_generator`.
+/// Generate fixed-size bit arrays where elements are generated
+/// using the provided integer generator.
 ///
-/// Shrinks on values, not on length.
+/// ### Arguments
+///
+/// - `value_generator`: Generators bit array values
+/// - `bit_size`: Number of bits in the generated bit array
+///
+/// ### Returns
+///
+/// A generator of fixed-size bit arrays
+///
+/// ### Notes
+///
+/// Shrinks on values, not on size
+///
+/// ### Example
+///
+/// ```
+/// fixed_size_bit_array_from(bounded_int(0, 255), 64)
+/// ```
+///
+/// ### Warning
+///
+/// This function will generate bit arrays that cause runtime crashes when
+/// targeting JavaScript unless the bit size is a multiple of 8.
 ///
 pub fn fixed_size_bit_array_from(
   value_generator: Generator(Int),
@@ -2701,19 +2723,45 @@ fn do_gen_bit_array(
   }
 }
 
-/// `generic_bit_array(value_generator, bit_size_generator)` generates bit_arrays with
-/// characters from `value_generator` and lengths from `bit_size_generator`.
+/// Generate bit arrays with configurable values and bit sizes.
+///
+/// ### Arguments
+///
+/// - `value_generator`: Generator for bit array contents
+/// - `bit_size_generator`: Generator for bit array size
+///
+/// ### Returns
+///
+/// A generator that produces bit arrays with values from `value_generator`
+/// and bit sizes from `bit_size_generator`
+///
+/// ### Example
+///
+/// ```
+/// let generator = generic_bit_array(
+///   value_generator: bounded_int(0, 255),
+///   bit_size_generator: bounded_int(32, 64)
+/// )
+/// ```
+///
+/// ### Warning
+///
+/// This function will generate bit arrays that cause runtime crashes when
+/// targeting JavaScript.
 ///
 pub fn generic_bit_array(
+  // TODO values, bit_sizes
   value_generator value_generator: Generator(Int),
   bit_size_generator bit_size_generator: Generator(Int),
 ) -> Generator(BitArray) {
   bit_size_generator |> bind(fixed_size_bit_array_from(value_generator, _))
 }
 
-/// `bit_array()` generates `BitArrays`.
+/// Generate bit arrays.
 ///
-/// Note: This function will generate bit arrays that cause runtime crashes when
+/// ### Warning
+///
+/// This function will generate bit arrays that cause runtime crashes when
 /// targeting JavaScript.
 ///
 pub fn bit_array() -> Generator(BitArray) {
@@ -2723,9 +2771,15 @@ pub fn bit_array() -> Generator(BitArray) {
   )
 }
 
-/// `bit_array()` generates non-empty `BitArrays`.
+/// Generate non-empty bit arrays.
 ///
-/// Note: This function will generate bit arrays that cause runtime crashes when
+/// ### Returns
+///
+/// A generator of non-empty bit arrays
+///
+/// ### Warning
+///
+/// This function will generate bit arrays that cause runtime crashes when
 /// targeting JavaScript.
 ///
 pub fn non_empty_bit_array() -> Generator(BitArray) {
@@ -2735,15 +2789,12 @@ pub fn non_empty_bit_array() -> Generator(BitArray) {
   )
 }
 
-/// `fixed_size_bit_array(size)` generates `BitArrays` of the given `size`.
+/// Generate fixed-size bit arrays.
 ///
-/// Note:
-/// - If `size > 1023`, then size will be `1023`.
-/// - If `size < 0`, then size will be `0`.
+/// ### Warning
 ///
-/// Note: This function will generate bit arrays that cause runtime crashes when
-/// targeting JavaScript, since the JS target only supports byte aligned bit
-/// arrays. TODO this note needs to go on all the ones that don't work on JS
+/// This function will generate bit arrays that cause runtime crashes when
+/// targeting JavaScript.
 ///
 pub fn fixed_size_bit_array(size: Int) -> Generator(BitArray) {
   fixed_size_bit_array_from(byte(), size)
@@ -2751,7 +2802,7 @@ pub fn fixed_size_bit_array(size: Int) -> Generator(BitArray) {
 
 // MARK: Bit arrays (UTF-8)
 
-/// `utf8_bit_array()` generates `BitArrays` of valid UTF-8 bytes.
+/// Generate bit arrays of valid UTF-8 bytes.
 ///
 pub fn utf8_bit_array() -> Generator(BitArray) {
   use max_length <- bind(small_strictly_positive_int())
@@ -2760,8 +2811,7 @@ pub fn utf8_bit_array() -> Generator(BitArray) {
   bit_array_from_codepoints(codepoints)
 }
 
-/// `utf8_bit_array()` generates non-empty `BitArrays` of valid UTF-8
-/// bytes.
+/// Generate non-empty bit arrays of valid UTF-8 bytes.
 ///
 pub fn non_empty_utf8_bit_array() -> Generator(BitArray) {
   use max_length <- bind(small_strictly_positive_int())
@@ -2770,12 +2820,23 @@ pub fn non_empty_utf8_bit_array() -> Generator(BitArray) {
   bit_array_from_codepoints(codepoints)
 }
 
-/// `fixed_size_utf8_bit_array(num_codepoints)` generates non-empty `BitArrays`
-/// of valid UTF-8 bytes.
+/// Generate a fixed-sized bit array of valid UTF-8 encoded bytes with the
+/// given number of codepoints.
 ///
-/// The "size" specified by `num_codepoints` is the number of codepoints
-/// represented by the generated `BitArray` rather than the number of bits or
-/// bytes.
+/// ### Arguments
+///
+/// - `num_codepoints`: The number of Unicode codepoints represented by the
+/// generated bit arrays
+///
+/// ### Returns
+///
+/// A generator that produces of fixed-sized bit arrays of UTF-8 encoded bytes
+///
+/// ### Details
+///
+/// - The size is determined by the number of Unicode codepoints, not bytes or
+///   bits.
+/// - If a negative number is provided, it is converted to zero.
 ///
 pub fn fixed_size_utf8_bit_array(num_codepoints: Int) -> Generator(BitArray) {
   let num_codepoints = ensure_positive_or_zero(num_codepoints)
@@ -2795,16 +2856,29 @@ fn utf_codepoint_list(
   )
 }
 
-/// `fixed_size_utf8_bit_array_from(num_codepoints_generator)` generates
-/// non-empty `BitArrays` of valid UTF-8 bytes.
+/// Generate a fixed-sized bit array of valid UTF-8 encoded bytes with the
+/// given number of codepoints and values generated from the given codepoint
+/// generator.
 ///
-/// The "size" distribution is specified by `num_codepoints_generator` and
-/// represents the number of codepoints rather than the number of bits or
-/// bytes.
+/// ### Arguments
+///
+/// - `codepoint_generator`: Generates the values
+/// - `num_codepoints`: The number of Unicode codepoints represented by the
+/// generated bit arrays
+///
+/// ### Returns
+///
+/// A generator that produces of fixed-sized bit arrays of UTF-8 encoded bytes
+///
+/// ### Details
+///
+/// - The size is determined by the number of Unicode codepoints, not bytes or
+///   bits.
+/// - If a negative number is provided, it is converted to zero.
 ///
 pub fn fixed_size_utf8_bit_array_from(
-  codepoint_generator codepoint_generator: Generator(UtfCodepoint),
-  num_codepoints num_codepoints: Int,
+  codepoint_generator: Generator(UtfCodepoint),
+  num_codepoints: Int,
 ) -> Generator(BitArray) {
   use codepoints <- map(fixed_length_list_from(
     codepoint_generator,
@@ -2814,7 +2888,22 @@ pub fn fixed_size_utf8_bit_array_from(
   bit_array_from_codepoints(codepoints)
 }
 
+/// Generate bit arrays of UTF-8 encoded bytes with configurable values
+/// and number of codepoints.
+///
+/// ### Arguments
+///
+/// - `codepoint_generator`: Generates the codepoint values of the resulting
+///     bit arrays
+/// - `bit_size_generator`: Generates sizes in number of codepoints represented
+///     by the resulting bit arrays
+///
+/// ### Returns
+///
+/// A generator of bit arrays of valid UTF-8 encoded bytes
+///
 pub fn generic_utf8_bit_array(
+  // TODO codepoints, sizes
   codepoint_generator codepoint_generator: Generator(UtfCodepoint),
   num_codepoints_generator num_codepoints_generator: Generator(Int),
 ) {
@@ -2830,7 +2919,7 @@ fn bit_array_from_codepoints(codepoints: List(UtfCodepoint)) -> BitArray {
 
 // MARK: Bit arrays (byte-aligned)
 
-/// `byte_aligned_bit_array()` generates byte-aligned `BitArrays`.
+/// Generate byte-aligned bit arrays.
 ///
 pub fn byte_aligned_bit_array() -> Generator(BitArray) {
   generic_bit_array(
@@ -2839,7 +2928,7 @@ pub fn byte_aligned_bit_array() -> Generator(BitArray) {
   )
 }
 
-/// `non_empty_byte_aligned_bit_array()` generates byte-aligned `BitArrays`.
+/// Generate non-empty byte-aligned bit arrays.
 ///
 pub fn non_empty_byte_aligned_bit_array() -> Generator(BitArray) {
   generic_bit_array(
@@ -2848,31 +2937,69 @@ pub fn non_empty_byte_aligned_bit_array() -> Generator(BitArray) {
   )
 }
 
-/// `fixed_size_byte_aligned_bit_array(num_bytes)` generates byte-aligned
-/// `BitArrays` with the given number of bytes.
+/// Generate byte-aligned bit arrays of the given number of bytes
 ///
-/// Note: the `num_bytes` will be adjusted
+/// ### Arguments
+///
+/// - `num_bytes`: Number of bytes for the generated bit array
+///
+/// ### Returns
+///
+/// A generator that produces bit arrays with the specified number of bytes
+///
+/// ### Example
+///
+/// Generate 4-byte bit arrays:
+///
+/// ```
+/// fixed_size_byte_aligned_bit_array(4)
+/// ```
 ///
 pub fn fixed_size_byte_aligned_bit_array(num_bytes: Int) -> Generator(BitArray) {
   let num_bits = ensure_positive_or_zero(num_bytes) * 8
   fixed_size_bit_array(num_bits)
 }
 
-/// `fixed_size_byte_aligned_bit_array_from(num_bytes_generator)` generates
-/// byte-aligned `BitArrays` with number of bytes specified by the given
-/// generator.
+/// Generate byte-aligned bit arrays of the given number of bytes from the
+/// given value generator
+///
+/// ### Arguments
+///
+/// - `value_generator`: Generates the values of the bit array
+/// - `num_bytes`: Number of bytes for the generated bit array
+///
+/// ### Returns
+///
+/// A generator that produces bit arrays with the specified number of bytes
+/// according to the given value generator
+///
+/// ### Example
+///
+/// Generate 4-byte bit arrays:
+///
+/// ```
+/// fixed_size_byte_aligned_bit_array(bounded_int(0, 255), 16)
+/// ```
 ///
 pub fn fixed_size_byte_aligned_bit_array_from(
-  value_generator value_generator: Generator(Int),
-  byte_size byte_size: Int,
+  value_generator: Generator(Int),
+  byte_size: Int,
 ) -> Generator(BitArray) {
   let bit_size = byte_size * 8
   fixed_size_bit_array_from(value_generator, bit_size)
 }
 
-/// `generic_byte_aligned_bit_array(value_generator, byte_size_generator)`
-/// generates bit_arrays with
-/// values from `value_generator` and lengths from `byte_size_generator`.
+/// Generate byte-aligned bit arrays according to the given value generator
+/// and byte size generator.
+///
+/// ### Arguments
+///
+/// - `value_generator`: Generates the values of the bit array
+/// - `byte_size_generator`: Generates the number of bytes of the bit array
+///
+/// ### Returns
+///
+/// A byte-aligned bit array generator
 ///
 pub fn generic_byte_aligned_bit_array(
   value_generator value_generator: Generator(Int),
