@@ -344,7 +344,7 @@ pub fn character_from__failures_shrink_ok__test() {
   |> should.equal(expected)
 }
 
-pub fn character_from__doesnt_crash_on_multicodepoint_chars__test() {
+pub fn codepoint_from_strings__doesnt_crash_on_multicodepoint_chars__test() {
   let e_accent = "é"
   let assert True = e_accent == "\u{0065}\u{0301}"
   qcheck.run(
