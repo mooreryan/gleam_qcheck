@@ -72,9 +72,9 @@ pub fn generic_list_doesnt_shrink_out_of_length_range__test_() {
 
 pub fn fixed_length_list_from__generates_correct_length__test() {
   use #(list, expected_length) <- qcheck.given({
-    use length <- qcheck.bind(qcheck.small_positive_or_zero_int())
+    use length <- qcheck.bind(qcheck.small_non_negative_int())
     use list <- qcheck.map(qcheck.fixed_length_list_from(
-      qcheck.small_positive_or_zero_int(),
+      qcheck.small_non_negative_int(),
       length,
     ))
     #(list, length)

@@ -70,7 +70,7 @@
 ////
 ////  - [uniform_int](#uniform_int)
 ////  - [bounded_int](#bounded_int)
-////  - [small_positive_or_zero_int](#small_positive_or_zero_int)
+////  - [small_non_negative_int](#small_non_negative_int)
 ////  - [small_strictly_positive_int](#small_strictly_positive_int)
 ////
 //// ### Unicode codepoints (`UtfCodepoint`)
@@ -1591,11 +1591,10 @@ pub fn sized_from(
 /// ### Example
 ///
 /// ```
-/// generic_string(bounded_codepoint(0, 255), small_positive_or_zero_int())
+/// generic_string(bounded_codepoint(0, 255), small_non_negative_int())
 /// ```
 ///
-pub fn small_positive_or_zero_int() -> Generator(Int) {
-  // TODO: rename to small_non_negative_int
+pub fn small_non_negative_int() -> Generator(Int) {
   generator(
     random.int(0, 100)
       |> random.then(fn(x) {
@@ -1624,7 +1623,7 @@ pub fn small_positive_or_zero_int() -> Generator(Int) {
 /// ```
 ///
 pub fn small_strictly_positive_int() -> Generator(Int) {
-  small_positive_or_zero_int() |> map(int.add(_, 1))
+  small_non_negative_int() |> map(int.add(_, 1))
 }
 
 /// Generate integers uniformly distributed between `from` and `to`, inclusive.
@@ -1969,7 +1968,7 @@ pub fn printable_ascii_codepoint() -> Generator(UtfCodepoint) {
 /// The decent default string generator could be writen something like this:
 ///
 /// ```
-/// generic_string(codepoint(), small_positive_or_zero_int())
+/// generic_string(codepoint(), small_non_negative_int())
 /// ```
 ///
 pub fn codepoint() -> Generator(UtfCodepoint) {
@@ -2239,7 +2238,7 @@ pub fn generic_string(
 /// ```
 ///
 pub fn string() -> Generator(String) {
-  use length <- bind(small_positive_or_zero_int())
+  use length <- bind(small_non_negative_int())
   fixed_length_string_from(codepoint(), length)
 }
 
@@ -2270,7 +2269,7 @@ pub fn non_empty_string() -> Generator(String) {
 pub fn string_from(
   codepoint_generator: Generator(UtfCodepoint),
 ) -> Generator(String) {
-  bind(small_positive_or_zero_int(), fn(length) {
+  bind(small_non_negative_int(), fn(length) {
     fixed_length_string_from(codepoint_generator, length)
   })
 }
@@ -2337,7 +2336,7 @@ fn generic_list_loop(
 /// ### Example
 ///
 /// ```
-/// generic_list(string(), small_positive_or_zero_int())
+/// generic_list(string(), small_non_negative_int())
 /// ```
 ///
 pub fn generic_list(
@@ -2402,7 +2401,7 @@ pub fn fixed_length_list_from(
 /// ```
 ///
 pub fn list_from(element_generator: Generator(a)) -> Generator(List(a)) {
-  generic_list(element_generator, small_positive_or_zero_int())
+  generic_list(element_generator, small_non_negative_int())
 }
 
 // MARK: Dicts
@@ -2754,7 +2753,7 @@ pub fn generic_bit_array(
 pub fn bit_array() -> Generator(BitArray) {
   generic_bit_array(
     value_generator: byte(),
-    bit_size_generator: small_positive_or_zero_int(),
+    bit_size_generator: small_non_negative_int(),
   )
 }
 

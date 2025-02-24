@@ -4,19 +4,19 @@ import gleeunit/should
 import qcheck
 import qcheck/test_error_message
 
-// small_positive_or_zero_int
+// small_non_negative_int
 //
 //
 
-pub fn small_positive_or_zero_int__test() {
-  use n <- qcheck.given(qcheck.small_positive_or_zero_int())
+pub fn small_non_negative_int__test() {
+  use n <- qcheck.given(qcheck.small_non_negative_int())
   n + 1 == 1 + n
 }
 
-pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
+pub fn small_non_negative_int__failures_shrink_to_zero__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use n <- qcheck.given(qcheck.small_positive_or_zero_int())
+    use n <- qcheck.given(qcheck.small_non_negative_int())
     n + 1 != 1 + n
   }
 
@@ -24,12 +24,12 @@ pub fn small_positive_or_zero_int__failures_shrink_to_zero__test() {
   |> should.equal(string.inspect(0))
 }
 
-pub fn small_positive_or_zero_int__failures_shrink_to_smaller_values__test() {
+pub fn small_non_negative_int__failures_shrink_to_smaller_values__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.small_positive_or_zero_int(),
+      generator: qcheck.small_non_negative_int(),
       property: fn(n) { n == 0 || n > 1 },
     )
   }

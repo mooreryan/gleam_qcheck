@@ -5,7 +5,7 @@ const test_count: Int = 2500
 
 pub fn using_use__test() {
   let generator = {
-    use n <- qcheck.map(qcheck.small_positive_or_zero_int())
+    use n <- qcheck.map(qcheck.small_non_negative_int())
     n + 10
   }
 
@@ -58,7 +58,7 @@ pub fn bind_with_use__test() {
 
     case bool {
       True -> {
-        use n <- qcheck.map(qcheck.small_positive_or_zero_int())
+        use n <- qcheck.map(qcheck.small_non_negative_int())
         Ok(n)
       }
       False -> {

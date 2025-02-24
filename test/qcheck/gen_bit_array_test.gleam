@@ -35,7 +35,7 @@ pub fn fixed_size_bit_array_from__makes_arrays_with_valid_size_and_values__test(
 @external(javascript, "../qcheck_ffi.mjs", "do_nothing")
 pub fn fixed_size_bit_array__makes_arrays_with_valid_size__test() -> Nil {
   let generator = {
-    use bit_size <- qcheck.bind(qcheck.small_positive_or_zero_int())
+    use bit_size <- qcheck.bind(qcheck.small_non_negative_int())
     use bit_array <- qcheck.map(qcheck.fixed_size_bit_array(bit_size))
     #(bit_array, bit_size)
   }
@@ -121,7 +121,7 @@ pub fn non_empty_utf8_bit_array__generates_valid_non_empty_utf8_bit_arrays__test
 
 pub fn fixed_size_utf8_bit_array__generates_valid_utf8_bit_arrays_with_given_num_codepoints__test() {
   let generator = {
-    use num_codepoints <- qcheck.bind(qcheck.small_positive_or_zero_int())
+    use num_codepoints <- qcheck.bind(qcheck.small_non_negative_int())
     use bit_array <- qcheck.map(qcheck.fixed_size_utf8_bit_array(num_codepoints))
     #(bit_array, num_codepoints)
   }
@@ -143,7 +143,7 @@ pub fn fixed_size_utf8_bit_array_from__generates_valid_utf8_bit_arrays_with_corr
     cp
   }
   let generator = {
-    use num_codepoints <- qcheck.bind(qcheck.small_positive_or_zero_int())
+    use num_codepoints <- qcheck.bind(qcheck.small_non_negative_int())
     use bit_array <- qcheck.map(qcheck.fixed_size_utf8_bit_array_from(
       qcheck.map(qcheck.bounded_int(0, 255), utf_codepoint),
       num_codepoints,
@@ -176,7 +176,7 @@ pub fn non_empty_byte_aligned_bit_array__bit_size_is_always_divisible_by_8__test
 
 pub fn fixed_size_byte_aligned_bit_array_from__makes_arrays_with_valid_size__test() {
   let generator = {
-    use byte_size <- qcheck.bind(qcheck.small_positive_or_zero_int())
+    use byte_size <- qcheck.bind(qcheck.small_non_negative_int())
     use bit_array <- qcheck.map(qcheck.fixed_size_byte_aligned_bit_array_from(
       qcheck.bounded_int(0, 10),
       byte_size,
@@ -189,7 +189,7 @@ pub fn fixed_size_byte_aligned_bit_array_from__makes_arrays_with_valid_size__tes
 
 pub fn fixed_size_byte_aligned_bit_array__makes_arrays_of_correct_size__test() {
   let generator = {
-    use byte_size <- qcheck.bind(qcheck.small_positive_or_zero_int())
+    use byte_size <- qcheck.bind(qcheck.small_non_negative_int())
     use bytes <- qcheck.map(qcheck.fixed_size_byte_aligned_bit_array(byte_size))
     #(bytes, byte_size)
   }
