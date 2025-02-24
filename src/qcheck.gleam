@@ -2060,8 +2060,6 @@ pub fn codepoint_from_ints(
 
   // Take the char with the minimum int representation as the shrink target.
   let shrink_target = list.fold(tl, hd, int.min)
-  // TODO: would it be more intuitive if the first argument was also the
-  // shrink target?
 
   use seed <- Generator
   let #(n, seed) = random.uniform(hd, tl) |> random.step(seed)
@@ -2354,14 +2352,14 @@ fn generic_list_loop(
 ///
 /// ### Arguments
 ///
-/// - `element_generator`: Generates list elements
-/// - `length_generator`: Generates list lengths
+/// - `elements_from`: Generates list elements
+/// - `length_from`: Generates list lengths
 ///
 /// ### Returns
 ///
 /// A generator that produces lists with:
-/// - Elements from `element_generator`
-/// - Lengths from `length_generator`
+/// - Elements from `elements_from`
+/// - Lengths from `length_from`
 ///
 /// ### Shrinking
 ///
@@ -2375,9 +2373,8 @@ fn generic_list_loop(
 /// ```
 ///
 pub fn generic_list(
-  // TODO: elements and length
-  element_generator element_generator: Generator(a),
-  length_generator length_generator: Generator(Int),
+  elements_from element_generator: Generator(a),
+  length_from length_generator: Generator(Int),
 ) -> Generator(List(a)) {
   use length <- bind(length_generator)
   fixed_length_list_from(element_generator, length)
@@ -2446,9 +2443,9 @@ pub fn list_from(element_generator: Generator(a)) -> Generator(List(a)) {
 ///
 /// ### Arguments
 ///
-/// - `key_generator`: Generator for dictionary keys
-/// - `value_generator`: Generator for dictionary values
-/// - `size_generator`: Generator for dictionary size
+/// - `keys_from`: Generator for dictionary keys
+/// - `values_from`: Generator for dictionary values
+/// - `size_from`: Generator for dictionary size
 ///
 /// ### Returns
 ///
@@ -2472,27 +2469,26 @@ pub fn list_from(element_generator: Generator(a)) -> Generator(List(a)) {
 /// ```
 ///
 pub fn generic_dict(
-  // TODO: keys, values, sizes
-  key_generator key_generator: Generator(key),
-  value_generator value_generator: Generator(value),
-  size_generator size_generator: Generator(Int),
+  keys_from key_generator: Generator(key),
+  values_from value_generator: Generator(value),
+  size_from size_generator: Generator(Int),
 ) -> Generator(Dict(key, value)) {
   use association_list <- map(generic_list(
-    element_generator: tuple2(key_generator, value_generator),
-    length_generator: size_generator,
+    elements_from: tuple2(key_generator, value_generator),
+    length_from: size_generator,
   ))
   dict.from_list(association_list)
 }
 
 // MARK: Sets
 
-/// Generates sets with values from a value generator, and sizes from a size
+/// Generates sets with values from an element generator, and sizes from a size
 /// generator.
 ///
 /// ### Arguments
 ///
-/// - `value_generator`: Generator for dictionary values
-/// - `size_generator`: Generator for dictionary size
+/// - `elements_from`: Generator for set elements
+/// - `size_from`: Generator for set size
 ///
 /// ### Returns
 ///
@@ -2515,13 +2511,12 @@ pub fn generic_dict(
 /// ```
 ///
 pub fn generic_set(
-  // TODO elements, sizes
-  element_generator element_generator: Generator(a),
-  size_generator size_generator: Generator(Int),
+  elements_from element_generator: Generator(a),
+  size_from size_generator: Generator(Int),
 ) -> Generator(set.Set(a)) {
   use elements <- map(generic_list(
-    element_generator:,
-    length_generator: size_generator,
+    elements_from: element_generator,
+    length_from: size_generator,
   ))
   set.from_list(elements)
 }
@@ -2604,8 +2599,7 @@ pub fn bool() -> Generator(Bool) {
 
 // MARK: Bit arrays
 
-// TODO: rename to unsigned byte
-pub fn byte() -> Generator(Int) {
+pub fn unsigned_byte() -> Generator(Int) {
   bounded_int(0, 255)
 }
 
@@ -2717,13 +2711,12 @@ fn do_gen_bit_array(
 ///
 /// ### Arguments
 ///
-/// - `value_generator`: Generator for bit array contents
-/// - `bit_size_generator`: Generator for bit array size
+/// - `values_from`: Generator for bit array contents
+/// - `bit_size_from`: Generator for bit array size
 ///
 /// ### Returns
 ///
-/// A generator that produces bit arrays with values from `value_generator`
-/// and bit sizes from `bit_size_generator`
+/// A bit array generator
 ///
 /// ### Example
 ///
@@ -2740,9 +2733,8 @@ fn do_gen_bit_array(
 /// targeting JavaScript.
 ///
 pub fn generic_bit_array(
-  // TODO values, bit_sizes
-  value_generator value_generator: Generator(Int),
-  bit_size_generator bit_size_generator: Generator(Int),
+  values_from value_generator: Generator(Int),
+  bit_size_from bit_size_generator: Generator(Int),
 ) -> Generator(BitArray) {
   bit_size_generator |> bind(fixed_size_bit_array_from(value_generator, _))
 }
@@ -2756,8 +2748,8 @@ pub fn generic_bit_array(
 ///
 pub fn bit_array() -> Generator(BitArray) {
   generic_bit_array(
-    value_generator: byte(),
-    bit_size_generator: small_non_negative_int(),
+    values_from: unsigned_byte(),
+    bit_size_from: small_non_negative_int(),
   )
 }
 
@@ -2774,8 +2766,8 @@ pub fn bit_array() -> Generator(BitArray) {
 ///
 pub fn non_empty_bit_array() -> Generator(BitArray) {
   generic_bit_array(
-    value_generator: byte(),
-    bit_size_generator: small_strictly_positive_int(),
+    values_from: unsigned_byte(),
+    bit_size_from: small_strictly_positive_int(),
   )
 }
 
@@ -2787,7 +2779,7 @@ pub fn non_empty_bit_array() -> Generator(BitArray) {
 /// targeting JavaScript.
 ///
 pub fn fixed_size_bit_array(size: Int) -> Generator(BitArray) {
-  fixed_size_bit_array_from(byte(), size)
+  fixed_size_bit_array_from(unsigned_byte(), size)
 }
 
 // MARK: Bit arrays (UTF-8)
@@ -2841,8 +2833,8 @@ fn utf_codepoint_list(
   max_length: Int,
 ) -> Generator(List(UtfCodepoint)) {
   generic_list(
-    element_generator: uniform_codepoint(),
-    length_generator: bounded_int(min_length, max_length),
+    elements_from: uniform_codepoint(),
+    length_from: bounded_int(min_length, max_length),
   )
 }
 
@@ -2883,9 +2875,9 @@ pub fn fixed_size_utf8_bit_array_from(
 ///
 /// ### Arguments
 ///
-/// - `codepoint_generator`: Generates the codepoint values of the resulting
+/// - `codepoints_from`: Generates the codepoint values of the resulting
 ///     bit arrays
-/// - `bit_size_generator`: Generates sizes in number of codepoints represented
+/// - `codepoint_size_from`: Generates sizes in number of codepoints represented
 ///     by the resulting bit arrays
 ///
 /// ### Returns
@@ -2893,9 +2885,8 @@ pub fn fixed_size_utf8_bit_array_from(
 /// A generator of bit arrays of valid UTF-8 encoded bytes
 ///
 pub fn generic_utf8_bit_array(
-  // TODO codepoints, sizes
-  codepoint_generator codepoint_generator: Generator(UtfCodepoint),
-  num_codepoints_generator num_codepoints_generator: Generator(Int),
+  codepoints_from codepoint_generator: Generator(UtfCodepoint),
+  codepoint_size_from num_codepoints_generator: Generator(Int),
 ) {
   use length <- map(num_codepoints_generator)
   fixed_length_list_from(codepoint_generator, length)
@@ -2913,8 +2904,8 @@ fn bit_array_from_codepoints(codepoints: List(UtfCodepoint)) -> BitArray {
 ///
 pub fn byte_aligned_bit_array() -> Generator(BitArray) {
   generic_bit_array(
-    value_generator: byte(),
-    bit_size_generator: byte_aligned_bit_size_generator(0),
+    values_from: unsigned_byte(),
+    bit_size_from: byte_aligned_bit_size_generator(0),
   )
 }
 
@@ -2922,8 +2913,8 @@ pub fn byte_aligned_bit_array() -> Generator(BitArray) {
 ///
 pub fn non_empty_byte_aligned_bit_array() -> Generator(BitArray) {
   generic_bit_array(
-    value_generator: byte(),
-    bit_size_generator: byte_aligned_bit_size_generator(1),
+    values_from: unsigned_byte(),
+    bit_size_from: byte_aligned_bit_size_generator(1),
   )
 }
 

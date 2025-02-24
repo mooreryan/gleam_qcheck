@@ -57,9 +57,9 @@ pub fn dict_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.generic_dict(
-        key_generator: qcheck.bounded_int(0, 2),
-        value_generator: qcheck.bounded_int(10, 12),
-        size_generator: qcheck.bounded_int(0, 3),
+        keys_from: qcheck.bounded_int(0, 2),
+        values_from: qcheck.bounded_int(10, 12),
+        size_from: qcheck.bounded_int(0, 3),
       ),
       qcheck.seed(12),
     )

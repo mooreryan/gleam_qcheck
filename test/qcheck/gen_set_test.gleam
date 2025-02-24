@@ -10,8 +10,8 @@ pub fn generic_set__generates_valid_values__test() {
   qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.generic_set(
-      element_generator: qcheck.bounded_int(-5, 5),
-      size_generator: qcheck.bounded_int(0, 5),
+      elements_from: qcheck.bounded_int(-5, 5),
+      size_from: qcheck.bounded_int(0, 5),
     ),
     property: fn(s) {
       let len = set.size(s)
@@ -42,8 +42,8 @@ pub fn set_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.generic_set(
-        element_generator: qcheck.bounded_int(-1, 2),
-        size_generator: qcheck.bounded_int(0, 3),
+        elements_from: qcheck.bounded_int(-1, 2),
+        size_from: qcheck.bounded_int(0, 3),
       ),
       qcheck.seed(10_003),
     )

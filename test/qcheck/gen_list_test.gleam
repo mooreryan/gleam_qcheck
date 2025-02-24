@@ -11,8 +11,8 @@ pub fn generic_list__generates_valid_values__test() {
   qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.generic_list(
-      element_generator: qcheck.bounded_int(-5, 5),
-      length_generator: qcheck.bounded_int(2, 5),
+      elements_from: qcheck.bounded_int(-5, 5),
+      length_from: qcheck.bounded_int(2, 5),
     ),
     property: fn(l) {
       let len = list.length(l)
@@ -42,8 +42,8 @@ pub fn list_generators_shrink_on_size_then_on_elements__test() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.generic_list(
-        element_generator: qcheck.bounded_int(-1, 2),
-        length_generator: qcheck.bounded_int(0, 3),
+        elements_from: qcheck.bounded_int(-1, 2),
+        length_from: qcheck.bounded_int(0, 3),
       ),
       qcheck.seed(10_003),
     )
@@ -61,8 +61,8 @@ pub fn generic_list_doesnt_shrink_out_of_length_range__test_() {
   let #(tree, _seed) =
     qcheck.generate_tree(
       qcheck.generic_list(
-        element_generator: qcheck.bounded_int(1, 2),
-        length_generator: qcheck.bounded_int(min_length, max_length),
+        elements_from: qcheck.bounded_int(1, 2),
+        length_from: qcheck.bounded_int(min_length, max_length),
       ),
       qcheck.random_seed(),
     )
