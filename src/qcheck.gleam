@@ -1663,7 +1663,6 @@ pub fn bounded_int(from low: Int, to high: Int) -> Generator(Int) {
 }
 
 // This is only used to ensure that codepoint generators shrink to "a" if possible.
-// TODO: should this be public?
 fn bounded_int_with_shrink_target(
   from low: Int,
   to high: Int,
@@ -1856,11 +1855,6 @@ pub fn uniform_codepoint() -> Generator(UtfCodepoint) {
     shrink_target: ascii_a_lowercase,
   ))
   case int {
-    // This is to work around the broken implementation of
-    // `string.utf_codepoint` currently in the stdlib.  Once that fix is
-    // upstreamed, you should remove this branch.
-    // TODO
-    n if n == 0xFFFE || n == 0xFFFF -> utf_codepoint_exn(ascii_a_lowercase)
     // [0, 55295]
     n if 0 <= n && n <= 0xD7FF -> utf_codepoint_exn(n)
     // [57344, 1114111], other than 0xFFFE and 0xFFFF.
