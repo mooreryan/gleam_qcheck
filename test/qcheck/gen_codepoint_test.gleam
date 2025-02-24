@@ -346,7 +346,7 @@ pub fn character_from__doesnt_crash_on_multicodepoint_chars__test() {
 pub fn whitespace_character__test() {
   qcheck.run(
     config: qcheck.default_config(),
-    generator: qcheck.whitespace_ascii_codepoint(),
+    generator: qcheck.ascii_whitespace_codepoint(),
     property: fn(codepoint) {
       case string.utf_codepoint_to_int(codepoint) {
         // Horizontal tab
@@ -373,7 +373,7 @@ pub fn whitespace_character__failures_shrink_ok__test() -> Nil {
     use <- test_error_message.rescue
     qcheck.run(
       config: qcheck.default_config(),
-      generator: qcheck.whitespace_ascii_codepoint(),
+      generator: qcheck.ascii_whitespace_codepoint(),
       property: fn(codepoint) {
         case string.utf_codepoint_to_int(codepoint) {
           // Horizontal tab

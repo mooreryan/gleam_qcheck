@@ -1595,6 +1595,7 @@ pub fn sized_from(
 /// ```
 ///
 pub fn small_positive_or_zero_int() -> Generator(Int) {
+  // TODO: rename to small_non_negative_int
   generator(
     random.int(0, 100)
       |> random.then(fn(x) {
@@ -1693,6 +1694,15 @@ fn bounded_int_with_shrink_target(
 ///
 /// A generator of integers with uniform distribution
 ///
+/// ### Example
+///
+/// ```
+/// let positive_int_generator = {
+///   use n <- map(uniform_int())
+///   int.absolute_value(n)
+/// }
+/// ```
+///
 pub fn uniform_int() -> Generator(Int) {
   bounded_int(random.min_int, random.max_int)
 }
@@ -1772,21 +1782,30 @@ pub fn bounded_float(from low: Float, to high: Float) {
 
 // MARK: Codepoints
 
-/// `bounded_character(low, high)` generates "characters" uniformly
-/// distributed between `low` and `high`, inclusive.  Here, "characters" are
-/// strings of a single codepoint.
+/// Generate Unicode codepoints uniformly distributed within a specified
+/// range.
 ///
-/// *Note*: this function is slightly weird in that it takes the integer
-/// representation of the range of codepoints, not the strings themselves.
-/// This behavior will likely change.
+/// ### Arguments
 ///
-/// These `char_*` functions are mainly used for setting up the string
-/// generators.
+/// - `from`: Minimum codepoint value (inclusive)
+/// - `to`: Maximum codepoint value (inclusive)
 ///
-/// Shrinks towards `a` when possible, but won't go outside of the range.
+/// ### Returns
 ///
-/// Note: if you provide a range that it outside the range of valid codepoints,
-/// a default range will be chosen for you.
+/// A generator that produces Unicode codepoints within the specified range.
+///
+/// ### Notes
+///
+/// - If the range is invalid, it will be automatically adjusted to a valid
+///   range
+/// - Shrinks towards an origin codepoint (typically lowercase 'a')
+/// - Mainly used for string generation
+///
+/// ### Example
+///
+/// ```
+/// let cyrillic_character = bounded_codepoint(from: 0x0400, to: 0x04FF)
+/// ```
 ///
 pub fn bounded_codepoint(from low: Int, to high: Int) -> Generator(UtfCodepoint) {
   let #(low, high) = case low <= high {
@@ -1797,6 +1816,9 @@ pub fn bounded_codepoint(from low: Int, to high: Int) -> Generator(UtfCodepoint)
   // It is okay if the min and max are the same.
   let low = int.clamp(low, min: min_valid_codepoint, max: max_valid_codepoint)
   let high = int.clamp(high, min: min_valid_codepoint, max: max_valid_codepoint)
+
+  // TODO: double check that there is a test for bad ints in the middle of the
+  // cp range.
 
   let origin = pick_origin_within_range(low, high, goal: ascii_a_lowercase)
   let shrink = shrink.int_towards(origin)
@@ -1815,39 +1837,81 @@ pub fn bounded_codepoint(from low: Int, to high: Int) -> Generator(UtfCodepoint)
   #(tree, seed)
 }
 
-/// `uppercase_codepoint()` generates uppercase (ASCII) letters.
+/// Generate uppercase ASCII letters.
+///
+/// ### Returns
+///
+/// A generator that produces uppercase letters from `A` to `Z` as codepoints
+///
+/// ### Example
+///
+/// ```
+/// string_from(uppercase_ascii_codepoint())
+/// ```
 ///
 pub fn uppercase_ascii_codepoint() -> Generator(UtfCodepoint) {
   bounded_codepoint(from: ascii_a_uppercase, to: ascii_z_uppercase)
 }
 
-/// `lowercase_codepoint()` generates lowercase (ASCII) letters.
+/// Generate lowercase ASCII letters.
+///
+/// ### Returns
+///
+/// A generator that produces lowercase letters from `a` to `z` as codepoints
+///
+/// ### Example
+///
+/// ```
+/// string_from(lowercase_ascii_codepoint())
+/// ```
 ///
 pub fn lowercase_ascii_codepoint() -> Generator(UtfCodepoint) {
   bounded_codepoint(from: ascii_a_lowercase, to: ascii_z_lowercase)
 }
 
-/// `digit_codepoint()` generates digits from `0` to `9`, inclusive.
+/// Generate ASCII digits as codepoints.
+///
+/// ### Returns
+///
+/// A generator that produces ASCII digits from `0` to `9` as codepoints
+///
+/// ### Example
+///
+/// ```
+/// string_from(ascii_digit_codepoint())
+/// ```
 ///
 pub fn ascii_digit_codepoint() -> Generator(UtfCodepoint) {
   bounded_codepoint(from: ascii_zero, to: ascii_nine)
 }
 
-/// `uniform_printable_character()` generates printable ASCII characters.
+/// Generate alphabetic ASCII characters.
 ///
-/// Shrinks to `"a"`.
+/// ### Returns
 ///
-pub fn uniform_printable_ascii_codepoint() -> Generator(UtfCodepoint) {
-  bounded_codepoint(from: ascii_space, to: ascii_tilde)
-}
-
-/// `alphabetic_character()` generates alphabetic (ASCII) characters.
+/// A generator that produces alphabetic ASCII characters as codepoints
+///
+/// ### Example
+///
+/// ```
+/// string_from(alphabetic_ascii_codepoint())
+/// ```
 ///
 pub fn alphabetic_ascii_codepoint() -> Generator(UtfCodepoint) {
   from_generators(uppercase_ascii_codepoint(), [lowercase_ascii_codepoint()])
 }
 
-/// `alphanumeric_character()` generates alphanumeric (ASCII) characters.
+/// Generate alphanumeric ASCII characters.
+///
+/// ### Returns
+///
+/// A generator that produces alphanumeric ASCII characters as codepoints
+///
+/// ### Example
+///
+/// ```
+/// string_from(alphanumeric_ascii_codepoint())
+/// ```
 ///
 pub fn alphanumeric_ascii_codepoint() -> Generator(UtfCodepoint) {
   from_weighted_generators(#(26, uppercase_ascii_codepoint()), [
@@ -1856,8 +1920,34 @@ pub fn alphanumeric_ascii_codepoint() -> Generator(UtfCodepoint) {
   ])
 }
 
-/// `printable_character()` generates printable ASCII characters, with a bias towards
-/// alphanumeric characters.
+/// Uniformly generate printable ASCII characters.
+///
+/// ### Returns
+///
+/// A generator that produces printable ASCII characters as codepoints
+///
+/// ### Example
+///
+/// ```
+/// string_from(uniform_printable_ascii_codepoint())
+/// ```
+///
+pub fn uniform_printable_ascii_codepoint() -> Generator(UtfCodepoint) {
+  bounded_codepoint(from: ascii_space, to: ascii_tilde)
+}
+
+/// Generate printable ASCII characters with a bias towards alphanumeric
+/// characters.
+///
+/// ### Returns
+///
+/// A generator that produces printable ASCII characters as codepoints
+///
+/// ### Example
+///
+/// ```
+/// string_from(printable_ascii_codepoint())
+/// ```
 ///
 pub fn printable_ascii_codepoint() -> Generator(UtfCodepoint) {
   from_weighted_generators(#(381, uppercase_ascii_codepoint()), [
@@ -1867,8 +1957,23 @@ pub fn printable_ascii_codepoint() -> Generator(UtfCodepoint) {
   ])
 }
 
+/// Generate Unicode codepoints with a decent distribution that is good for
+/// generating genreal strings.
+///
+/// ### Returns
+///
+/// A generator that produces Unicode codepoints
+///
+/// ### Example
+///
+/// The decent default string generator could be writen something like this:
+///
+/// ```
+/// generic_string(codepoint(), small_positive_or_zero_int())
+/// ```
+///
 pub fn codepoint() -> Generator(UtfCodepoint) {
-  // This is based on the base_quickcheck library. They have some generation of
+  // The base_quickcheck library has some generation of
   // the min and max char values, which we do not do here.
   from_weighted_generators(#(30, uppercase_ascii_codepoint()), [
     #(30, lowercase_ascii_codepoint()),
@@ -1878,23 +1983,52 @@ pub fn codepoint() -> Generator(UtfCodepoint) {
   ])
 }
 
-/// `character_from(char, chars)` generates characters from the given list of
-/// characters.
+/// Generate a codepoint from a list of codepoints represented as integers.
 ///
-/// The name is slightly weird since there is a single argument plus the list,
-/// but doing it this way avoids the case of an empty list crashing your
-/// program.  E.g., `character_from([])` would crash your test suite, so a
-/// single char must always be provided.
+/// Splitting up the arguments in this way ensures some value is always
+/// generated by preventing you from passing in an empty list.
+///
+/// ### Arguments
+///
+/// - `first`: First codepoint to choose from
+/// - `rest`: Additional codepoints to choose from
+///
+/// ### Returns
+///
+/// A `Generator` that produces codepoints from the provided values
+///
+/// ### Example
+///
+/// ```
+/// let ascii_whitespace_generator = codepoint_from_ints(
+///   // Horizontal tab
+///   9,
+///   [
+///     // Line feed
+///     10,
+///     // Vertical tab
+///     11,
+///     // Form feed
+///     12,
+///     // Carriage return
+///     13,
+///     // Space
+///     32,
+///   ],
+/// )
+/// ```
 ///
 pub fn codepoint_from_ints(
-  char: Int,
-  chars: List(Int),
+  first: Int,
+  rest: List(Int),
 ) -> Generator(UtfCodepoint) {
-  let hd = char
-  let tl = chars
+  let hd = first
+  let tl = rest
 
   // Take the char with the minimum int representation as the shrink target.
   let shrink_target = list.fold(tl, hd, int.min)
+  // TODO: would it be more intuitive if the first argument was also the
+  // shrink target?
 
   use seed <- Generator
   let #(n, seed) = random.uniform(hd, tl) |> random.step(seed)
@@ -1906,12 +2040,35 @@ pub fn codepoint_from_ints(
   #(tree, seed)
 }
 
+/// Generate a codepoint from a list of strings.
+///
+/// ### Arguments
+///
+/// - `first`: First character to choose from
+/// - `rest`: Additional characters to choose from
+///
+/// ### Returns
+///
+/// A `Generator` that produces codepoints from the provided values
+///
+/// ### Notes
+///
+/// - Splitting up the arguments in this way ensures some value is always
+///   generated by preventing you from passing in an empty list.
+/// - Only the first codepoint is taken from each of the provided strings
+///
+/// ### Example
+///
+/// ```
+/// let quadrant_generator = codepoint_from_strings("▙", ["▛", "▜", "▟"])
+/// ```
+///
 pub fn codepoint_from_strings(
-  head: String,
-  tail: List(String),
+  first: String,
+  rest: List(String),
 ) -> Generator(UtfCodepoint) {
-  let head = char_to_int(head)
-  let tail = list.map(tail, char_to_int)
+  let head = char_to_int(first)
+  let tail = list.map(rest, char_to_int)
 
   codepoint_from_ints(head, tail)
 }
@@ -1928,9 +2085,19 @@ fn char_to_int(char: String) -> Int {
   }
 }
 
-/// `whitespace_character()` generates whitespace (ASCII) characters.
+/// Generate ASCII whitespace as codepoints.
 ///
-pub fn whitespace_ascii_codepoint() -> Generator(UtfCodepoint) {
+/// ### Returns
+///
+/// A generator that produces ASCII whitespace as codepoints
+///
+/// ### Example
+///
+/// ```
+/// let whitespace_generator = string_from(ascii_whitespace_codepoint())
+/// ```
+///
+pub fn ascii_whitespace_codepoint() -> Generator(UtfCodepoint) {
   codepoint_from_ints(
     // Horizontal tab
     9,
@@ -1982,16 +2149,27 @@ fn do_gen_string(
   }
 }
 
-// This is the base string generator. The others are implemented in terms of
-// this one.
-//
-/// `fixed_length_string_from(gen, length)` generates strings of the given
-/// `length` from the given generator.
+/// Generate a fixed-length string from the given codepoint generator.
 ///
-/// Note that for the string generators, "length" refers to the number of
-/// codepoints rather than the number of grapheme clusters as `string.length`
-/// from the stdlib does.  This is a consequence of the current generation
-/// strategy, and may change in the future.
+/// ### Arguments
+///
+/// - `generator`: A generator for codepoints
+/// - `length`: Number of codepoints in the generated string
+///
+/// ### Returns
+///
+/// A generator that produces strings with the specified number of codepoints
+///
+/// ### Notes
+///
+/// - Length refers to the number of codepoints, not the number grapheme
+///   clusters as `string.length` from the standard library reports.
+///
+/// ### Example
+///
+/// ```
+/// fixed_length_string_from(codepoint(), 5)
+/// ```
 ///
 pub fn fixed_length_string_from(
   generator: Generator(UtfCodepoint),
@@ -2020,8 +2198,28 @@ pub fn fixed_length_string_from(
   })
 }
 
-/// `generic_string(char_generator, length_generator)` generates strings with
-/// characters from `char_generator` and lengths from `length_generator`.
+/// Generate a fixed-length string from the given codepoint generator.
+///
+/// ### Arguments
+///
+/// - `codepoint_generator`: A generator for codepoints
+/// - `length_generator`: A generator to determine number of codepoints in the
+///      generated strings
+///
+/// ### Returns
+///
+/// A string generator
+///
+/// ### Notes
+///
+/// - Length refers to the number of codepoints, not the number grapheme
+///   clusters as `string.length` from the standard library reports.
+///
+/// ### Example
+///
+/// ```
+/// generic_string(ascii_digit_codepoint(), bounded_int(8, 15))
+/// ```
 ///
 pub fn generic_string(
   codepoint_generator: Generator(UtfCodepoint),
@@ -2031,16 +2229,28 @@ pub fn generic_string(
   fixed_length_string_from(codepoint_generator, length)
 }
 
-/// `string() generates strings with the default character generator and the
-/// default length generator.
+/// Generate strings with the default codepoint and length generators.
+///
+/// ### Example
+///
+/// ```
+/// use string <- given(string())
+/// string.length(string) == string.length(string <> "!") + 1
+/// ```
 ///
 pub fn string() -> Generator(String) {
   use length <- bind(small_positive_or_zero_int())
   fixed_length_string_from(codepoint(), length)
 }
 
-/// `non_empty_string()` generates non-empty strings with the default character
-/// generator and the default length generator.
+/// Generate non-empty strings with the default codepoint and length generators.
+///
+/// ### Example
+///
+/// ```
+/// use string <- given(string())
+/// string.length(string) > 0
+/// ```
 ///
 pub fn non_empty_string() -> Generator(String) {
   bind(small_strictly_positive_int(), fn(length) {
@@ -2048,8 +2258,14 @@ pub fn non_empty_string() -> Generator(String) {
   })
 }
 
-/// `string_from(char_generator)` generates strings from the given character generator
-/// using the default length generator.
+/// Generate strings with the given codepoint generator and default length
+/// generator.
+///
+/// ### Example
+///
+/// ```
+/// string_from(ascii_digit_codepoint())
+/// ```
 ///
 pub fn string_from(
   codepoint_generator: Generator(UtfCodepoint),
@@ -2059,8 +2275,14 @@ pub fn string_from(
   })
 }
 
-/// `non_empty_string_from(char_generator)` generates non-empty strings from the given
-/// character generator using the default length generator.
+/// Generate non-empty strings with the given codepoint generator and default
+/// length generator.
+///
+/// ### Example
+///
+/// ```
+/// non_empty_string_from(alphanumeric_ascii_codepoint())
+/// ```
 ///
 pub fn non_empty_string_from(
   codepoint_generator: Generator(UtfCodepoint),
@@ -2094,14 +2316,32 @@ fn generic_list_loop(
   }
 }
 
-/// `generic_list(element_generator, length_generator)` generates lists of
-/// elements from `element_generator` with lengths from `length_generator`.
+/// Generate lists with elements from one generator and lengths from another.
 ///
-/// Shrinks first on the number of elements, then on the elements themselves.
-/// Will not generate shrinks whose length is  outside of the range specified
-/// by the `length_generator`.
+/// ### Arguments
+///
+/// - `element_generator`: Generates list elements
+/// - `length_generator`: Generates list lengths
+///
+/// ### Returns
+///
+/// A generator that produces lists with:
+/// - Elements from `element_generator`
+/// - Lengths from `length_generator`
+///
+/// ### Shrinking
+///
+/// Shrinks first on list length, then on list elements, ensuring shrunk lists
+/// remain within length generator's range.
+///
+/// ### Example
+///
+/// ```
+/// generic_list(string(), small_positive_or_zero_int())
+/// ```
 ///
 pub fn generic_list(
+  // TODO: elements and length
   element_generator element_generator: Generator(a),
   length_generator length_generator: Generator(Int),
 ) -> Generator(List(a)) {
@@ -2109,21 +2349,57 @@ pub fn generic_list(
   fixed_length_list_from(element_generator, length)
 }
 
-/// `fixed_length_list_from(element_generator, length)` generates lists of
-/// elements from `element_generator` of length `length`.
+/// Generate fixed-length lists with elements from the given generator.
+///
+/// ### Arguments
+///
+/// - `element_generator`: Generates list elements
+/// - `length`: The length of the generated lists
+///
+/// ### Returns
+///
+/// A generator that produces fixed-length lists with elements from the given
+/// generator.
+///
+/// ### Shrinking
+///
+/// Shrinks first on list length, then on list elements, ensuring shrunk lists
+/// remain within length generator's range.
+///
+/// ### Example
+///
+/// ```
+/// fixed_length_list_from(string(), 5)
+/// ```
 ///
 pub fn fixed_length_list_from(
-  element_generator element_generator: Generator(a),
-  length length: Int,
+  element_generator: Generator(a),
+  length: Int,
 ) -> Generator(List(a)) {
   use seed <- Generator
   generic_list_loop(length, tree.return([]), element_generator, seed)
 }
 
-/// `list_from(element_generator)` generates list of elements from
-/// `element_generator` of a reasonable size.
+/// Generate lists with elements from the given generator and the default
+/// length generator.
 ///
-/// Shrinks on size, then on values.
+/// ### Arguments
+///
+/// - `element_generator`: Generates list elements
+///
+/// ### Returns
+///
+/// A generator that produces lists with elements from the given generator
+///
+/// ### Shrinking
+///
+/// Shrinks first on list length, then on list elements.
+///
+/// ### Example
+///
+/// ```
+/// list_from(string())
+/// ```
 ///
 pub fn list_from(element_generator: Generator(a)) -> Generator(List(a)) {
   generic_list(element_generator, small_positive_or_zero_int())
@@ -2131,22 +2407,38 @@ pub fn list_from(element_generator: Generator(a)) -> Generator(List(a)) {
 
 // MARK: Dicts
 
-/// `generic_dict(key_generator, value_generator, length_generator)` generates
-/// dictionaries with keys
-/// from `key_generator`, values from `value_generator`, and sizes from
-/// `size_generator`.
+/// Generates dictionaries with keys from a key generator, values from a value
+/// generator, and sizes from a size generator.
 ///
-/// Shrinks on size then on elements.
+/// ### Arguments
 ///
-/// Note: If the size generator generates a size of 5 for an example, then for
-/// that example `5` is taken as the upper bound on the size of the
-/// dictionary.
-/// The current implementation will generate 5 key-value pairs, but it does NOT
-/// guarantee that each of the 5 keys is unique.  So, depending on your
-/// `key_generator`, the actual size may be less than 5.  (This is considered
-/// to be an implementation detail that you should not rely upon.)
+/// - `key_generator`: Generator for dictionary keys
+/// - `value_generator`: Generator for dictionary values
+/// - `size_generator`: Generator for dictionary size
+///
+/// ### Returns
+///
+/// A generator that produces dictionaries
+///
+/// ### Notes
+///
+/// - The size generator limits the maximum number of key-value pairs
+/// - The actual size may be less than the generated size due to potential key
+///   duplicates
+/// - Shrinks on size first, then on individual elements
+///
+/// ### Example
+///
+/// ```
+/// generic_dict(
+///   key_generator: uniform_int(),
+///   value_generator: string(),
+///   size_generator: small_strictly_positive_int()
+/// )
+/// ```
 ///
 pub fn generic_dict(
+  // TODO: keys, values, sizes
   key_generator key_generator: Generator(key),
   value_generator value_generator: Generator(value),
   size_generator size_generator: Generator(Int),
@@ -2550,8 +2842,8 @@ pub fn fixed_size_utf8_bit_array_from(
   num_codepoints num_codepoints: Int,
 ) -> Generator(BitArray) {
   use codepoints <- map(fixed_length_list_from(
-    element_generator: codepoint_generator,
-    length: num_codepoints,
+    codepoint_generator,
+    num_codepoints,
   ))
 
   bit_array_from_codepoints(codepoints)
