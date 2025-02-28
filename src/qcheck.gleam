@@ -276,9 +276,7 @@ const min_valid_codepoint: Int = 0
 
 const max_valid_codepoint: Int = 0x10FFFF
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARK: Running tests
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /// Test a property against generated test cases using the provided
 /// configuration.
