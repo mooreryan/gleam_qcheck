@@ -311,32 +311,6 @@ pub fn run(
   do_run(config, generator, property, 0)
 }
 
-/// Test a property against generated test cases using the provided
-/// configuration. The property returns a Nil instead of a Bool.
-///
-/// This function is for cases when you want to write your properties with
-/// assertions from gleeunit, startest, or some other test runner or assertion
-/// library.
-///
-/// ### Arguments
-///
-/// - `config`: Settings for test execution
-/// - `generator`: Creates test inputs
-/// - `property`: The property to verify (returns Nil)
-///
-/// ### Returns
-///
-/// - `Nil` if all test cases pass (property returns `Ok`)
-/// - Panics if any test case fails (property returns `Error` or panics)
-///
-pub fn run_assertion(
-  config config: Config,
-  generator generator: Generator(a),
-  property property: fn(a) -> Nil,
-) -> Nil {
-  do_run_assertion(config, generator, property, 0)
-}
-
 /// Test a property against generated test cases using the default
 /// configuration.
 ///
@@ -359,27 +333,6 @@ pub fn run_assertion(
 ///
 pub fn given(generator: Generator(a), property: fn(a) -> Bool) -> Nil {
   run(default_config(), generator, property)
-}
-
-/// Test a property against generated test cases using the default
-/// configuration. The property returns a Nil instead of a Bool.
-///
-/// This function is for cases when you want to write your properties with
-/// assertions from gleeunit, startest, or some other test runner or assertion
-/// library.
-///
-/// ### Arguments
-///
-/// - `generator`: Creates test inputs
-/// - `property`: The property to verify (returns Nil)
-///
-/// ### Returns
-///
-/// - `Nil` if all test cases pass (property returns `Ok`)
-/// - Panics if any test case fails (property returns `Error` or panics)
-///
-pub fn given_assertion(generator: Generator(a), property: fn(a) -> Nil) -> Nil {
-  run_assertion(default_config(), generator, property)
 }
 
 /// Test a property against generated test cases using the provided
@@ -422,6 +375,53 @@ pub fn given_result(
   property: fn(a) -> Result(b, error),
 ) -> Nil {
   run_result(default_config(), generator, property)
+}
+
+/// Test a property against generated test cases using the provided
+/// configuration. The property returns a Nil instead of a Bool.
+///
+/// This function is for cases when you want to write your properties with
+/// assertions from gleeunit, startest, or some other test runner or assertion
+/// library.
+///
+/// ### Arguments
+///
+/// - `config`: Settings for test execution
+/// - `generator`: Creates test inputs
+/// - `property`: The property to verify (returns Nil)
+///
+/// ### Returns
+///
+/// - `Nil` if all test cases pass (property returns `Ok`)
+/// - Panics if any test case fails (property returns `Error` or panics)
+///
+pub fn run_assertion(
+  config config: Config,
+  generator generator: Generator(a),
+  property property: fn(a) -> Nil,
+) -> Nil {
+  do_run_assertion(config, generator, property, 0)
+}
+
+/// Test a property against generated test cases using the default
+/// configuration. The property returns a Nil instead of a Bool.
+///
+/// This function is for cases when you want to write your properties with
+/// assertions from gleeunit, startest, or some other test runner or assertion
+/// library.
+///
+/// ### Arguments
+///
+/// - `generator`: Creates test inputs
+/// - `property`: The property to verify (returns Nil)
+///
+/// ### Returns
+///
+/// - `Nil` if all test cases pass (property returns `Ok`)
+/// - Panics if any test case fails (property returns `Error` or panics)
+///
+pub fn given_assertion(generator: Generator(a), property: fn(a) -> Nil) -> Nil {
+  run_assertion(default_config(), generator, property)
 }
 
 fn do_run(
@@ -578,6 +578,14 @@ type RunPropertyResult {
   RunPropertyFail
 }
 
+fn run_property(
+  property: fn(a) -> Bool,
+  value: a,
+  max_retries: Int,
+) -> RunPropertyResult {
+  do_run_property(property, value, max_retries, 0)
+}
+
 // Retrying a test can be useful when when testing non-deterministic code.
 // See QCheck2.run_law for more info.
 fn do_run_property(
@@ -597,22 +605,12 @@ fn do_run_property(
   }
 }
 
-fn do_run_property_assertion(
-  property: fn(a) -> Nil,
+fn run_property_result(
+  property: fn(a) -> Result(b, error),
   value: a,
   max_retries: Int,
-  i: Int,
 ) -> RunPropertyResult {
-  case i < max_retries {
-    True -> {
-      case try(fn() { property(value) }) {
-        NoPanic(Nil) ->
-          do_run_property_assertion(property, value, max_retries, i + 1)
-        Panic(_) -> RunPropertyFail
-      }
-    }
-    False -> RunPropertyOk
-  }
+  do_run_property_result(property, value, max_retries, 0)
 }
 
 // Retrying a test can be useful when when testing non-deterministic code.
@@ -635,14 +633,6 @@ fn do_run_property_result(
   }
 }
 
-fn run_property(
-  property: fn(a) -> Bool,
-  value: a,
-  max_retries: Int,
-) -> RunPropertyResult {
-  do_run_property(property, value, max_retries, 0)
-}
-
 fn run_property_assertion(
   property: fn(a) -> Nil,
   value: a,
@@ -651,12 +641,22 @@ fn run_property_assertion(
   do_run_property_assertion(property, value, max_retries, 0)
 }
 
-fn run_property_result(
-  property: fn(a) -> Result(b, error),
+fn do_run_property_assertion(
+  property: fn(a) -> Nil,
   value: a,
   max_retries: Int,
+  i: Int,
 ) -> RunPropertyResult {
-  do_run_property_result(property, value, max_retries, 0)
+  case i < max_retries {
+    True -> {
+      case try(fn() { property(value) }) {
+        NoPanic(Nil) ->
+          do_run_property_assertion(property, value, max_retries, i + 1)
+        Panic(_) -> RunPropertyFail
+      }
+    }
+    False -> RunPropertyOk
+  }
 }
 
 fn shrink(
