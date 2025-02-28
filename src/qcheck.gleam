@@ -56,6 +56,7 @@
 //// - [map6](#map6)
 //// - [from_generators](#from_generators)
 //// - [from_weighted_generators](#from_weighted_generators)
+//// - [sized_from](#sized_from)
 ////
 //// ### Generator Categories
 ////
