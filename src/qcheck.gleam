@@ -15,203 +15,205 @@
 ////
 //// For full usage examples, see the project README.
 ////
+//// ## API
 ////
-//// ## Running tests
+//// ### Running Tests
 ////
 //// - [given](#given)
 //// - [given_result](#given_result)
 //// - [run](#run)
 //// - [run_result](#run_result)
 ////
-////
-//// ## Configuring test runs
+//// ### Configuring and Seeding
 ////
 //// - The [Config](#Config) type
+//// - [config](#config)
 //// - [default_config](#default_config)
+//// - [with_seed](#with_seed)
 //// - [with_test_count](#with_test_count)
 //// - [with_max_retries](#with_max_retries)
-//// - [with_seed](#with_seed)
 ////
+//// - The [Seed](#Seed) type
+//// - [seed](#seed)
+//// - [random_seed](#random_seed)
 ////
-//// ## Generators
-////
-//// The exact distributions of individual generators are considered an
-//// implementation detail, and may change without a major version update.
-//// For example, if the `option` generator currently produced `None`
-//// approximately 25% of the time, but that distribution was changed to produce
-//// `None` 50% of the time instead, that would NOT be considered a breaking
-//// change.
+//// ### Low-Level Construction
 ////
 //// - The [Generator](#Generator) type
+//// - [generator](#generator)
 ////
-//// Here is a list of generator functions grouped by category.
+//// ### Combinators and Other Utilities
 ////
-//// ### Combinators
-////
-//// - [return](#return)
+//// - [return](#return) (and [constant](#constant))
+//// - [bind](#bind) (and [then](#then))
+//// - [apply](#apply)
 //// - [parameter](#parameter)
 //// - [map](#map)
-//// - [bind](#bind)
-//// - [apply](#apply)
 //// - [map2](#map2)
 //// - [map3](#map3)
 //// - [map4](#map4)
 //// - [map5](#map5)
 //// - [map6](#map6)
-//// - [tuple2](#tuple2)
-//// - [tuple3](#tuple3)
-//// - [tuple4](#tuple4)
-//// - [tuple5](#tuple5)
-//// - [tuple6](#tuple6)
 //// - [from_generators](#from_generators)
 //// - [from_weighted_generators](#from_weighted_generators)
 ////
-//// ### Ints
+//// ### Generator Categories
 ////
-////  - [uniform_int](#uniform_int)
-////  - [bounded_int](#bounded_int)
-////  - [small_non_negative_int](#small_non_negative_int)
-////  - [small_strictly_positive_int](#small_strictly_positive_int)
+//// There are a few different "categories" of generator.
 ////
-//// ### Unicode codepoints (`UtfCodepoint`)
+//// - Some types have generators named after the type.
+////   - These give a distribution of values that is a reasonable default for test generation.
+////   - E.g., `string`, `float`, `bit_array`.
+//// - Generic generators
+////   - These are fully specified, or "generic", and you must provide generators for values and sizes.
+////   - E.g., `generic_string`, `generic_list`.
+//// - Fixed size/length generators
+////   - These take a size or length parameter as appropriate for the type, and generate values of that size (when possible).
+////   - These generators use the default value generator.
+////   - E.g., `fixed_length_string`, `fixed_length_list`
+//// - Non-empty generators
+////   - These generate collections with length or size of at least one
+////   - E.g., `non_empty_string`, `non_empty_bit_array`
+//// - From other generators
+////   - The `_from` suffix means that another generator is used to generate values
+////   - E.g., `string_from`, `list_from`
+//// - Mixing and matching
+////   - Some generators mix and match the above categories
+////   - E.g., `fixed_length_list_from`, `non_empty_string_from`
 ////
-//// - [utf_codepoint](#utf_codepoint)
 ////
-//// ### Floats
+//// ### Numeric Generators
 ////
-////  - [float](#float)
-////  - [float_uniform_inclusive](#float_uniform_inclusive)
+//// #### Ints
 ////
-//// ### Characters
+//// - [uniform_int](#uniform_int)
+//// - [bounded_int](#bounded_int)
+//// - [small_non_negative_int](#small_non_negative_int)
+//// - [small_strictly_positive_int](#small_strictly_positive_int)
+//// - [unsigned_byte](#unsigned_byte)
 ////
-//// These are "characters" in the sense that they might be understood when
-//// reading the Unicode docs.
+//// #### Floats
 ////
-//// For example "Similarly, an accented character could be represented by a
-//// single glyph, or by separate component glyphs positioned appropriately.
-//// In addition, any of the accents can also be considered characters in their
-//// own right, in which case a sequence of characters can also correspond to
-//// different possible glyph representations...." or this: "Combining characters
-//// are shown with a dotted circle. This dotted circle is not part of the
-//// representative glyph and it would not ordinarily be included as part of any
-//// actual glyph for that character in a font. Instead, the relative position
-//// of the dotted circle indicates an approximate location of the base character
-//// in relation to the combining mark."
+//// - [float](#float)
+//// - [bounded_float](#bounded_float)
 ////
-//// Anyway, it is not always aligned with what a user might think of as a
-//// "character", but neither is a character the same thing as a "grapheme".
+//// ### Codepoint and String Generators
 ////
-//// The problem is that there are also "noncharacter" codepoints, which may be
-//// generated by `unicode_character`.  This may be a bit counterintuitive--a
-//// generater that generates "characters" may generate "noncharacters".
+//// The main purpose of codepoint generators are to use them to generate
+//// strings.
 ////
-//// All this to say that "character" may not be the best name, rather, something
-//// like "codepoint" might be more accurate.
+//// #### Codepoints
 ////
-////  - [char](#char)
-////  - [bounded_character](#bounded_character)
-////  - [unicode_character](#unicode_character)
-////  - [uppercase_character](#uppercase_character)
-////  - [lowercase_character](#lowercase_character)
-////  - [digit_character](#digit_character)
-////  - [uniform_printable_character](#uniform_printable_character)
-////  - [uniform_character](#uniform_character)
-////  - [alphabetic_character](#alphabetic_character)
-////  - [alphanumeric_character](#alphanumeric_character)
-////  - [character_from](#character_from)
-////  - [whitespace_character](#whitespace_character)
-////  - [printable_character](#printable_character)
+//// - [codepoint](#codepoint)
+//// - [uniform_codepoint](#uniform_codepoint)
+//// - [bounded_codepoint](#bounded_codepoint)
+//// - [codepoint_from_ints](#codepoint_from_ints)
+//// - [codepoint_from_strings](#codepoint_from_strings)
 ////
-//// ### Strings
+//// ##### ASCII Codepoints
 ////
-////  - [string](#string)
-////  - [string_from](#string_from)
-////  - [non_empty_string](#non_empty_string)
-////  - [fixed_length_string](#fixed_length_string)
-////  - [fixed_length_string_from](#fixed_length_string_from)
-////  - [non_empty_string_from](#non_empty_string_from)
-////  - [generic_string](#generic_string)
+//// - [uppercase_ascii_codepoint](#uppercase_ascii_codepoint)
+//// - [lowercase_ascii_codepoint](#lowercase_ascii_codepoint)
+//// - [ascii_digit_codepoint](#ascii_digit_codepoint)
+//// - [alphabetic_ascii_codepoint](#alphabetic_ascii_codepoint)
+//// - [alphanumeric_ascii_codepoint](#alphanumeric_ascii_codepoint)
+//// - [printable_ascii_codepoint](#printable_ascii_codepoint)
+//// - [ascii_whitespace_codepoint](#ascii_whitespace_codepoint)
+//// - [uniform_printable_ascii_codepoint](#uniform_printable_ascii_codepoint)
+////
+//// #### Strings
+////
+//// String generators are built from codepoint generators.
+////
+//// - [string](#string)
+//// - [string_from](#string_from)
+//// - [non_empty_string](#non_empty_string)
+//// - [non_empty_string_from](#non_empty_string_from)
+//// - [generic_string](#generic_string)
+//// - [fixed_length_string_from](#fixed_length_string_from)
 ////
 //// Note that for the string generators, "length" refers to the number of
 //// codepoints rather than the number of grapheme clusters as `string.length`
 //// from the stdlib does.  This is a consequence of the current generation
 //// strategy, and may change in the future.
 ////
-//// ### Bit arrays
+//// ### Bit Array Generators
 ////
-//// Bit array shrinking is a bit wonky compared to shrinking of the other types.
+//// Bit array values come from integers, and handle sizes and shrinking in a
+//// reasonable way given that values in the bit array are connected to the
+//// size of the bit array in certain situations.
 ////
 //// These functions will generate bit arrays that cause runtime crashes when
 //// targeting JavaScript.
 ////
 //// - [bit_array](#bit_array)
 //// - [non_empty_bit_array](#non_empty_bit_array)
-//// - [fixed_size_bit_array_from](#fixed_size_bit_array_from)
 //// - [fixed_size_bit_array](#fixed_size_bit_array)
+//// - [fixed_size_bit_array_from](#fixed_size_bit_array_from)
+//// - [generic_bit_array](#generic_bit_array)
 ////
-//// #### Bit arrays (UTF-8 encoded)
+//// #### Byte-aligned bit arrays
 ////
-//// These functions will not generate bit arrays that cause runtime crashes when
-//// targeting JavaScript.
+//// Byte-aligned bit arrays always have a size that is a multiple of 8.
 ////
-//// - [utf8_bit_array](#utf8_bit_array)
-//// - [non_empty_utf8_bit_array](#non_empty_utf8_bit_array)
-//// - [fixed_size_utf8_bit_array](#fixed_size_utf8_bit_array)
-//// - [fixed_size_utf8_bit_array_from](#fixed_size_utf8_bit_array_from)
-////
-//// #### Bit arrays (Byte-aligned)
-////
-//// These functions will not generate bit arrays that cause runtime crashes when
-//// targeting JavaScript.
+//// These bit arrays work on the JavaScript target.
 ////
 //// - [byte_aligned_bit_array](#byte_aligned_bit_array)
 //// - [non_empty_byte_aligned_bit_array](#non_empty_byte_aligned_bit_array)
 //// - [fixed_size_byte_aligned_bit_array](#fixed_size_byte_aligned_bit_array)
 //// - [fixed_size_byte_aligned_bit_array_from](#fixed_size_byte_aligned_bit_array_from)
+//// - [generic_byte_aligned_bit_array](#generic_byte_aligned_bit_array)
 ////
-//// ### Lists
+//// #### UTF-8 Encoded Bit Arrays
 ////
-////  - [generic_list](#generic_list)
+//// Bit arrays where the values are always valid utf-8 encoded bytes.
 ////
-//// ### Dicts
+//// These bit arrays work on the JavaScript target.
+////
+//// - [utf8_bit_array](#utf8_bit_array)
+//// - [non_empty_utf8_bit_array](#non_empty_utf8_bit_array)
+//// - [fixed_size_utf8_bit_array](#fixed_size_utf8_bit_array)
+//// - [fixed_size_utf8_bit_array_from](#fixed_size_utf8_bit_array_from)
+//// - [generic_utf8_bit_array](#generic_utf8_bit_array)
+////
+//// ### Collection Generators
+////
+//// #### Lists
+////
+//// - [list_from](#list_from)
+//// - [fixed_length_list_from](#fixed_length_list_from)
+//// - [generic_list](#generic_list)
+////
+//// #### Dictionaries
 ////
 //// - [generic_dict](#generic_dict)
 ////
-//// ### Sets
+//// #### Sets
 ////
-////  - [generic_set](#generic_set)
+//// - [generic_set](#generic_set)
 ////
-//// ### Other
+//// #### Tuples
+////
+//// - [tuple2](#tuple2)
+//// - [tuple3](#tuple3)
+//// - [tuple4](#tuple4)
+//// - [tuple5](#tuple5)
+//// - [tuple6](#tuple6)
+////
+//// ### Other Generators
 ////
 //// - [bool](#bool)
 //// - [nil](#nil)
-//// - [option](#option)
+//// - [option_from](#option_from)
 ////
-//// ## Debug Generators
+//// ### Debug Generators
 ////
-//// These functions aren't meant to be used directly in tests.  They are
+//// These functions aren't meant to be used directly in your tests.  They are
 //// provided to help debug or investigate what values and shrinks that a
 //// generator produces.
 ////
 //// - [generate](#generate)
 //// - [generate_tree](#generate_tree)
-////
-//// ## Seeding generators
-////
-//// - The [Seed](#Seed) type
-//// - [seed_new](#seed_new)
-//// - [random_seed](#random_seed)
-////
-//// ## Shrinking
-////
-//// There are some public functions for dealing with shrinks and shrinking.
-//// Similar to the Tree functions, you often won't need to use these directly.
-////
-//// - [shrink_atomic](#shrink_atomic)
-//// - [shrink.int_towards](#shrink.int_towards)
-//// - [shrink.int_towards_zero](#shrink.int_towards_zero)
-//// - [shrink.float_towards](#shrink.float_towards)
-//// - [shrink.float_towards_zero](#shrink.float_towards_zero)
 ////
 ////
 //// ## Notes
@@ -224,6 +226,14 @@
 ////   errors.
 //// - `failwith`, `try`, and `rescue` will also likely become private as they
 ////   deal with internal property test running machinery.
+////
+//// The exact distributions of individual generators are considered an
+//// implementation detail, and may change without a major version update.
+//// For example, if the `option` generator currently produced `None`
+//// approximately 25% of the time, but that distribution was changed to produce
+//// `None` 50% of the time instead, that would _not_ be considered a breaking
+//// change.
+////
 ////
 ////
 
