@@ -23,14 +23,14 @@ Here is a short example to get you started. It assumes you are using [gleeunit](
 ```gleam
 import qcheck
 
-pub fn small_non_negative_int__test() {
+pub fn int_addition_commutativity__test() {
   use n <- qcheck.given(qcheck.small_non_negative_int())
-  n + 1 == 1 + n
+  should.equal(n + 1, 1 + n)
 }
 
-pub fn small_non_negative_int__failures_shrink_to_zero__test() {
+pub fn int_addition_commutativity__failures_shrink_to_zero__test() {
   use n <- qcheck.given(qcheck.small_non_negative_int())
-  n + 1 != 1 + n
+  should.not_equal(n + 1, 1 + n)
 }
 ```
 
@@ -40,7 +40,11 @@ That second example will fail with an error that may look something like this if
  Failures:
 
   1) examples/basic_example_test.small_non_negative_int__failures_shrink_to_zero__test
-     Failure: <<"TestError[original_value: 3; shrunk_value: 0; shrink_steps: 1; error: property was False;]">>
+     Failure: <<"TestError[original_value: 5; shrunk_value: 0; shrink_steps: 1; error: Errored(
+                  atom.create_from_string(\"assertNotEqual\")(
+                    [Module(GleeunitFfi), Line(17), Expression([65, 99, 116, 117, 97, 108]), Value(6)]
+                  )
+                );]">>
      stacktrace:
        qcheck_ffi.fail
 ```
@@ -49,16 +53,16 @@ That second example will fail with an error that may look something like this if
   - If a property holds for all generated values, then `qcheck.given` returns `Nil`.
   - If a property does not hold for all generated values, then `qcheck.given` will panic.
 - `qcheck.small_non_negative_int()` generates small integers greater than or equal to zero.
-- `n + 1 == 1 + n` is the property being tested in the first test.
+- `should.equal(n + 1, 1 + n)` is the property being tested in the first test.
   - It should be true for all generated values.
   - The return value of `qcheck.given` will be `Nil`, because the property does hold for all generated values.
-- `n + 1 != 1 + n` is the property being tested in the second test.
+- `should.not_equal(n + 1, 1 + n)` is the property being tested in the second test.
   - It should be false for all generated values.
   - `qcheck.given` will be panic, because the property does not hold for all generated values.
 
 ### In-depth example
 
-Here is a more in-depth example. We will create a simple `Point` type write some serialization functions, and then check that the serializing round-trips.
+Here is a more in-depth example. We will create a simple `Point` type, write some serialization functions, and then check that the serializing round-trips.
 
 First here is some code to define a `Point`.
 
@@ -155,7 +159,7 @@ fn point_generator() {
 }
 ```
 
-Now that we have the point generator, we can write a property test.
+Now that we have the point generator, we can write a property test. (It uses the `gleeunit/should.be_true` function again.)
 
 ```gleam
 pub fn point_serialization_roundtripping__test() {
@@ -166,17 +170,11 @@ pub fn point_serialization_roundtripping__test() {
     |> point_to_string
     |> point_of_string
 
-  point_equal(generated_point, parsed_point)
+  should.be_true(point_equal(generated_point, parsed_point))
 }
 ```
 
-A couple things to note here.
-
-- `qcheck.given` will "fail" if either the property doesn't hold (e.g., returns `False`) or if there is a panic somewhere in the property function.
-  - Either, the points are not equal, or, the deserialization returns an `Error` (because we `assert` that it is `Ok`).
-  - Either one of these cases will trigger shrinking.
-
-Let's try and run the test.
+Let's try and run the test. (Note that your output won't look exactly like this.)
 
 ```
 $ gleam test
@@ -212,7 +210,7 @@ You could imagine combining a property test like the one above, with a few well 
 
 (The full code for this example can be found in `test/examples/parsing_example_test.gleam`.)
 
-### Applicative sytle
+### Applicative style
 
 The applicative style provides a nice interface for creating generators for custom types.
 
@@ -244,10 +242,6 @@ fn box_generator() {
 }
 ```
 
-### More examples
-
-The [test](https://github.com/mooreryan/gleam_qcheck/tree/main/test) directory of this repository has many examples of setting up tests, using the built-in generators, and creating new generators. Until more dedicated documentation is written, the tests can provide some good info, as they exercise most of the available behavior. However, be aware that the tests will often use `use <- qcheck.rescue`. This is _not_ needed in your tests--it provides a way to test the `qcheck` internals.
-
 ### Integrating with testing frameworks
 
 You don't have to do anything special to integrate `qcheck` with a testing framework like [gleeunit](https://github.com/lpil/gleeunit). The only thing required is that your testing framework of choice be able to handle panics/exceptions.
@@ -256,13 +250,9 @@ _Note: [startest](https://github.com/maxdeviant/startest) should be fine._
 
 You may also be interested in [qcheck_gleeunit_utils](https://github.com/mooreryan/qcheck_gleeunit_utils) for running your tests in parallel and controlling test timeouts when using gleeunit and targeting Erlang.
 
-## Roadmap
-
-While `qcheck` has a lot of features needed to get started with property-based testing, there are still things that could be added or improved. See the `ROADMAP.md` for more information.
-
 ## Acknowledgements
 
-Very heavily inspired by the [qcheck](https://github.com/c-cube/qcheck) and [base_quickcheck](https://github.com/janestreet/base_quickcheck) OCaml packages, and of course, the Haskell libraries from which they take inspiration.
+Very heavily inspired by the [qcheck](https://github.com/c-cube/qcheck) and [base_quickcheck](https://github.com/janestreet/base_quickcheck) OCaml packages.
 
 ## Contributing
 
@@ -278,6 +268,6 @@ Thank you for your interest in the project!
 [![license MIT or Apache
 2.0](https://img.shields.io/badge/license-MIT%20or%20Apache%202.0-blue)](https://github.com/mooreryan/gleam_qcheck)
 
-Copyright (c) 2024 Ryan M. Moore
+Copyright (c) 2024 - 2025 Ryan M. Moore
 
 Licensed under the Apache License, Version 2.0 or the MIT license, at your option. This program may not be copied, modified, or distributed except according to those terms.
