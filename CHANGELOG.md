@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [1.0.0] -- 2025-02-28
+## [1.0.0] -- 2025-03-01
 
 - Major rewrite of the public API
 - Not backward compatible with pre-1.0 versions
