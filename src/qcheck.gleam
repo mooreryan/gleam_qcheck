@@ -20,9 +20,7 @@
 //// ### Running Tests
 ////
 //// - [given](#given)
-//// - [given_result](#given_result)
 //// - [run](#run)
-//// - [run_result](#run_result)
 ////
 //// ### Configuring and Seeding
 ////
@@ -82,7 +80,6 @@
 ////   - Some generators mix and match the above categories
 ////   - E.g., `fixed_length_list_from`, `non_empty_string_from`
 ////
-////
 //// ### Numeric Generators
 ////
 //// #### Ints
@@ -131,11 +128,6 @@
 //// - [non_empty_string_from](#non_empty_string_from)
 //// - [generic_string](#generic_string)
 //// - [fixed_length_string_from](#fixed_length_string_from)
-////
-//// Note that for the string generators, "length" refers to the number of
-//// codepoints rather than the number of grapheme clusters as `string.length`
-//// from the stdlib does.  This is a consequence of the current generation
-//// strategy, and may change in the future.
 ////
 //// ### Bit Array Generators
 ////
@@ -215,17 +207,7 @@
 //// - [generate](#generate)
 //// - [generate_tree](#generate_tree)
 ////
-////
 //// ## Notes
-////
-//// - If something is marked as being “unspecified”, do not depend on it, as it
-////   may change at any time without a major version bump. This mainly applies
-////   to the various `*_to_string` functions.
-//// - `TestError`, `TestErrorMessage`, and association functions will likely
-////   become private as they are mainly internal machinery for displaying
-////   errors.
-//// - `failwith`, `try`, and `rescue` will also likely become private as they
-////   deal with internal property test running machinery.
 ////
 //// The exact distributions of individual generators are considered an
 //// implementation detail, and may change without a major version update.
@@ -233,8 +215,6 @@
 //// approximately 25% of the time, but that distribution was changed to produce
 //// `None` 50% of the time instead, that would _not_ be considered a breaking
 //// change.
-////
-////
 ////
 
 // MARK: Imports
@@ -249,7 +229,6 @@ import gleam/option.{type Option, None, Some}
 import gleam/order
 import gleam/set
 import gleam/string
-
 import gleam/yielder
 import qcheck/random
 import qcheck/shrink
@@ -811,7 +790,6 @@ pub fn parameter(f: fn(x) -> y) -> fn(x) -> y {
 ///
 /// A new generator that produces values transformed by `f`, with shrinking
 /// behavior derived from the original generator
-/// (TODO describe shrinking -- it's in the tests, just summarize)
 ///
 /// ### Examples
 ///
@@ -839,10 +817,6 @@ pub fn map(generator: Generator(a), f: fn(a) -> b) -> Generator(b) {
     #(tree, seed)
   })
 }
-
-// `bind(generator, f)` generates a value of type `a` with `generator`, then
-// passes that value to `f`, which uses it to generate values of type `b`.
-//
 
 /// Transform a generator by applying a function that returns another
 /// generator to each generated value.
