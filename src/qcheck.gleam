@@ -2279,7 +2279,6 @@ pub fn list_from(element_generator: Generator(a)) -> Generator(List(a)) {
 ///
 /// ### Notes
 ///
-/// - The size generator limits the maximum number of key-value pairs
 /// - The actual size may be less than the generated size due to potential key
 ///   duplicates
 /// - Shrinks on size first, then on individual elements
@@ -2322,7 +2321,6 @@ pub fn generic_dict(
 ///
 /// ### Notes
 ///
-/// - The size generator limits the maximum number elements
 /// - The actual size may be less than the generated size due to potential
 ///   duplicates
 /// - Shrinks on size first, then on individual elements
