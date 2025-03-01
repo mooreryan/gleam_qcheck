@@ -48,17 +48,14 @@ pub fn default_model() -> Model {
 }
 
 pub type QcheckFunction {
-  Char
   CharAlpha
   CharAlphaNumeric
   CharDigit
   CharLowercase
   CharPrintable
   CharPrintableUniform
-  CharUniform
   CharUniformInclusive
   CharUppercase
-  CharUtfCodepoint
   CharWhitespace
   Float
   FloatUniformInclusive
@@ -90,17 +87,8 @@ fn qcheck_function_html_options(
       FloatUniformInclusive,
       current_function: model_function,
     ),
-    qcheck_function_to_html_option(Char, current_function: model_function),
-    qcheck_function_to_html_option(
-      CharUniform,
-      current_function: model_function,
-    ),
     qcheck_function_to_html_option(
       CharUniformInclusive,
-      current_function: model_function,
-    ),
-    qcheck_function_to_html_option(
-      CharUtfCodepoint,
       current_function: model_function,
     ),
     qcheck_function_to_html_option(
@@ -153,10 +141,7 @@ pub fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
     IntSmallPositiveOrZero -> "int_small_positive_or_zero"
     Float -> "float"
     FloatUniformInclusive -> "float_uniform_inclusive"
-    Char -> "char"
-    CharUniform -> "char_uniform"
     CharUniformInclusive -> "char_uniform_inclusive"
-    CharUtfCodepoint -> "char_utf_codepoint"
     CharUppercase -> "char_uppercase"
     CharLowercase -> "char_lowercase"
     CharDigit -> "char_digit"
@@ -184,10 +169,7 @@ fn qcheck_function_from_string(
     "int_small_strictly_positive" -> Ok(IntSmallStrictlyPositive)
     "float" -> Ok(Float)
     "float_uniform_inclusive" -> Ok(FloatUniformInclusive)
-    "char" -> Ok(Char)
-    "char_uniform" -> Ok(CharUniform)
     "char_uniform_inclusive" -> Ok(CharUniformInclusive)
-    "char_utf_codepoint" -> Ok(CharUtfCodepoint)
     "char_uppercase" -> Ok(CharUppercase)
     "char_lowercase" -> Ok(CharLowercase)
     "char_digit" -> Ok(CharDigit)
@@ -448,29 +430,25 @@ fn embed_plot(vega_lite_spec: json.Json) -> Nil {
 
 fn generate_histogram(model: Model) -> json.Json {
   case model.function {
-    IntUniform -> gen_histogram(qcheck.int_uniform(), of: json.int, bin: True)
+    IntUniform -> gen_histogram(qcheck.uniform_int(), of: json.int, bin: True)
     IntUniformInclusive ->
       gen_histogram(
-        qcheck.int_uniform_inclusive(model.int_range_low, model.int_range_high),
+        qcheck.bounded_int(model.int_range_low, model.int_range_high),
         of: json.int,
         bin: True,
       )
     IntSmallPositiveOrZero ->
-      gen_histogram(
-        qcheck.int_small_positive_or_zero(),
-        of: json.int,
-        bin: False,
-      )
+      gen_histogram(qcheck.small_non_negative_int(), of: json.int, bin: False)
     IntSmallStrictlyPositive ->
       gen_histogram(
-        qcheck.int_small_strictly_positive(),
+        qcheck.small_strictly_positive_int(),
         of: json.int,
         bin: False,
       )
     Float -> gen_histogram(qcheck.float(), of: json.float, bin: True)
     FloatUniformInclusive ->
       gen_histogram(
-        qcheck.float_uniform_inclusive(
+        qcheck.bounded_float(
           int.to_float(model.int_range_low),
           int.to_float(model.int_range_high),
         ),
@@ -478,48 +456,70 @@ fn generate_histogram(model: Model) -> json.Json {
         bin: True,
       )
 
-    Char -> gen_histogram(qcheck.char(), of: json.string, bin: False)
-    CharUniform ->
-      gen_histogram(qcheck.char_uniform(), of: json.string, bin: False)
     CharUniformInclusive ->
       gen_histogram(
-        qcheck.char_uniform_inclusive(model.int_range_low, model.int_range_high),
-        of: json.string,
+        qcheck.bounded_codepoint(model.int_range_low, model.int_range_high),
+        of: codepoint_to_json,
         bin: False,
-      )
-    CharUtfCodepoint ->
-      gen_histogram(
-        qcheck.char_utf_codepoint()
-          |> qcheck.map(fn(char) {
-            let assert [cp] = string.to_utf_codepoints(char)
-            string.utf_codepoint_to_int(cp)
-          }),
-        of: json.int,
-        bin: True,
       )
     CharUppercase ->
-      gen_histogram(qcheck.char_uppercase(), of: json.string, bin: False)
-    CharLowercase ->
-      gen_histogram(qcheck.char_lowercase(), of: json.string, bin: False)
-    CharDigit -> gen_histogram(qcheck.char_digit(), of: json.string, bin: False)
-    CharPrintableUniform ->
       gen_histogram(
-        qcheck.char_printable_uniform(),
-        of: json.string,
+        qcheck.uppercase_ascii_codepoint(),
+        of: codepoint_to_json,
         bin: False,
       )
-    CharAlpha -> gen_histogram(qcheck.char_alpha(), of: json.string, bin: False)
+    CharLowercase ->
+      gen_histogram(
+        qcheck.lowercase_ascii_codepoint(),
+        of: codepoint_to_json,
+        bin: False,
+      )
+    CharDigit ->
+      gen_histogram(
+        qcheck.ascii_digit_codepoint(),
+        of: codepoint_to_json,
+        bin: False,
+      )
+    CharPrintableUniform ->
+      gen_histogram(
+        qcheck.uniform_printable_ascii_codepoint(),
+        of: codepoint_to_json,
+        bin: False,
+      )
+    CharAlpha ->
+      gen_histogram(
+        qcheck.alphabetic_ascii_codepoint(),
+        of: codepoint_to_json,
+        bin: False,
+      )
     CharAlphaNumeric ->
-      gen_histogram(qcheck.char_alpha_numeric(), of: json.string, bin: False)
+      gen_histogram(
+        qcheck.alphanumeric_ascii_codepoint(),
+        of: codepoint_to_json,
+        bin: False,
+      )
     CharWhitespace ->
-      gen_histogram(qcheck.char_whitespace(), of: json.string, bin: False)
+      gen_histogram(
+        qcheck.ascii_whitespace_codepoint(),
+        of: codepoint_to_json,
+        bin: False,
+      )
     CharPrintable ->
-      gen_histogram(qcheck.char_printable(), of: json.string, bin: False)
+      gen_histogram(
+        qcheck.printable_ascii_codepoint(),
+        of: codepoint_to_json,
+        bin: False,
+      )
   }
 }
 
+fn codepoint_to_json(codepoint: UtfCodepoint) -> json.Json {
+  string.from_utf_codepoints([codepoint]) |> json.string
+}
+
 fn gen_histogram(generator, of to_json, bin bin) {
-  generator
-  |> qcheck.generate(10_000, qcheck.seed_random())
-  |> histogram(of: to_json, bin:)
+  let #(data, _seed) =
+    generator |> qcheck.generate(10_000, qcheck.random_seed())
+
+  data |> histogram(of: to_json, bin:)
 }

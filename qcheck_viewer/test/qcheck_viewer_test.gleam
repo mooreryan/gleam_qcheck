@@ -1,7 +1,6 @@
 import domino
 import gleam/int
 import gleam/option
-import gleam/result
 import gleam/string
 import gleeunit
 import gleeunit/should
@@ -51,8 +50,8 @@ pub fn int_range_high_is_shown_for_correct_functions_test() {
 
   case model.function {
     qv.IntUniformInclusive | qv.FloatUniformInclusive ->
-      domino.length(input) == 1
-    _ -> domino.length(input) == 0
+      should.equal(domino.length(input), 1)
+    _ -> should.equal(domino.length(input), 0)
   }
 }
 
@@ -66,8 +65,8 @@ pub fn int_range_low_is_shown_for_correct_functions_test() {
 
   case model.function {
     qv.IntUniformInclusive | qv.FloatUniformInclusive ->
-      domino.length(input) == 1
-    _ -> domino.length(input) == 0
+      should.equal(domino.length(input), 1)
+    _ -> should.equal(domino.length(input), 0)
   }
 }
 
@@ -78,7 +77,9 @@ pub fn user_changed_function_test() {
   let model = qv.Model(..qv.default_model(), function:)
   let msg = qv.UserChangedFunction(qv.qcheck_function_to_string(function))
   let #(model, _) = qv.update(model, msg)
-  model.function == function && model.error_message == option.None
+  should.be_true(
+    model.function == function && model.error_message == option.None,
+  )
 }
 
 // MARK: parsing ints
@@ -129,7 +130,7 @@ pub fn parse_int_range_high__good_values__test() {
   let assert qv.UserUpdatedIntRangeHigh(Ok(result)) =
     qv.parse_int_range_high(int.to_string(high), low:)
 
-  result == high
+  should.equal(result, high)
 }
 
 pub fn parse_int_range_low__good_values__test() {
@@ -138,15 +139,12 @@ pub fn parse_int_range_low__good_values__test() {
   let assert qv.UserUpdatedIntRangeLow(Ok(result)) =
     qv.parse_int_range_low(int.to_string(low), high: high)
 
-  result == low
+  should.equal(result, low)
 }
 
 fn good_high_low_values_generator() {
-  use low <- qcheck.bind(qcheck.int_uniform_inclusive(
-    qv.min_int,
-    qv.max_int - 1,
-  ))
-  use high <- qcheck.map(qcheck.int_uniform_inclusive(low, qv.max_int))
+  use low <- qcheck.bind(qcheck.bounded_int(qv.min_int, qv.max_int - 1))
+  use high <- qcheck.map(qcheck.bounded_int(low, qv.max_int))
   let assert True = qv.min_int <= low && low < high && high <= qv.max_int
   #(low, high)
 }
@@ -159,7 +157,11 @@ pub fn parse_int_range_high__high_must_be_gt_low__test() {
   let assert qv.UserUpdatedIntRangeHigh(result) =
     qv.parse_int_range_high(int.to_string(high), low:)
 
-  result.is_error(result)
+  should.be_error(result) |> ignore
+}
+
+fn ignore(_) {
+  Nil
 }
 
 pub fn parse_int_range_low__high_must_be_gt_low__test() {
@@ -168,15 +170,12 @@ pub fn parse_int_range_low__high_must_be_gt_low__test() {
   let assert qv.UserUpdatedIntRangeLow(result) =
     qv.parse_int_range_low(int.to_string(low), high:)
 
-  result.is_error(result)
+  should.be_error(result) |> ignore
 }
 
 fn high_lt_low_generator() {
-  use low <- qcheck.bind(qcheck.int_uniform_inclusive(
-    qv.min_int + 1,
-    qv.max_int,
-  ))
-  use high <- qcheck.map(qcheck.int_uniform_inclusive(qv.min_int, low))
+  use low <- qcheck.bind(qcheck.bounded_int(qv.min_int + 1, qv.max_int))
+  use high <- qcheck.map(qcheck.bounded_int(qv.min_int, low))
   let assert True = high < low
   #(low, high)
 }
@@ -189,7 +188,7 @@ pub fn parse_int_range_high__high_must_be_an_int__test() {
   let assert qv.UserUpdatedIntRangeHigh(result) =
     qv.parse_int_range_high(high, low: qv.min_int)
 
-  result.is_error(result)
+  should.be_error(result) |> ignore
 }
 
 pub fn parse_int_range_low__low_must_be_an_int__test() {
@@ -198,11 +197,12 @@ pub fn parse_int_range_low__low_must_be_an_int__test() {
   let assert qv.UserUpdatedIntRangeLow(result) =
     qv.parse_int_range_low(low, high: qv.max_int)
 
-  result.is_error(result)
+  should.be_error(result) |> ignore
 }
 
 fn non_digit_char_generator() {
-  use char <- qcheck.map(qcheck.char())
+  use codepoint <- qcheck.map(qcheck.codepoint())
+  let char = string.from_utf_codepoints([codepoint])
   case char {
     "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" -> "a"
     char -> char
@@ -218,10 +218,7 @@ fn qcheck_function_generator() {
     qcheck.return(qv.IntSmallStrictlyPositive),
     qcheck.return(qv.Float),
     qcheck.return(qv.FloatUniformInclusive),
-    qcheck.return(qv.Char),
-    qcheck.return(qv.CharUniform),
     qcheck.return(qv.CharUniformInclusive),
-    qcheck.return(qv.CharUtfCodepoint),
     qcheck.return(qv.CharUppercase),
     qcheck.return(qv.CharLowercase),
     qcheck.return(qv.CharDigit),
