@@ -10,8 +10,8 @@ import qcheck_gleeunit_utils/test_spec
 
 pub fn generic_list__generates_valid_values__test() {
   use l <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.generic_list(
+    qcheck.default_config(),
+    qcheck.generic_list(
       elements_from: qcheck.bounded_int(-5, 5),
       length_from: qcheck.bounded_int(2, 5),
     ),
@@ -24,8 +24,8 @@ pub fn generic_list__generates_valid_values__test() {
 
 pub fn list_from__generates_valid_values__test() {
   use l <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.list_from(qcheck.bounded_int(-1000, 1000)),
+    qcheck.default_config(),
+    qcheck.list_from(qcheck.bounded_int(-1000, 1000)),
   )
   should.be_true(list.all(l, fn(n) { -1000 <= n && n <= 1000 }))
 }

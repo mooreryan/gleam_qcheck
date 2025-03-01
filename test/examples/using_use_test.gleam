@@ -46,8 +46,8 @@ fn valid_name_and_age_generator() {
 
 pub fn person__test() {
   use #(name, age) <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: valid_name_and_age_generator(),
+    qcheck.default_config() |> qcheck.with_test_count(test_count),
+    valid_name_and_age_generator(),
   )
 
   make_person(name, age) |> should.be_ok |> ignore
@@ -74,8 +74,8 @@ pub fn bind_with_use__test() {
   }
 
   use generated_value <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: generator,
+    qcheck.default_config() |> qcheck.with_test_count(test_count),
+    generator,
   )
 
   case generated_value {

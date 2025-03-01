@@ -8,8 +8,8 @@ import qcheck/tree
 
 pub fn generic_dict__generates_valid_values__test() {
   use d <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.generic_dict(
+    qcheck.default_config(),
+    qcheck.generic_dict(
       qcheck.bounded_int(0, 2),
       qcheck.bounded_int(10, 12),
       qcheck.bounded_int(0, 5),

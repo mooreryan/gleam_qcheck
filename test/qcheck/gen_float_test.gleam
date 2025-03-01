@@ -7,10 +7,7 @@ import qcheck/test_error_message
 pub fn float__failures_shrink_towards_zero__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use _ <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.float(),
-    )
+    use _ <- qcheck.run(qcheck.default_config(), qcheck.float())
     should.be_true(False)
   }
   test_error_message.test_error_message_shrunk_value(msg)
@@ -25,8 +22,8 @@ pub fn float_uniform_range__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use x <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.bounded_float(-10.0, 10.0),
+      qcheck.default_config(),
+      qcheck.bounded_float(-10.0, 10.0),
     )
     should.be_true(-5.0 <=. x && x <=. 5.0)
   }
@@ -44,8 +41,8 @@ pub fn positive_float_uniform_range_not_including_zero__shrinks_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use x <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.bounded_float(5.0, 10.0),
+      qcheck.default_config(),
+      qcheck.bounded_float(5.0, 10.0),
     )
     should.be_true(7.0 <=. x && x <=. 8.0)
   }
@@ -60,8 +57,8 @@ pub fn negative_float_uniform_range_not_including_zero__shrinks_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use x <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.bounded_float(-10.0, -5.0),
+      qcheck.default_config(),
+      qcheck.bounded_float(-10.0, -5.0),
     )
     should.be_true(-8.0 >=. x && x >=. -7.0)
   }

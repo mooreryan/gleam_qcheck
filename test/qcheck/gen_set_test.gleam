@@ -9,8 +9,8 @@ import qcheck/tree
 
 pub fn generic_set__generates_valid_values__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.generic_set(
+    qcheck.default_config(),
+    qcheck.generic_set(
       elements_from: qcheck.bounded_int(-5, 5),
       size_from: qcheck.bounded_int(0, 5),
     ),

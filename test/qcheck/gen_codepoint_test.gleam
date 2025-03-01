@@ -7,8 +7,8 @@ import qcheck/test_error_message
 
 pub fn bounded_codepoint__test() {
   use codepoint <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.bounded_codepoint(500, 1000),
+    qcheck.default_config(),
+    qcheck.bounded_codepoint(500, 1000),
   )
   let n = string.utf_codepoint_to_int(codepoint)
   should.be_true(500 <= n && n <= 1000)
@@ -16,8 +16,8 @@ pub fn bounded_codepoint__test() {
 
 pub fn bounded_codepoint__ranges_that_include_invalid_codepoints_are_okay__test() {
   use codepoint <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: qcheck.bounded_codepoint(55_200, 58_000),
+    qcheck.default_config() |> qcheck.with_test_count(10_000),
+    qcheck.bounded_codepoint(55_200, 58_000),
   )
   let n = string.utf_codepoint_to_int(codepoint)
   should.be_true(55_200 <= n && n <= 58_000)
@@ -25,8 +25,8 @@ pub fn bounded_codepoint__ranges_that_include_invalid_codepoints_are_okay__test(
 
 pub fn bounded_codepoint__ranges_that_include_only_invalid_codepoints_are_corrected__test() {
   use codepoint <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: qcheck.bounded_codepoint(55_296, 57_343),
+    qcheck.default_config() |> qcheck.with_test_count(10_000),
+    qcheck.bounded_codepoint(55_296, 57_343),
   )
   let n = string.utf_codepoint_to_int(codepoint)
   should.equal(n, 97)
@@ -34,8 +34,8 @@ pub fn bounded_codepoint__ranges_that_include_only_invalid_codepoints_are_correc
 
 pub fn bounded_codepoint__low_greater_than_hi__test() {
   use codepoint <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: qcheck.bounded_codepoint(70, 65),
+    qcheck.default_config() |> qcheck.with_test_count(10_000),
+    qcheck.bounded_codepoint(70, 65),
   )
   let n = string.utf_codepoint_to_int(codepoint)
   should.be_true(65 <= n && n <= 70)
@@ -43,9 +43,9 @@ pub fn bounded_codepoint__low_greater_than_hi__test() {
 
 pub fn bounded_codepoint__codepoints_out_of_range__test() {
   qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: qcheck.bounded_codepoint(-2_000_000, 2_000_000),
-    property: it_doesnt_crash,
+    qcheck.default_config() |> qcheck.with_test_count(10_000),
+    qcheck.bounded_codepoint(-2_000_000, 2_000_000),
+    it_doesnt_crash,
   )
 }
 
@@ -60,8 +60,8 @@ pub fn bounded_codepoint__failures_shink_ok__test() -> Nil {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use codepoint <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.bounded_codepoint(500, 1000),
+      qcheck.default_config(),
+      qcheck.bounded_codepoint(500, 1000),
     )
     let n = string.utf_codepoint_to_int(codepoint)
     should.be_true(600 <= n && n <= 900)
@@ -93,9 +93,9 @@ fn assert_has_one_codepoint_in_range(
 
 pub fn uppercase_character__test() {
   qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.uppercase_ascii_codepoint(),
-    property: assert_has_one_codepoint_in_range(_, int("A"), int("Z")),
+    qcheck.default_config(),
+    qcheck.uppercase_ascii_codepoint(),
+    assert_has_one_codepoint_in_range(_, int("A"), int("Z")),
   )
 }
 
@@ -108,9 +108,9 @@ pub fn uppercase_character__failures_shink_ok__test() {
     use <- test_error_message.rescue
 
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.uppercase_ascii_codepoint(),
-      property: assert_has_one_codepoint_in_range(_, int("A") + 2, int("Z") - 2),
+      qcheck.default_config(),
+      qcheck.uppercase_ascii_codepoint(),
+      assert_has_one_codepoint_in_range(_, int("A") + 2, int("Z") - 2),
     )
   }
   test_error_message.test_error_message_shrunk_value(msg)
@@ -119,9 +119,9 @@ pub fn uppercase_character__failures_shink_ok__test() {
 
 pub fn lowercase_character__test() {
   qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.lowercase_ascii_codepoint(),
-    property: assert_has_one_codepoint_in_range(_, int("a"), int("z")),
+    qcheck.default_config(),
+    qcheck.lowercase_ascii_codepoint(),
+    assert_has_one_codepoint_in_range(_, int("a"), int("z")),
   )
 }
 
@@ -134,9 +134,9 @@ pub fn lowercase_character__failures_shink_ok__test() {
     use <- test_error_message.rescue
 
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.lowercase_ascii_codepoint(),
-      property: assert_has_one_codepoint_in_range(_, int("a") + 2, int("z") - 2),
+      qcheck.default_config(),
+      qcheck.lowercase_ascii_codepoint(),
+      assert_has_one_codepoint_in_range(_, int("a") + 2, int("z") - 2),
     )
   }
   test_error_message.test_error_message_shrunk_value(msg)
@@ -145,9 +145,9 @@ pub fn lowercase_character__failures_shink_ok__test() {
 
 pub fn digit_character__test() {
   qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.ascii_digit_codepoint(),
-    property: assert_has_one_codepoint_in_range(_, int("0"), int("9")),
+    qcheck.default_config(),
+    qcheck.ascii_digit_codepoint(),
+    assert_has_one_codepoint_in_range(_, int("0"), int("9")),
   )
 }
 
@@ -160,9 +160,9 @@ pub fn digit_character__failures_shink_ok__test() {
     use <- test_error_message.rescue
 
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.ascii_digit_codepoint(),
-      property: assert_has_one_codepoint_in_range(_, int("0") + 2, int("9") - 2),
+      qcheck.default_config(),
+      qcheck.ascii_digit_codepoint(),
+      assert_has_one_codepoint_in_range(_, int("0") + 2, int("9") - 2),
     )
   }
   test_error_message.test_error_message_shrunk_value(msg)
@@ -171,9 +171,9 @@ pub fn digit_character__failures_shink_ok__test() {
 
 pub fn uniform_printable_character__test() {
   qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.uniform_printable_ascii_codepoint(),
-    property: assert_has_one_codepoint_in_range(_, int(" "), int("~")),
+    qcheck.default_config(),
+    qcheck.uniform_printable_ascii_codepoint(),
+    assert_has_one_codepoint_in_range(_, int(" "), int("~")),
   )
 }
 
@@ -182,10 +182,10 @@ pub fn uniform_printable_character__failures_shink_ok__test() -> Nil {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.uniform_printable_ascii_codepoint(),
+      qcheck.default_config(),
+      qcheck.uniform_printable_ascii_codepoint(),
       // TODO: These tests with `int` need to be fixed
-      property: assert_has_one_codepoint_in_range(_, int(" ") + 2, int("~") - 2),
+      assert_has_one_codepoint_in_range(_, int(" ") + 2, int("~") - 2),
     )
   }
 
@@ -197,10 +197,10 @@ pub fn uniform_printable_character__failures_shink_ok__test() -> Nil {
 // TODO: the edge conditions don't matter -- test if the distribution is approximately uniform
 pub fn uniform_character__test() {
   qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.uniform_codepoint(),
+    qcheck.default_config(),
+    qcheck.uniform_codepoint(),
     // TODO this test is basically pointless.
-    property: assert_has_one_codepoint_in_range(_, 0x0000, 0x10FFFF),
+    assert_has_one_codepoint_in_range(_, 0x0000, 0x10FFFF),
   )
 }
 
@@ -209,9 +209,9 @@ pub fn uniform_character__failures_shink_ok__test() -> Nil {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.uniform_codepoint(),
-      property: assert_has_one_codepoint_in_range(_, 2, 253),
+      qcheck.default_config(),
+      qcheck.uniform_codepoint(),
+      assert_has_one_codepoint_in_range(_, 2, 253),
     )
   }
 
@@ -233,8 +233,8 @@ pub fn uniform_character__failures_shink_ok__test() -> Nil {
 
 pub fn alphabetic_character__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.alphabetic_ascii_codepoint(),
+    qcheck.default_config(),
+    qcheck.alphabetic_ascii_codepoint(),
   )
   should.be_true(
     has_one_codepoint_in_range(s, int("A"), int("Z"))
@@ -250,8 +250,8 @@ pub fn alphabetic_character__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use s <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.alphabetic_ascii_codepoint(),
+      qcheck.default_config(),
+      qcheck.alphabetic_ascii_codepoint(),
     )
     assert_has_one_codepoint_in_range(s, int("A"), int("Z"))
   }
@@ -268,9 +268,9 @@ pub fn alphabetic_character__failures_shrink_ok_2__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.alphabetic_ascii_codepoint(),
-      property: assert_has_one_codepoint_in_range(_, int("a"), int("z")),
+      qcheck.default_config(),
+      qcheck.alphabetic_ascii_codepoint(),
+      assert_has_one_codepoint_in_range(_, int("a"), int("z")),
     )
   }
   test_error_message.test_error_message_shrunk_value(msg)
@@ -279,8 +279,8 @@ pub fn alphabetic_character__failures_shrink_ok_2__test() {
 
 pub fn alphanumeric_character__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.alphanumeric_ascii_codepoint(),
+    qcheck.default_config(),
+    qcheck.alphanumeric_ascii_codepoint(),
   )
   should.be_true(
     has_one_codepoint_in_range(s, int("A"), int("Z"))
@@ -297,8 +297,8 @@ pub fn alphanumeric_character__failures_shrink_ok__test() -> Nil {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use _ <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.alphanumeric_ascii_codepoint(),
+      qcheck.default_config(),
+      qcheck.alphanumeric_ascii_codepoint(),
     )
     should.be_true(False)
   }
@@ -311,8 +311,8 @@ pub fn alphanumeric_character__failures_shrink_ok__test() -> Nil {
 
 pub fn character_from__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.codepoint_from_strings("b", ["c", "x", "y", "z"]),
+    qcheck.default_config(),
+    qcheck.codepoint_from_strings("b", ["c", "x", "y", "z"]),
   )
   case string.from_utf_codepoints([s]) {
     "b" -> should.be_true(True)
@@ -330,8 +330,8 @@ pub fn character_from__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use s <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.codepoint_from_strings("b", ["c", "x", "y", "z"]),
+      qcheck.default_config(),
+      qcheck.codepoint_from_strings("b", ["c", "x", "y", "z"]),
     )
     should.equal(string.to_utf_codepoints("q"), [s])
   }
@@ -343,16 +343,16 @@ pub fn codepoint_from_strings__doesnt_crash_on_multicodepoint_chars__test() {
   let e_accent = "é"
   let assert True = e_accent == "\u{0065}\u{0301}"
   use _ <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.codepoint_from_strings(e_accent, [e_accent]),
+    qcheck.default_config(),
+    qcheck.codepoint_from_strings(e_accent, [e_accent]),
   )
   should.be_true(True)
 }
 
 pub fn whitespace_character__test() {
   use codepoint <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.ascii_whitespace_codepoint(),
+    qcheck.default_config(),
+    qcheck.ascii_whitespace_codepoint(),
   )
   case string.utf_codepoint_to_int(codepoint) {
     // Horizontal tab
@@ -376,8 +376,8 @@ pub fn whitespace_character__failures_shrink_ok__test() -> Nil {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use codepoint <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.ascii_whitespace_codepoint(),
+      qcheck.default_config(),
+      qcheck.ascii_whitespace_codepoint(),
     )
     case string.utf_codepoint_to_int(codepoint) {
       // Horizontal tab
@@ -402,8 +402,8 @@ pub fn whitespace_character__failures_shrink_ok__test() -> Nil {
 
 pub fn printable_character__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.printable_ascii_codepoint(),
+    qcheck.default_config(),
+    qcheck.printable_ascii_codepoint(),
   )
   should.be_true(
     has_one_codepoint_in_range(s, int("A"), int("Z"))
@@ -418,8 +418,8 @@ pub fn printable_character__failures_shrink_ok__test() -> Nil {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use _ <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.printable_ascii_codepoint(),
+      qcheck.default_config(),
+      qcheck.printable_ascii_codepoint(),
     )
     should.be_true(False)
   }
@@ -432,9 +432,9 @@ pub fn printable_character__failures_shrink_ok__test() -> Nil {
 
 pub fn char__test() {
   qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.codepoint(),
-    property: assert_has_one_codepoint_in_range(_, 0x0000, 0x10FFFF),
+    qcheck.default_config(),
+    qcheck.codepoint(),
+    assert_has_one_codepoint_in_range(_, 0x0000, 0x10FFFF),
   )
 }
 
@@ -442,10 +442,7 @@ pub fn char__test() {
 pub fn char__failures_shrink_ok__test() -> Nil {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use _ <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.codepoint(),
-    )
+    use _ <- qcheck.run(qcheck.default_config(), qcheck.codepoint())
     should.be_true(False)
   }
 

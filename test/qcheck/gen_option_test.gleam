@@ -6,8 +6,8 @@ import qcheck/test_error_message
 
 pub fn option__test() {
   use int_option <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.small_non_negative_int()
+    qcheck.default_config(),
+    qcheck.small_non_negative_int()
       |> qcheck.option_from,
   )
   case int_option {
@@ -19,10 +19,9 @@ pub fn option__test() {
 pub fn option__failures_shrink_ok__test() {
   let run = fn(property) {
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.small_non_negative_int()
-        |> qcheck.option_from,
-      property: property,
+      qcheck.default_config(),
+      qcheck.small_non_negative_int() |> qcheck.option_from,
+      property,
     )
   }
 
@@ -64,9 +63,8 @@ pub fn option_sometimes_generates_none__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use value <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.small_non_negative_int()
-        |> qcheck.option_from,
+      qcheck.default_config(),
+      qcheck.small_non_negative_int() |> qcheck.option_from,
     )
     // All values are `Some` (False)
     should.be_true(option.is_some(value))

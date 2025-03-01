@@ -21,9 +21,9 @@ pub fn generic_string__test() {
   let has_only_a_through_z = fn(s) { regexp.check(all_letters, s) }
 
   use s <- qcheck.run(
-    config: qcheck.default_config(),
+    qcheck.default_config(),
     // a - z
-    generator: qcheck.generic_string(
+    qcheck.generic_string(
       qcheck.bounded_codepoint(97, 122),
       qcheck.bounded_int(1, 10),
     ),
@@ -36,9 +36,9 @@ pub fn generic_string__failure_does_not_mess_up_shrinks__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use s <- qcheck.run(
-      config: qcheck.default_config(),
+      qcheck.default_config(),
       // a - z
-      generator: qcheck.generic_string(
+      qcheck.generic_string(
         qcheck.bounded_codepoint(97, 122),
         // The empty string should not be generated because it is outside of the
         // possible generated lengths.
@@ -59,9 +59,9 @@ pub fn generic_string__shrinks_okay_2__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use s <- qcheck.run(
-      config: qcheck.default_config(),
+      qcheck.default_config(),
       // a - z
-      generator: qcheck.generic_string(
+      qcheck.generic_string(
         qcheck.bounded_codepoint(97, 122),
         qcheck.bounded_int(1, 10),
       ),
@@ -77,9 +77,9 @@ pub fn fixed_length_string_from__shrinks_okay__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use s <- qcheck.run(
-      config: qcheck.default_config(),
+      qcheck.default_config(),
       // a - z
-      generator: qcheck.bounded_codepoint(97, 122)
+      qcheck.bounded_codepoint(97, 122)
         |> qcheck.fixed_length_string_from(2),
     )
     should.be_false(string.contains(s, "x"))
@@ -92,9 +92,9 @@ pub fn generic_string__shrinks_okay__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use s <- qcheck.run(
-      config: qcheck.default_config(),
+      qcheck.default_config(),
       // a - z
-      generator: qcheck.generic_string(
+      qcheck.generic_string(
         qcheck.bounded_codepoint(97, 122),
         qcheck.bounded_int(1, 10),
       ),
@@ -167,35 +167,35 @@ pub fn string_generators_with_specific_length_dont_shrink_on_length__test() {
 
 pub fn string_smoke_test() {
   use s <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: qcheck.string(),
+    qcheck.default_config() |> qcheck.with_test_count(test_count),
+    qcheck.string(),
   )
   should.be_true(string.length(s) >= 0)
 }
 
 pub fn non_empty_string_generates_non_empty_strings__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: qcheck.non_empty_string(),
+    qcheck.default_config() |> qcheck.with_test_count(test_count),
+    qcheck.non_empty_string(),
   )
   should.be_true(string.length(s) > 0)
 }
 
 pub fn fixed_length_string__generates_length_n_strings__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
+    qcheck.default_config() |> qcheck.with_test_count(test_count),
     // This generator will frequently generate codepoints that combine with
     // others to make multicodepoint graphemes. I.e., there grapheme length is
     // less than their number of codepoints.
-    generator: qcheck.fixed_length_string_from(qcheck.codepoint(), 3),
+    qcheck.fixed_length_string_from(qcheck.codepoint(), 3),
   )
   should.equal(string.length(s), 3)
 }
 
 pub fn fixed_length_string__generates_length_n_strings_2__test() {
   use s <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: qcheck.fixed_length_string_from(
+    qcheck.default_config() |> qcheck.with_test_count(test_count),
+    qcheck.fixed_length_string_from(
       // This generator will never generate codepoints that can combine to form
       // a multicodepoint string.
       qcheck.lowercase_ascii_codepoint(),
@@ -213,9 +213,9 @@ pub fn string_from__generates_correct_values__test() {
     )
 
   use s <- qcheck.run(
-    config: qcheck.default_config()
+    qcheck.default_config()
       |> qcheck.with_test_count(test_count),
-    generator: qcheck.string_from(qcheck.lowercase_ascii_codepoint()),
+    qcheck.string_from(qcheck.lowercase_ascii_codepoint()),
   )
   should.be_true(string.is_empty(s) || regexp.check(all_ascii_lowercase, s))
 }
@@ -228,8 +228,8 @@ pub fn non_empty_string_from__generates_correct_values__test() {
     )
 
   use s <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(test_count),
-    generator: qcheck.non_empty_string_from(qcheck.lowercase_ascii_codepoint()),
+    qcheck.default_config() |> qcheck.with_test_count(test_count),
+    qcheck.non_empty_string_from(qcheck.lowercase_ascii_codepoint()),
   )
   should.be_true(regexp.check(all_ascii_lowercase, s))
 }

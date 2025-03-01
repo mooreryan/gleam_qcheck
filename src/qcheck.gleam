@@ -292,9 +292,9 @@ const max_valid_codepoint: Int = 0x10FFFF
 /// - Panics if any test case fails (the property panics)
 ///
 pub fn run(
-  config config: Config,
-  generator generator: Generator(a),
-  property property: fn(a) -> Nil,
+  config: Config,
+  generator: Generator(a),
+  property: fn(a) -> Nil,
 ) -> Nil {
   do_run(config, generator, property, 0)
 }

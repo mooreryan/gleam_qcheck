@@ -15,8 +15,8 @@ pub fn map__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use n <- qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.small_non_negative_int() |> qcheck.map(int.to_float),
+      qcheck.default_config(),
+      qcheck.small_non_negative_int() |> qcheck.map(int.to_float),
     )
 
     should.be_true(n == 0.0 || n >. 1.0)
@@ -41,8 +41,8 @@ pub fn map2__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup2 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.map2(gen_int, gen_int, fn(a, b) { #(a, b) }),
+    qcheck.default_config(),
+    qcheck.map2(gen_int, gen_int, fn(a, b) { #(a, b) }),
   )
   let #(a, b) = tup2
   should.be_true(in_range(a) && in_range(b))
@@ -57,8 +57,8 @@ pub fn map3__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup3 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.map3(gen_int, gen_int, gen_int, fn(a, b, c) { #(a, b, c) }),
+    qcheck.default_config(),
+    qcheck.map3(gen_int, gen_int, gen_int, fn(a, b, c) { #(a, b, c) }),
   )
   let #(a, b, c) = tup3
   should.be_true(in_range(a) && in_range(b) && in_range(c))
@@ -73,8 +73,8 @@ pub fn map4__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup4 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.map4(gen_int, gen_int, gen_int, gen_int, fn(a, b, c, d) {
+    qcheck.default_config(),
+    qcheck.map4(gen_int, gen_int, gen_int, gen_int, fn(a, b, c, d) {
       #(a, b, c, d)
     }),
   )
@@ -91,15 +91,10 @@ pub fn map5__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup5 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.map5(
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-      fn(a, b, c, d, e) { #(a, b, c, d, e) },
-    ),
+    qcheck.default_config(),
+    qcheck.map5(gen_int, gen_int, gen_int, gen_int, gen_int, fn(a, b, c, d, e) {
+      #(a, b, c, d, e)
+    }),
   )
   let #(a, b, c, d, e) = tup5
 
@@ -117,8 +112,8 @@ pub fn map6__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup6 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.map6(
+    qcheck.default_config(),
+    qcheck.map6(
       gen_int,
       gen_int,
       gen_int,
@@ -162,7 +157,7 @@ pub fn map4_with_apply__test() {
     |> qcheck.apply(gen_int)
     |> qcheck.apply(gen_int)
 
-  use tup4 <- qcheck.run(config: qcheck.default_config(), generator: generator)
+  use tup4 <- qcheck.run(qcheck.default_config(), generator)
 
   let #(a, b, c, d) = tup4
 
@@ -178,8 +173,8 @@ pub fn tuple2__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup2 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.tuple2(gen_int, gen_int),
+    qcheck.default_config(),
+    qcheck.tuple2(gen_int, gen_int),
   )
 
   let #(a, b) = tup2
@@ -196,8 +191,8 @@ pub fn tuple3__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup3 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.tuple3(gen_int, gen_int, gen_int),
+    qcheck.default_config(),
+    qcheck.tuple3(gen_int, gen_int, gen_int),
   )
 
   let #(a, b, c) = tup3
@@ -213,8 +208,8 @@ pub fn tuple4__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup4 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.tuple4(gen_int, gen_int, gen_int, gen_int),
+    qcheck.default_config(),
+    qcheck.tuple4(gen_int, gen_int, gen_int, gen_int),
   )
   let #(a, b, c, d) = tup4
   should.be_true(in_range(a) && in_range(b) && in_range(c) && in_range(d))
@@ -229,8 +224,8 @@ pub fn tuple5__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup5 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.tuple5(gen_int, gen_int, gen_int, gen_int, gen_int),
+    qcheck.default_config(),
+    qcheck.tuple5(gen_int, gen_int, gen_int, gen_int, gen_int),
   )
   let #(a, b, c, d, e) = tup5
   should.be_true(
@@ -247,15 +242,8 @@ pub fn tuple6__test() {
   let gen_int = qcheck.bounded_int(min, max)
 
   use tup6 <- qcheck.run(
-    config: qcheck.default_config(),
-    generator: qcheck.tuple6(
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-      gen_int,
-    ),
+    qcheck.default_config(),
+    qcheck.tuple6(gen_int, gen_int, gen_int, gen_int, gen_int, gen_int),
   )
 
   let #(a, b, c, d, e, f) = tup6
@@ -286,8 +274,8 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.uniform_int()
+      qcheck.default_config(),
+      qcheck.uniform_int()
         |> qcheck.bind(fn(n) {
           // n >= 0 here will set the shrinker starting on the `First` case, as that
           // is what 0 will become.
@@ -301,7 +289,7 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
               |> qcheck.map(Second)
           }
         }),
-      property: fn(either) {
+      fn(either) {
         // Adding the two extra failing cases for First and Second to test the
         // shrinking.
         case either {
@@ -323,8 +311,8 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.uniform_int()
+      qcheck.default_config(),
+      qcheck.uniform_int()
         |> qcheck.bind(fn(n) {
           // n > 0 here will set the shrinker starting on the `Second` case, as that
           // is what 0 will become.
@@ -338,7 +326,7 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
               |> qcheck.map(Second)
           }
         }),
-      property: fn(either) {
+      fn(either) {
         case either {
           First(15) -> should.be_true(False)
           First(14) -> should.be_true(False)
@@ -361,8 +349,8 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     qcheck.run(
-      config: qcheck.default_config(),
-      generator: qcheck.uniform_int()
+      qcheck.default_config(),
+      qcheck.uniform_int()
         |> qcheck.bind(fn(n) {
           case n > 0 {
             True ->
@@ -375,7 +363,7 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
           }
         }),
       // None of the `Second` shrinks will trigger a failure.
-      property: fn(either) {
+      fn(either) {
         case either {
           First(15) -> should.be_true(False)
           First(14) -> should.be_true(False)
@@ -409,7 +397,7 @@ pub fn apply__test() {
     |> qcheck.apply(qcheck.bounded_int(-10, 10))
     |> qcheck.apply(qcheck.bounded_int(-100, 100))
 
-  use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+  use ns <- qcheck.run(qcheck.default_config(), generator)
 
   let #(a, b, c) = ns
   let a_prop = -5 <= a && a <= 5
@@ -434,7 +422,7 @@ pub fn shrinking_works_with_apply__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
 
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -5 <= a && a <= 3
@@ -448,7 +436,7 @@ pub fn shrinking_works_with_apply__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -3 <= a && a <= 5
@@ -463,7 +451,7 @@ pub fn shrinking_works_with_apply__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -5 <= a && a <= 5
@@ -477,7 +465,7 @@ pub fn shrinking_works_with_apply__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -5 <= a && a <= 5
@@ -491,7 +479,7 @@ pub fn shrinking_works_with_apply__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -5 <= a && a <= 5
@@ -506,7 +494,7 @@ pub fn shrinking_works_with_apply__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -5 <= a && a <= 5
@@ -521,7 +509,7 @@ pub fn shrinking_works_with_apply__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -5 <= a && a <= 3
@@ -536,7 +524,7 @@ pub fn shrinking_works_with_apply__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
+    use ns <- qcheck.run(qcheck.default_config(), generator)
 
     let #(a, b, c) = ns
     let a_prop = -3 <= a && a <= 3
