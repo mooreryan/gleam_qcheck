@@ -33,7 +33,7 @@ pub fn option__failures_shrink_ok__test() {
       None -> should.be_true(True)
     }
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(Some(0)))
 
   let assert Error(msg) = {
@@ -44,7 +44,7 @@ pub fn option__failures_shrink_ok__test() {
       None -> should.be_true(True)
     }
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(Some(6)))
 
   let assert Error(msg) = {
@@ -55,7 +55,7 @@ pub fn option__failures_shrink_ok__test() {
       None -> should.be_true(False)
     }
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(None))
 }
 
@@ -69,6 +69,6 @@ pub fn option_sometimes_generates_none__test() {
     // All values are `Some` (False)
     should.be_true(option.is_some(value))
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(None))
 }

@@ -19,7 +19,7 @@ pub fn given_failing__test() {
     n |> should.equal(n + 1)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(0))
 }
 // TODO: delete this test file

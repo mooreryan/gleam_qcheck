@@ -14,7 +14,7 @@ pub opaque type TestErrorMessage {
   )
 }
 
-pub fn test_error_message_shrunk_value(msg: TestErrorMessage) -> String {
+pub fn shrunk_value(msg: TestErrorMessage) -> String {
   msg.shrunk_value
 }
 
@@ -59,25 +59,19 @@ fn regexp_first_submatch(
 
 /// Mainly for asserting values in qcheck internal tests.
 ///
-fn test_error_message_get_original_value(
-  test_error_str: String,
-) -> Result(String, String) {
+fn get_original_value(test_error_str: String) -> Result(String, String) {
   regexp_first_submatch(pattern: "original_value: (.+?);", in: test_error_str)
 }
 
 /// Mainly for asserting values in qcheck internal tests.
 ///
-fn test_error_message_get_shrunk_value(
-  test_error_str: String,
-) -> Result(String, String) {
+fn get_shrunk_value(test_error_str: String) -> Result(String, String) {
   regexp_first_submatch(pattern: "shrunk_value: (.+?);", in: test_error_str)
 }
 
 /// Mainly for asserting values in qcheck internal tests.
 ///
-fn test_error_message_get_shrink_steps(
-  test_error_str: String,
-) -> Result(String, String) {
+fn get_shrink_steps(test_error_str: String) -> Result(String, String) {
   regexp_first_submatch(pattern: "shrink_steps: (.+?);", in: test_error_str)
 }
 
@@ -94,11 +88,9 @@ pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
     Error(err) -> {
       // If this assert causes a panic, then you have an implementation error.
       let assert Ok(test_error_message) = {
-        use original_value <- result.then(test_error_message_get_original_value(
-          err,
-        ))
-        use shrunk_value <- result.then(test_error_message_get_shrunk_value(err))
-        use shrink_steps <- result.then(test_error_message_get_shrink_steps(err))
+        use original_value <- result.then(get_original_value(err))
+        use shrunk_value <- result.then(get_shrunk_value(err))
+        use shrink_steps <- result.then(get_shrink_steps(err))
 
         Ok(new_test_error_message(
           original_value: original_value,

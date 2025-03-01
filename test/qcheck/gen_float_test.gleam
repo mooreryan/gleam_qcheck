@@ -10,7 +10,7 @@ pub fn float__failures_shrink_towards_zero__test() {
     use _ <- qcheck.run(qcheck.default_config(), qcheck.float())
     should.be_true(False)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(0.0))
 }
 
@@ -29,7 +29,7 @@ pub fn float_uniform_range__test() {
   }
 
   let assert Ok(x) =
-    test_error_message.test_error_message_shrunk_value(msg)
+    test_error_message.shrunk_value(msg)
     |> float.parse
 
   should.be_true(-6.0 <=. x && x <=. -5.0 || 5.0 <=. x && x <=. 6.0)
@@ -47,7 +47,7 @@ pub fn positive_float_uniform_range_not_including_zero__shrinks_ok__test() {
     should.be_true(7.0 <=. x && x <=. 8.0)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(5.0))
 }
 
@@ -63,7 +63,7 @@ pub fn negative_float_uniform_range_not_including_zero__shrinks_ok__test() {
     should.be_true(-8.0 >=. x && x >=. -7.0)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(-5.0))
 }
 

@@ -67,7 +67,7 @@ pub fn bounded_codepoint__failures_shink_ok__test() -> Nil {
     should.be_true(600 <= n && n <= 900)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(expected)
 }
 
@@ -113,7 +113,7 @@ pub fn uppercase_character__failures_shink_ok__test() {
       assert_has_one_codepoint_in_range(_, int("A") + 2, int("Z") - 2),
     )
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(expected)
 }
 
@@ -139,7 +139,7 @@ pub fn lowercase_character__failures_shink_ok__test() {
       assert_has_one_codepoint_in_range(_, int("a") + 2, int("z") - 2),
     )
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(expected)
 }
 
@@ -165,7 +165,7 @@ pub fn digit_character__failures_shink_ok__test() {
       assert_has_one_codepoint_in_range(_, int("0") + 2, int("9") - 2),
     )
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(expected)
 }
 
@@ -190,7 +190,7 @@ pub fn uniform_printable_character__failures_shink_ok__test() -> Nil {
   }
 
   // Printable chars shrink to `"a"`, so either of these could be valid.
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should_be_one_of(["!", "}"])
 }
 
@@ -216,7 +216,7 @@ pub fn uniform_character__failures_shink_ok__test() -> Nil {
   }
 
   let s =
-    test_error_message.test_error_message_shrunk_value(msg)
+    test_error_message.shrunk_value(msg)
     |> string.replace(each: "\"", with: "")
 
   // `uniform_codepoint` shrinks towards `"a"`, so either of these could be valid.
@@ -256,7 +256,7 @@ pub fn alphabetic_character__failures_shrink_ok__test() {
     assert_has_one_codepoint_in_range(s, int("A"), int("Z"))
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(expected)
 }
 
@@ -273,7 +273,7 @@ pub fn alphabetic_character__failures_shrink_ok_2__test() {
       assert_has_one_codepoint_in_range(_, int("a"), int("z")),
     )
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(expected)
 }
 
@@ -305,7 +305,7 @@ pub fn alphanumeric_character__failures_shrink_ok__test() -> Nil {
 
   // Depending on the selected generator, any of these could be the shrink
   // target.
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should_be_one_of(["a", "Z", "9"])
 }
 
@@ -335,7 +335,7 @@ pub fn character_from__failures_shrink_ok__test() {
     )
     should.equal(string.to_utf_codepoints("q"), [s])
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(expected)
 }
 
@@ -396,7 +396,7 @@ pub fn whitespace_character__failures_shrink_ok__test() -> Nil {
     }
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should_be_one_of(["\n", "\r"])
 }
 
@@ -426,7 +426,7 @@ pub fn printable_character__failures_shrink_ok__test() -> Nil {
 
   // Depending on the selected generator, any of these could be the shrink
   // target.
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should_be_one_of(["a", "Z", "9", " "])
 }
 
@@ -448,7 +448,7 @@ pub fn char__failures_shrink_ok__test() -> Nil {
 
   // Depending on the selected generator, any of these could be the shrink
   // target.
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should_be_one_of(["a", "Z", "9", " ", "\u{0000}", "\u{00FF}"])
 }
 

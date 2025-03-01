@@ -20,7 +20,7 @@ pub fn small_non_negative_int__failures_shrink_to_zero__test() {
     should.not_equal(n + 1, 1 + n)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(0))
 }
 
@@ -33,7 +33,7 @@ pub fn small_non_negative_int__failures_shrink_to_smaller_values__test() {
     )
     should.be_true(n == 0 || n > 1)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(1))
 }
 
@@ -58,7 +58,7 @@ pub fn small_strictly_positive_int__failures_shrink_ok__test() {
     )
     should.be_true(n > 1)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(1))
 
   let assert Error(msg) = {
@@ -69,7 +69,7 @@ pub fn small_strictly_positive_int__failures_shrink_ok__test() {
     )
     should.be_true(n == 1 || n > 2)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(2))
 }
 
@@ -89,7 +89,7 @@ pub fn uniform_int__failures_shrink_ok__test() {
     should.be_true(n < 55_555)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(55_555))
 }
 
@@ -99,7 +99,7 @@ pub fn uniform_int__negative_numbers_shrink_towards_zero__test() {
     use n <- qcheck.run(qcheck.default_config(), qcheck.uniform_int())
     should.be_true(n > -5)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(-5))
 }
 
@@ -115,7 +115,7 @@ pub fn uniform_int_range__test() {
   }
 
   let assert Ok(n) =
-    test_error_message.test_error_message_shrunk_value(msg)
+    test_error_message.shrunk_value(msg)
     |> int.parse
 
   should.be_true(n == -6 || n == 6)
@@ -137,7 +137,7 @@ pub fn positive_uniform_int_range_not_including_zero__shrinks_ok__test() {
     should.be_true(7 <= n && n <= 8)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(5))
 }
 
@@ -150,7 +150,7 @@ pub fn negative_uniform_int_range_not_including_zero__shrinks_ok__test() {
     should.be_true(-8 >= n && n >= -7)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(-5))
 }
 

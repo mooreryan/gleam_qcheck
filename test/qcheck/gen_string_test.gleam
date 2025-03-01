@@ -51,7 +51,7 @@ pub fn generic_string__failure_does_not_mess_up_shrinks__test() {
       || string.length(s) >= 4,
     )
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect("ccc"))
 }
 
@@ -69,7 +69,7 @@ pub fn generic_string__shrinks_okay_2__test() {
     let len = string.length(s)
     should.be_true(len <= 5 || len >= 10 || string.contains(s, "a"))
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect("bbbbbb"))
 }
 
@@ -84,7 +84,7 @@ pub fn fixed_length_string_from__shrinks_okay__test() {
     )
     should.be_false(string.contains(s, "x"))
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should_be_one_of(["ax", "xa"])
 }
 
@@ -102,7 +102,7 @@ pub fn generic_string__shrinks_okay__test() {
     let len = string.length(s)
     should.be_true(len <= 5 || len >= 10)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect("aaaaaa"))
 }
 

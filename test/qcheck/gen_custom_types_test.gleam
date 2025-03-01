@@ -22,7 +22,7 @@ pub fn custom_type_failing_test() {
     let MyInt(n) = my_int
     should.be_true(n < 10)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(MyInt(10)))
 }
 
@@ -66,7 +66,7 @@ pub fn either_failing_test() {
       Second(n) -> should.equal(n % 2, 0)
     }
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(First(0)))
 
   // The n == 0 will prevent the First(0) from being a shrink that fails
@@ -79,7 +79,7 @@ pub fn either_failing_test() {
       Second(n) -> should.be_true(n % 2 == 0)
     }
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(Second(1)))
 
   // The n == 1 will prevent the Second(1) from being a shrink that
@@ -92,7 +92,7 @@ pub fn either_failing_test() {
       Second(n) -> should.be_true(n == 1 || n % 2 == 0)
     }
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(First(2)))
 }
 

@@ -22,7 +22,7 @@ pub fn map__test() {
     should.be_true(n == 0.0 || n >. 1.0)
   }
 
-  let shrunk_value = test_error_message.test_error_message_shrunk_value(msg)
+  let shrunk_value = test_error_message.shrunk_value(msg)
 
   // Value differs on Erlang and JS targets.
   should.be_true(shrunk_value == "1.0" || shrunk_value == "1")
@@ -303,7 +303,7 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
       },
     )
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("First(14)")
 }
 
@@ -339,7 +339,7 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
     )
   }
 
-  let shrunk_value = test_error_message.test_error_message_shrunk_value(msg)
+  let shrunk_value = test_error_message.shrunk_value(msg)
 
   // Value differs on Erlang and JS targets.
   should.be_true(shrunk_value == "Second(94.0)" || shrunk_value == "Second(94)")
@@ -373,7 +373,7 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
     )
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("First(14)")
 }
 
@@ -431,7 +431,7 @@ pub fn shrinking_works_with_apply__test() {
 
     should.be_true(a_prop && b_prop && c_prop)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("#(4, 0, 0)")
 
   let assert Error(msg) = {
@@ -446,7 +446,7 @@ pub fn shrinking_works_with_apply__test() {
     should.be_true(a_prop && b_prop && c_prop)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("#(-4, 0, 0)")
 
   let assert Error(msg) = {
@@ -460,7 +460,7 @@ pub fn shrinking_works_with_apply__test() {
 
     should.be_true(a_prop && b_prop && c_prop)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("#(0, 6, 0)")
 
   let assert Error(msg) = {
@@ -474,7 +474,7 @@ pub fn shrinking_works_with_apply__test() {
 
     should.be_true(a_prop && b_prop && c_prop)
   }
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("#(0, -6, 0)")
 
   let assert Error(msg) = {
@@ -489,7 +489,7 @@ pub fn shrinking_works_with_apply__test() {
     should.be_true(a_prop && b_prop && c_prop)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("#(0, 0, 51)")
 
   let assert Error(msg) = {
@@ -504,7 +504,7 @@ pub fn shrinking_works_with_apply__test() {
     should.be_true(a_prop && b_prop && c_prop)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("#(0, 0, -51)")
 
   let assert Error(msg) = {
@@ -519,7 +519,7 @@ pub fn shrinking_works_with_apply__test() {
     should.be_true(a_prop || b_prop || c_prop)
   }
 
-  test_error_message.test_error_message_shrunk_value(msg)
+  test_error_message.shrunk_value(msg)
   |> should.equal("#(4, 6, 51)")
 
   let assert Error(msg) = {
@@ -575,7 +575,7 @@ pub fn shrinking_works_with_apply__test() {
   }
 
   let assert Ok(numbers) =
-    test_error_message.test_error_message_shrunk_value(msg)
+    test_error_message.shrunk_value(msg)
     |> parse_numbers
 
   numbers
