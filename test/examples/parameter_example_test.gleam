@@ -1,3 +1,4 @@
+import gleeunit/should
 import qcheck
 
 type Box {
@@ -24,5 +25,5 @@ pub fn parameter_example__test() {
   // Test some interesting property of boxes here.
 
   // (This `True` is a standin for your property.)
-  True
+  should.be_true(True)
 }

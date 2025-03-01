@@ -2,6 +2,7 @@ import birdie
 import gleam/bit_array
 import gleam/list
 import gleam/string
+import gleeunit/should
 import qcheck
 import qcheck/tree
 
@@ -10,13 +11,13 @@ import qcheck/tree
 @external(javascript, "../qcheck_ffi.mjs", "do_nothing")
 pub fn bit_array__smoke_test() -> Nil {
   use bits <- qcheck.given(qcheck.bit_array())
-  bit_array.bit_size(bits) >= 0
+  should.be_true(bit_array.bit_size(bits) >= 0)
 }
 
 @external(javascript, "../qcheck_ffi.mjs", "do_nothing")
 pub fn non_empty_bit_array__doesnt_generate_empty_arrays__test() -> Nil {
   use bits <- qcheck.given(qcheck.non_empty_bit_array())
-  bit_array.bit_size(bits) >= 1
+  should.be_true(bit_array.bit_size(bits) >= 1)
 }
 
 @external(javascript, "../qcheck_ffi.mjs", "do_nothing")
@@ -28,8 +29,10 @@ pub fn fixed_size_bit_array_from__makes_arrays_with_valid_size_and_values__test(
     5,
   ))
   let assert <<value:size(bit_size)>> = bits
+  should.equal(bit_array.bit_size(bits), bit_size)
+
   let value_okay = 1 <= value && value <= 30
-  bit_array.bit_size(bits) == bit_size && value_okay
+  should.be_true(value_okay)
 }
 
 @external(javascript, "../qcheck_ffi.mjs", "do_nothing")
@@ -41,7 +44,7 @@ pub fn fixed_size_bit_array__makes_arrays_with_valid_size__test() -> Nil {
   }
 
   use #(bit_array, expected_bit_size) <- qcheck.given(generator)
-  bit_array.bit_size(bit_array) == expected_bit_size
+  bit_array.bit_size(bit_array) |> should.equal(expected_bit_size)
 }
 
 // NOTE: this shrinking looks weird, but it is "correct" in terms of how the
@@ -94,15 +97,18 @@ pub fn fixed_size_bit_array_from__shrinks_are_the_correct_size__test() -> Nil {
     )
 
   let sizes = tree.collect(tree, bit_array.bit_size)
-  use size <- list.all(sizes)
-  size == bit_size
+
+  should.be_true({
+    use size <- list.all(sizes)
+    size == bit_size
+  })
 }
 
 // MARK: Bit arrays (UTF-8)
 
 pub fn utf8_bit_array__generates_valid_utf8_bit_arrays__test() {
   use utf8_bytes <- qcheck.given(qcheck.utf8_bit_array())
-  bit_array.is_utf8(utf8_bytes)
+  bit_array.is_utf8(utf8_bytes) |> should.be_true
 }
 
 pub fn utf8_bit_array__is_byte_aligned__test() {
@@ -113,12 +119,14 @@ pub fn utf8_bit_array__is_byte_aligned__test() {
 
   // Could do the % 8, but this also tests a property of bit_array module itself
   // for free.
-  bit_size == 0 || bit_size == byte_size * 8
+  should.be_true(bit_size == 0 || bit_size == byte_size * 8)
 }
 
 pub fn non_empty_utf8_bit_array__generates_valid_non_empty_utf8_bit_arrays__test() {
   use utf8_bytes <- qcheck.given(qcheck.non_empty_utf8_bit_array())
-  bit_array.is_utf8(utf8_bytes) && bit_array.bit_size(utf8_bytes) >= 8
+  should.be_true(
+    bit_array.is_utf8(utf8_bytes) && bit_array.bit_size(utf8_bytes) >= 8,
+  )
 }
 
 pub fn fixed_size_utf8_bit_array__generates_valid_utf8_bit_arrays_with_given_num_codepoints__test() {
@@ -136,7 +144,7 @@ pub fn fixed_size_utf8_bit_array__generates_valid_utf8_bit_arrays_with_given_num
   let correct_num_codepoints =
     list.length(codepoints) == expected_num_codepoints
 
-  is_valid_utf8 && correct_num_codepoints
+  should.be_true(is_valid_utf8 && correct_num_codepoints)
 }
 
 pub fn fixed_size_utf8_bit_array_from__generates_valid_utf8_bit_arrays_with_correct_num_codepoints__test() {
@@ -161,19 +169,21 @@ pub fn fixed_size_utf8_bit_array_from__generates_valid_utf8_bit_arrays_with_corr
   let correct_num_codepoints =
     list.length(codepoints) == expected_num_codepoints
 
-  is_valid_utf8 && correct_num_codepoints
+  should.be_true(is_valid_utf8 && correct_num_codepoints)
 }
 
 // MARK: Bit arrays (byte-aligned)
 
 pub fn byte_aligned_bit_array__bit_size_is_always_divisible_by_8__test() {
   use bytes <- qcheck.given(qcheck.byte_aligned_bit_array())
-  bit_array.bit_size(bytes) % 8 == 0
+  should.be_true(bit_array.bit_size(bytes) % 8 == 0)
 }
 
 pub fn non_empty_byte_aligned_bit_array__bit_size_is_always_divisible_by_8__test() {
   use bytes <- qcheck.given(qcheck.non_empty_byte_aligned_bit_array())
-  bit_array.bit_size(bytes) % 8 == 0 && bit_array.bit_size(bytes) > 0
+  should.be_true(
+    bit_array.bit_size(bytes) % 8 == 0 && bit_array.bit_size(bytes) > 0,
+  )
 }
 
 pub fn fixed_size_byte_aligned_bit_array_from__makes_arrays_with_valid_size__test() {
@@ -186,7 +196,7 @@ pub fn fixed_size_byte_aligned_bit_array_from__makes_arrays_with_valid_size__tes
     #(bit_array, byte_size)
   }
   use #(bit_array, expected_byte_size) <- qcheck.given(generator)
-  bit_array.byte_size(bit_array) == expected_byte_size
+  should.equal(bit_array.byte_size(bit_array), expected_byte_size)
 }
 
 pub fn fixed_size_byte_aligned_bit_array__makes_arrays_of_correct_size__test() {
@@ -196,7 +206,7 @@ pub fn fixed_size_byte_aligned_bit_array__makes_arrays_of_correct_size__test() {
     #(bytes, byte_size)
   }
   use #(bytes, expected_byte_size) <- qcheck.given(generator)
-  bit_array.byte_size(bytes) == expected_byte_size
+  should.equal(bit_array.byte_size(bytes), expected_byte_size)
 }
 
 pub fn generic_byte_aligned_bit_array__test() {
@@ -204,7 +214,7 @@ pub fn generic_byte_aligned_bit_array__test() {
     value_generator: qcheck.bounded_int(0, 255),
     byte_size_generator: qcheck.bounded_int(0, 8),
   ))
-  bit_array.byte_size(bytes) <= 8
+  should.be_true(bit_array.byte_size(bytes) <= 8)
 }
 
 // MARK: Negative sizes
@@ -216,7 +226,7 @@ pub fn fixed_size_bit_array_from__negative_sizes_yield_empty_bit_arrays__test() 
     qcheck.fixed_size_bit_array_from(qcheck.bounded_int(0, 255), bit_size)
   })
 
-  bit_array.bit_size(bits) == 0
+  should.equal(bit_array.bit_size(bits), 0)
 }
 
 pub fn fixed_size_byte_aligned_bit_array_from__negative_sizes_yield_empty_bit_arrays__test() {
@@ -228,7 +238,7 @@ pub fn fixed_size_byte_aligned_bit_array_from__negative_sizes_yield_empty_bit_ar
     )
   })
 
-  bit_array.bit_size(bytes) == 0
+  should.equal(bit_array.bit_size(bytes), 0)
 }
 
 pub fn fixed_size_utf8_bit_array_from__negative_sizes_yield_empty_bit_arrays__test() {
@@ -237,7 +247,7 @@ pub fn fixed_size_utf8_bit_array_from__negative_sizes_yield_empty_bit_arrays__te
     qcheck.fixed_size_utf8_bit_array_from(qcheck.codepoint(), num_codepoints)
   })
 
-  bit_array.bit_size(bytes) == 0
+  should.equal(bit_array.bit_size(bytes), 0)
 }
 
 // Previous versions would crash if the size was too big.
@@ -246,7 +256,7 @@ pub fn fixed_size_bit_array__doesnt_crash_for_huge_numbers__test() {
     qcheck.default_config() |> qcheck.with_test_count(10),
     qcheck.fixed_size_bit_array(1024),
   )
-  True
+  should.be_true(True)
 }
 
 // MARK: Sized
@@ -259,7 +269,7 @@ pub fn sizing_bit_arrays__test() -> Nil {
 
   let byte_size = bit_array.byte_size(bytes)
 
-  0 <= byte_size && byte_size <= 10
+  should.be_true(0 <= byte_size && byte_size <= 10)
 }
 
 // MARK: Utils

@@ -1,3 +1,4 @@
+import gleeunit/should
 import qcheck
 import qcheck/test_error_message
 
@@ -7,7 +8,7 @@ pub fn negative_seeds_are_ok__test() {
     qcheck.small_strictly_positive_int(),
   )
 
-  n > 0
+  should.be_true(n > 0)
 }
 
 pub fn negative_test_counts_are_replaced_with_a_good_value__test() {
@@ -23,7 +24,7 @@ pub fn negative_test_counts_are_replaced_with_a_good_value__test() {
     //
     // If the test count was left as negative or 0, then this property would
     // never be executed.
-    n <= 0
+    should.be_true(n <= 0)
   }
 }
 
@@ -35,7 +36,7 @@ pub fn zero_test_counts_are_replaced_with_a_good_value__test() {
       qcheck.small_strictly_positive_int(),
     )
 
-    n <= 0
+    should.be_true(n <= 0)
   }
 }
 
@@ -47,6 +48,6 @@ pub fn config_replaces_bad_args_with_good_ones__test() {
       qcheck.small_strictly_positive_int(),
     )
 
-    n <= 0
+    should.be_true(n <= 0)
   }
 }

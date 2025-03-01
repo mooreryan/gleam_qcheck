@@ -3,30 +3,31 @@ import gleam/int
 import gleam/list
 import gleam/string
 import gleam/yielder
+import gleeunit/should
 import qcheck
 import qcheck/tree
 import qcheck_gleeunit_utils/test_spec
 
 pub fn generic_list__generates_valid_values__test() {
-  qcheck.run(
+  use l <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.generic_list(
       elements_from: qcheck.bounded_int(-5, 5),
       length_from: qcheck.bounded_int(2, 5),
     ),
-    property: fn(l) {
-      let len = list.length(l)
-      2 <= len && len <= 5 && list.all(l, fn(n) { -5 <= n && n <= 5 })
-    },
+  )
+  let len = list.length(l)
+  should.be_true(
+    2 <= len && len <= 5 && list.all(l, fn(n) { -5 <= n && n <= 5 }),
   )
 }
 
 pub fn list_from__generates_valid_values__test() {
-  qcheck.run(
+  use l <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.list_from(qcheck.bounded_int(-1000, 1000)),
-    property: fn(l) { list.all(l, fn(n) { -1000 <= n && n <= 1000 }) },
   )
+  should.be_true(list.all(l, fn(n) { -1000 <= n && n <= 1000 }))
 }
 
 fn int_list_to_string(l) {
@@ -80,7 +81,7 @@ pub fn fixed_length_list_from__generates_correct_length__test() {
     #(list, length)
   })
 
-  list.length(list) == expected_length
+  should.equal(list.length(list), expected_length)
 }
 
 fn all_lengths_good(tree, min_length min_length, max_length max_length) {

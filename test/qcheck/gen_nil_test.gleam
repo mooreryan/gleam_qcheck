@@ -1,13 +1,12 @@
+import gleeunit/should
 import qcheck
 
 pub fn nil_only_generates_nil__test() {
-  qcheck.run(
+  use nil <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.nil(),
-    property: fn(nil) {
-      case nil {
-        Nil -> True
-      }
-    },
   )
+  case nil {
+    Nil -> should.be_true(True)
+  }
 }

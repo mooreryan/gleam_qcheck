@@ -3,6 +3,7 @@ import gleam/option.{Some}
 import gleam/regexp.{Match}
 import gleam/result
 import gleam/string
+import gleeunit/should
 import qcheck.{type Generator}
 
 type Point {
@@ -66,5 +67,5 @@ pub fn point_serialization_roundtripping__test() {
     |> point_to_string
     |> point_of_string
 
-  point_equal(generated_point, parsed_point)
+  point_equal(generated_point, parsed_point) |> should.be_true
 }

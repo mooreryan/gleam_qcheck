@@ -4,27 +4,23 @@ import qcheck
 import qcheck/test_error_message
 
 pub fn custom_type_passing_test() {
-  qcheck.run(
+  use my_int <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.small_non_negative_int() |> qcheck.map(MyInt),
-    property: fn(my_int) {
-      let MyInt(n) = my_int
-      n == my_int_to_int(my_int)
-    },
   )
+  let MyInt(n) = my_int
+  should.equal(my_int_to_int(my_int), n)
 }
 
 pub fn custom_type_failing_test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use my_int <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.small_non_negative_int() |> qcheck.map(MyInt),
-      property: fn(my_int) {
-        let MyInt(n) = my_int
-        n < 10
-      },
     )
+    let MyInt(n) = my_int
+    should.be_true(n < 10)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(MyInt(10)))
@@ -43,16 +39,14 @@ fn even_odd(n: Int) -> Either(Int, Int) {
 }
 
 pub fn either_passing_test() {
-  qcheck.run(
+  use v <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.small_non_negative_int() |> qcheck.map(even_odd),
-    property: fn(v) {
-      case v {
-        First(n) -> n % 2 == 0
-        Second(n) -> n % 2 == 1
-      }
-    },
   )
+  case v {
+    First(n) -> should.equal(n % 2, 0)
+    Second(n) -> should.equal(n % 2, 1)
+  }
 }
 
 pub fn either_failing_test() {
@@ -66,12 +60,11 @@ pub fn either_failing_test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    run(fn(v) {
-      case v {
-        First(n) -> n % 2 == 1
-        Second(n) -> n % 2 == 0
-      }
-    })
+    use v <- run
+    case v {
+      First(n) -> should.equal(n % 2, 1)
+      Second(n) -> should.equal(n % 2, 0)
+    }
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(First(0)))
@@ -80,12 +73,11 @@ pub fn either_failing_test() {
   // the property.
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    run(fn(v) {
-      case v {
-        First(n) -> n == 0 || n % 2 == 1
-        Second(n) -> n % 2 == 0
-      }
-    })
+    use v <- run
+    case v {
+      First(n) -> should.be_true(n == 0 || n % 2 == 1)
+      Second(n) -> should.be_true(n % 2 == 0)
+    }
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(Second(1)))
@@ -94,12 +86,11 @@ pub fn either_failing_test() {
   // fails the property.
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    run(fn(v) {
-      case v {
-        First(n) -> n == 0 || n % 2 == 1
-        Second(n) -> n == 1 || n % 2 == 0
-      }
-    })
+    use v <- run
+    case v {
+      First(n) -> should.be_true(n == 0 || n % 2 == 1)
+      Second(n) -> should.be_true(n == 1 || n % 2 == 0)
+    }
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(First(2)))

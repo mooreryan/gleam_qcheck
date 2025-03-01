@@ -289,23 +289,13 @@ const max_valid_codepoint: Int = 0x10FFFF
 ///
 /// ### Returns
 ///
-/// - `Nil` if all test cases pass (property returns `True`)
-/// - Panics if any test case fails (property returns `False` or panics)
-///
-/// ### Example
-///
-/// ```
-/// use n <- run(
-///   config: default_config() |> with_test_count(10_000),
-///   generator: small_strictly_positive_int()
-/// )
-/// n + 1 == 1 + n
-/// ```
+/// - `Nil` if all test cases pass (the property returns `Nil`)
+/// - Panics if any test case fails (the property panics)
 ///
 pub fn run(
   config config: Config,
   generator generator: Generator(a),
-  property property: fn(a) -> Bool,
+  property property: fn(a) -> Nil,
 ) -> Nil {
   do_run(config, generator, property, 0)
 }
@@ -320,217 +310,14 @@ pub fn run(
 ///
 /// ### Returns
 ///
-/// - `Nil` if all test cases pass (property returns `True`)
-/// - Panics if any test case fails (property returns `False` or panics)
+/// - `Nil` if all test cases pass (the property returns `Nil`)
+/// - Panics if any test case fails (the property panics)
 ///
-/// ### Example
-///
-/// ```
-/// use n <- given(small_strictly_positive_int())
-/// n + 1 == 1 + n
-/// ```
-///
-pub fn given(generator: Generator(a), property: fn(a) -> Bool) -> Nil {
+pub fn given(generator: Generator(a), property: fn(a) -> Nil) -> Nil {
   run(default_config(), generator, property)
 }
 
-/// Test a property against generated test cases using the provided
-/// configuration. The property returns a Result instead of a Bool.
-///
-/// ### Arguments
-///
-/// - `config`: Settings for test execution
-/// - `generator`: Creates test inputs
-/// - `property`: The property to verify (returns Result)
-///
-/// ### Returns
-///
-/// - `Nil` if all test cases pass (property returns `Ok`)
-/// - Panics if any test case fails (property returns `Error` or panics)
-///
-pub fn run_result(
-  config config: Config,
-  generator generator: Generator(a),
-  property property: fn(a) -> Result(b, error),
-) -> Nil {
-  do_run_result(config, generator, property, 0)
-}
-
-/// Test a property against generated test cases using the default
-/// configuration. The property returns a Result instead of a Bool.
-///
-/// ### Arguments
-///
-/// - `generator`: Creates test inputs
-/// - `property`: The property to verify (returns Result)
-///
-/// ### Returns
-///
-/// - `Nil` if all test cases pass (property returns `Ok`)
-/// - Panics if any test case fails (property returns `Error` or panics)
-///
-pub fn given_result(
-  generator: Generator(a),
-  property: fn(a) -> Result(b, error),
-) -> Nil {
-  run_result(default_config(), generator, property)
-}
-
-/// Test a property against generated test cases using the provided
-/// configuration. The property returns a Nil instead of a Bool.
-///
-/// This function is for cases when you want to write your properties with
-/// assertions from gleeunit, startest, or some other test runner or assertion
-/// library.
-///
-/// ### Arguments
-///
-/// - `config`: Settings for test execution
-/// - `generator`: Creates test inputs
-/// - `property`: The property to verify (returns Nil)
-///
-/// ### Returns
-///
-/// - `Nil` if all test cases pass (property returns `Ok`)
-/// - Panics if any test case fails (property returns `Error` or panics)
-///
-pub fn run_assertion(
-  config config: Config,
-  generator generator: Generator(a),
-  property property: fn(a) -> Nil,
-) -> Nil {
-  do_run_assertion(config, generator, property, 0)
-}
-
-/// Test a property against generated test cases using the default
-/// configuration. The property returns a Nil instead of a Bool.
-///
-/// This function is for cases when you want to write your properties with
-/// assertions from gleeunit, startest, or some other test runner or assertion
-/// library.
-///
-/// ### Arguments
-///
-/// - `generator`: Creates test inputs
-/// - `property`: The property to verify (returns Nil)
-///
-/// ### Returns
-///
-/// - `Nil` if all test cases pass (property returns `Ok`)
-/// - Panics if any test case fails (property returns `Error` or panics)
-///
-pub fn given_assertion(generator: Generator(a), property: fn(a) -> Nil) -> Nil {
-  run_assertion(default_config(), generator, property)
-}
-
 fn do_run(
-  config: Config,
-  generator: Generator(a),
-  property: fn(a) -> Bool,
-  i: Int,
-) -> Nil {
-  case i >= config.test_count {
-    True -> Nil
-    False -> {
-      let Generator(generate) = generator
-      let #(tree, seed) = generate(config.seed)
-      let Tree(value, _shrinks) = tree
-
-      case try(fn() { property(value) }) {
-        NoPanic(True) -> {
-          do_run(
-            config
-              |> with_seed(seed),
-            generator,
-            property,
-            i + 1,
-          )
-        }
-        NoPanic(False) -> {
-          let #(shrunk_value, shrink_steps) =
-            shrink(tree, property, run_property_max_retries: config.max_retries)
-
-          failwith(
-            original_value: value,
-            shrunk_value: shrunk_value,
-            shrink_steps: shrink_steps,
-            error_msg: "property was False",
-          )
-        }
-        Panic(exn) -> {
-          let #(shrunk_value, shrink_steps) =
-            shrink(tree, property, run_property_max_retries: config.max_retries)
-
-          failwith(
-            original_value: value,
-            shrunk_value: shrunk_value,
-            shrink_steps: shrink_steps,
-            error_msg: string.inspect(exn),
-          )
-        }
-      }
-    }
-  }
-}
-
-fn do_run_result(
-  config: Config,
-  generator: Generator(a),
-  property: fn(a) -> Result(b, error),
-  i: Int,
-) -> Nil {
-  case i >= config.test_count {
-    True -> Nil
-    False -> {
-      let Generator(generate) = generator
-      let #(tree, seed) = generate(config.seed)
-      let Tree(value, _shrinks) = tree
-
-      case try(fn() { property(value) }) {
-        NoPanic(Ok(_)) ->
-          do_run_result(
-            config
-              |> with_seed(seed),
-            generator,
-            property,
-            i + 1,
-          )
-        NoPanic(Error(e)) -> {
-          let #(shrunk_value, shrink_steps) =
-            shrink_result(
-              tree,
-              property,
-              run_property_max_retries: config.max_retries,
-            )
-
-          failwith(
-            original_value: value,
-            shrunk_value: shrunk_value,
-            shrink_steps: shrink_steps,
-            error_msg: string.inspect(e),
-          )
-        }
-        Panic(exn) -> {
-          let #(shrunk_value, shrink_steps) =
-            shrink_result(
-              tree,
-              property,
-              run_property_max_retries: config.max_retries,
-            )
-
-          failwith(
-            original_value: value,
-            shrunk_value: shrunk_value,
-            shrink_steps: shrink_steps,
-            error_msg: string.inspect(exn),
-          )
-        }
-      }
-    }
-  }
-}
-
-fn do_run_assertion(
   config: Config,
   generator: Generator(a),
   property: fn(a) -> Nil,
@@ -545,20 +332,11 @@ fn do_run_assertion(
 
       case try(fn() { property(value) }) {
         NoPanic(Nil) -> {
-          do_run_assertion(
-            config |> with_seed(seed),
-            generator,
-            property,
-            i + 1,
-          )
+          do_run(config |> with_seed(seed), generator, property, i + 1)
         }
         Panic(exn) -> {
           let #(shrunk_value, shrink_steps) =
-            shrink_assertion(
-              tree,
-              property,
-              run_property_max_retries: config.max_retries,
-            )
+            shrink(tree, property, run_property_max_retries: config.max_retries)
 
           failwith(
             original_value: value,
@@ -577,70 +355,17 @@ type RunPropertyResult {
   RunPropertyFail
 }
 
+// Retrying a test can be useful when when testing non-deterministic code.
+// See QCheck2.run_law for more info.
 fn run_property(
-  property: fn(a) -> Bool,
+  property: fn(a) -> Nil,
   value: a,
   max_retries: Int,
 ) -> RunPropertyResult {
   do_run_property(property, value, max_retries, 0)
 }
 
-// Retrying a test can be useful when when testing non-deterministic code.
-// See QCheck2.run_law for more info.
 fn do_run_property(
-  property: fn(a) -> Bool,
-  value: a,
-  max_retries: Int,
-  i: Int,
-) -> RunPropertyResult {
-  case i < max_retries {
-    True -> {
-      case try(fn() { property(value) }) {
-        NoPanic(True) -> do_run_property(property, value, max_retries, i + 1)
-        NoPanic(False) | Panic(_) -> RunPropertyFail
-      }
-    }
-    False -> RunPropertyOk
-  }
-}
-
-fn run_property_result(
-  property: fn(a) -> Result(b, error),
-  value: a,
-  max_retries: Int,
-) -> RunPropertyResult {
-  do_run_property_result(property, value, max_retries, 0)
-}
-
-// Retrying a test can be useful when when testing non-deterministic code.
-// See QCheck2.run_law for more info.
-fn do_run_property_result(
-  property: fn(a) -> Result(b, error),
-  value: a,
-  max_retries: Int,
-  i: Int,
-) -> RunPropertyResult {
-  case i < max_retries {
-    True -> {
-      case try(fn() { property(value) }) {
-        NoPanic(Ok(_)) ->
-          do_run_property_result(property, value, max_retries, i + 1)
-        NoPanic(Error(_)) | Panic(_) -> RunPropertyFail
-      }
-    }
-    False -> RunPropertyOk
-  }
-}
-
-fn run_property_assertion(
-  property: fn(a) -> Nil,
-  value: a,
-  max_retries: Int,
-) -> RunPropertyResult {
-  do_run_property_assertion(property, value, max_retries, 0)
-}
-
-fn do_run_property_assertion(
   property: fn(a) -> Nil,
   value: a,
   max_retries: Int,
@@ -649,8 +374,7 @@ fn do_run_property_assertion(
   case i < max_retries {
     True -> {
       case try(fn() { property(value) }) {
-        NoPanic(Nil) ->
-          do_run_property_assertion(property, value, max_retries, i + 1)
+        NoPanic(Nil) -> do_run_property(property, value, max_retries, i + 1)
         Panic(_) -> RunPropertyFail
       }
     }
@@ -660,15 +384,15 @@ fn do_run_property_assertion(
 
 fn shrink(
   tree: Tree(a),
-  property: fn(a) -> Bool,
+  property: fn(a) -> Nil,
   run_property_max_retries run_property_max_retries: Int,
-) {
+) -> #(a, Int) {
   do_shrink(tree, property, run_property_max_retries, 0)
 }
 
 fn do_shrink(
   tree: Tree(a),
-  property: fn(a) -> Bool,
+  property: fn(a) -> Nil,
   run_property_max_retries run_property_max_retries: Int,
   shrink_count shrink_count: Int,
 ) -> #(a, Int) {
@@ -692,90 +416,6 @@ fn do_shrink(
     // We have a head, that means we had a fail in one of the shrinks.
     Ok(next_tree) ->
       do_shrink(next_tree, property, run_property_max_retries, shrink_count + 1)
-  }
-}
-
-fn shrink_result(
-  tree: Tree(a),
-  property: fn(a) -> Result(b, error),
-  run_property_max_retries run_property_max_retries: Int,
-) {
-  do_shrink_result(tree, property, run_property_max_retries, 0)
-}
-
-fn do_shrink_result(
-  tree: Tree(a),
-  property: fn(a) -> Result(b, error),
-  run_property_max_retries run_property_max_retries: Int,
-  shrink_count shrink_count: Int,
-) -> #(a, Int) {
-  let Tree(original_failing_value, shrinks) = tree
-
-  let result =
-    shrinks
-    |> filter_map(fn(tree) {
-      let Tree(value, _) = tree
-
-      case run_property_result(property, value, run_property_max_retries) {
-        RunPropertyOk -> None
-        RunPropertyFail -> Some(tree)
-      }
-    })
-    |> yielder.first
-
-  case result {
-    // Error means no head here.
-    Error(Nil) -> #(original_failing_value, shrink_count)
-    // We have a head, that means we had a fail in one of the shrinks.
-    Ok(next_tree) ->
-      do_shrink_result(
-        next_tree,
-        property,
-        run_property_max_retries,
-        shrink_count + 1,
-      )
-  }
-}
-
-fn shrink_assertion(
-  tree: Tree(a),
-  property: fn(a) -> Nil,
-  run_property_max_retries run_property_max_retries: Int,
-) -> #(a, Int) {
-  do_shrink_assertion(tree, property, run_property_max_retries, 0)
-}
-
-fn do_shrink_assertion(
-  tree: Tree(a),
-  property: fn(a) -> Nil,
-  run_property_max_retries run_property_max_retries: Int,
-  shrink_count shrink_count: Int,
-) -> #(a, Int) {
-  let Tree(original_failing_value, shrinks) = tree
-
-  let result =
-    shrinks
-    |> filter_map(fn(tree) {
-      let Tree(value, _) = tree
-
-      case run_property_assertion(property, value, run_property_max_retries) {
-        RunPropertyOk -> None
-        RunPropertyFail -> Some(tree)
-      }
-    })
-    |> yielder.first
-
-  case result {
-    // Error means no head here.
-    Error(Nil) -> #(original_failing_value, shrink_count)
-    // We have a head, that means we had a fail in one of the shrinks.
-    Ok(next_tree) ->
-      do_shrink_assertion(
-        next_tree,
-        property,
-        run_property_max_retries,
-        shrink_count + 1,
-      )
   }
 }
 

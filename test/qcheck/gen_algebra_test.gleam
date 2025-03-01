@@ -14,11 +14,12 @@ import qcheck/test_error_message
 pub fn map__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.small_non_negative_int() |> qcheck.map(int.to_float),
-      property: fn(n) { n == 0.0 || n >. 1.0 },
     )
+
+    should.be_true(n == 0.0 || n >. 1.0)
   }
 
   let shrunk_value = test_error_message.test_error_message_shrunk_value(msg)
@@ -39,15 +40,12 @@ pub fn map2__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup2 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.map2(gen_int, gen_int, fn(a, b) { #(a, b) }),
-    property: fn(tup2) {
-      let #(a, b) = tup2
-
-      in_range(a) && in_range(b)
-    },
   )
+  let #(a, b) = tup2
+  should.be_true(in_range(a) && in_range(b))
 }
 
 pub fn map3__test() {
@@ -58,15 +56,12 @@ pub fn map3__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup3 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.map3(gen_int, gen_int, gen_int, fn(a, b, c) { #(a, b, c) }),
-    property: fn(tup3) {
-      let #(a, b, c) = tup3
-
-      in_range(a) && in_range(b) && in_range(c)
-    },
   )
+  let #(a, b, c) = tup3
+  should.be_true(in_range(a) && in_range(b) && in_range(c))
 }
 
 pub fn map4__test() {
@@ -77,17 +72,14 @@ pub fn map4__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup4 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.map4(gen_int, gen_int, gen_int, gen_int, fn(a, b, c, d) {
       #(a, b, c, d)
     }),
-    property: fn(tup4) {
-      let #(a, b, c, d) = tup4
-
-      in_range(a) && in_range(b) && in_range(c) && in_range(d)
-    },
   )
+  let #(a, b, c, d) = tup4
+  should.be_true(in_range(a) && in_range(b) && in_range(c) && in_range(d))
 }
 
 pub fn map5__test() {
@@ -98,7 +90,7 @@ pub fn map5__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup5 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.map5(
       gen_int,
@@ -108,11 +100,11 @@ pub fn map5__test() {
       gen_int,
       fn(a, b, c, d, e) { #(a, b, c, d, e) },
     ),
-    property: fn(tup5) {
-      let #(a, b, c, d, e) = tup5
+  )
+  let #(a, b, c, d, e) = tup5
 
-      in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e)
-    },
+  should.be_true(
+    in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e),
   )
 }
 
@@ -124,7 +116,7 @@ pub fn map6__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup6 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.map6(
       gen_int,
@@ -135,16 +127,17 @@ pub fn map6__test() {
       gen_int,
       fn(a, b, c, d, e, f) { #(a, b, c, d, e, f) },
     ),
-    property: fn(tup6) {
-      let #(a, b, c, d, e, f) = tup6
+  )
 
-      in_range(a)
-      && in_range(b)
-      && in_range(c)
-      && in_range(d)
-      && in_range(e)
-      && in_range(f)
-    },
+  let #(a, b, c, d, e, f) = tup6
+
+  should.be_true(
+    in_range(a)
+    && in_range(b)
+    && in_range(c)
+    && in_range(d)
+    && in_range(e)
+    && in_range(f),
   )
 }
 
@@ -169,15 +162,11 @@ pub fn map4_with_apply__test() {
     |> qcheck.apply(gen_int)
     |> qcheck.apply(gen_int)
 
-  qcheck.run(
-    config: qcheck.default_config(),
-    generator: generator,
-    property: fn(tup4) {
-      let #(a, b, c, d) = tup4
+  use tup4 <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-      in_range(a) && in_range(b) && in_range(c) && in_range(d)
-    },
-  )
+  let #(a, b, c, d) = tup4
+
+  should.be_true(in_range(a) && in_range(b) && in_range(c) && in_range(d))
 }
 
 pub fn tuple2__test() {
@@ -188,15 +177,14 @@ pub fn tuple2__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup2 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.tuple2(gen_int, gen_int),
-    property: fn(tup2) {
-      let #(a, b) = tup2
-
-      in_range(a) && in_range(b)
-    },
   )
+
+  let #(a, b) = tup2
+
+  should.be_true(in_range(a) && in_range(b))
 }
 
 pub fn tuple3__test() {
@@ -207,15 +195,13 @@ pub fn tuple3__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup3 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.tuple3(gen_int, gen_int, gen_int),
-    property: fn(tup3) {
-      let #(a, b, c) = tup3
-
-      in_range(a) && in_range(b) && in_range(c)
-    },
   )
+
+  let #(a, b, c) = tup3
+  should.be_true(in_range(a) && in_range(b) && in_range(c))
 }
 
 pub fn tuple4__test() {
@@ -226,15 +212,12 @@ pub fn tuple4__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup4 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.tuple4(gen_int, gen_int, gen_int, gen_int),
-    property: fn(tup4) {
-      let #(a, b, c, d) = tup4
-
-      in_range(a) && in_range(b) && in_range(c) && in_range(d)
-    },
   )
+  let #(a, b, c, d) = tup4
+  should.be_true(in_range(a) && in_range(b) && in_range(c) && in_range(d))
 }
 
 pub fn tuple5__test() {
@@ -245,14 +228,13 @@ pub fn tuple5__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup5 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.tuple5(gen_int, gen_int, gen_int, gen_int, gen_int),
-    property: fn(tup5) {
-      let #(a, b, c, d, e) = tup5
-
-      in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e)
-    },
+  )
+  let #(a, b, c, d, e) = tup5
+  should.be_true(
+    in_range(a) && in_range(b) && in_range(c) && in_range(d) && in_range(e),
   )
 }
 
@@ -264,7 +246,7 @@ pub fn tuple6__test() {
 
   let gen_int = qcheck.bounded_int(min, max)
 
-  qcheck.run(
+  use tup6 <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.tuple6(
       gen_int,
@@ -274,16 +256,17 @@ pub fn tuple6__test() {
       gen_int,
       gen_int,
     ),
-    property: fn(tup6) {
-      let #(a, b, c, d, e, f) = tup6
+  )
 
-      in_range(a)
-      && in_range(b)
-      && in_range(c)
-      && in_range(d)
-      && in_range(e)
-      && in_range(f)
-    },
+  let #(a, b, c, d, e, f) = tup6
+
+  should.be_true(
+    in_range(a)
+    && in_range(b)
+    && in_range(c)
+    && in_range(d)
+    && in_range(e)
+    && in_range(f),
   )
 }
 
@@ -322,12 +305,12 @@ pub fn shrinking_works_with_bind_and_custom_types_test() {
         // Adding the two extra failing cases for First and Second to test the
         // shrinking.
         case either {
-          First(15) -> False
-          First(14) -> False
-          First(_) -> True
-          Second(95.0) -> False
-          Second(94.0) -> False
-          Second(_) -> True
+          First(15) -> should.be_true(False)
+          First(14) -> should.be_true(False)
+          First(_) -> should.be_true(True)
+          Second(95.0) -> should.be_true(False)
+          Second(94.0) -> should.be_true(False)
+          Second(_) -> should.be_true(True)
         }
       },
     )
@@ -357,12 +340,12 @@ pub fn shrinking_works_with_bind_and_custom_types_2_test() {
         }),
       property: fn(either) {
         case either {
-          First(15) -> False
-          First(14) -> False
-          First(_) -> True
-          Second(95.0) -> False
-          Second(94.0) -> False
-          Second(_) -> True
+          First(15) -> should.be_true(False)
+          First(14) -> should.be_true(False)
+          First(_) -> should.be_true(True)
+          Second(95.0) -> should.be_true(False)
+          Second(94.0) -> should.be_true(False)
+          Second(_) -> should.be_true(True)
         }
       },
     )
@@ -394,9 +377,9 @@ pub fn shrinking_works_with_bind_and_custom_types_3_test() {
       // None of the `Second` shrinks will trigger a failure.
       property: fn(either) {
         case either {
-          First(15) -> False
-          First(14) -> False
-          _ -> True
+          First(15) -> should.be_true(False)
+          First(14) -> should.be_true(False)
+          _ -> should.be_true(True)
         }
       },
     )
@@ -426,18 +409,14 @@ pub fn apply__test() {
     |> qcheck.apply(qcheck.bounded_int(-10, 10))
     |> qcheck.apply(qcheck.bounded_int(-100, 100))
 
-  qcheck.run(
-    config: qcheck.default_config(),
-    generator: generator,
-    property: fn(ns) {
-      let #(a, b, c) = ns
-      let a_prop = -5 <= a && a <= 5
-      let b_prop = -10 <= b && b <= 10
-      let c_prop = -100 <= c && c <= 100
+  use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-      a_prop && b_prop && c_prop
-    },
-  )
+  let #(a, b, c) = ns
+  let a_prop = -5 <= a && a <= 5
+  let b_prop = -10 <= b && b <= 10
+  let c_prop = -100 <= c && c <= 100
+
+  should.be_true(a_prop && b_prop && c_prop)
 }
 
 pub fn shrinking_works_with_apply__test() {
@@ -455,144 +434,116 @@ pub fn shrinking_works_with_apply__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
 
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -5 <= a && a <= 3
-        let b_prop = -10 <= b && b <= 10
-        let c_prop = -100 <= c && c <= 100
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop && b_prop && c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -5 <= a && a <= 3
+    let b_prop = -10 <= b && b <= 10
+    let c_prop = -100 <= c && c <= 100
+
+    should.be_true(a_prop && b_prop && c_prop)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(4, 0, 0)")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -3 <= a && a <= 5
-        let b_prop = -10 <= b && b <= 10
-        let c_prop = -100 <= c && c <= 100
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop && b_prop && c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -3 <= a && a <= 5
+    let b_prop = -10 <= b && b <= 10
+    let c_prop = -100 <= c && c <= 100
+
+    should.be_true(a_prop && b_prop && c_prop)
   }
+
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(-4, 0, 0)")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -5 <= a && a <= 5
-        let b_prop = -10 <= b && b <= 5
-        let c_prop = -100 <= c && c <= 100
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop && b_prop && c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -5 <= a && a <= 5
+    let b_prop = -10 <= b && b <= 5
+    let c_prop = -100 <= c && c <= 100
+
+    should.be_true(a_prop && b_prop && c_prop)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 6, 0)")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -5 <= a && a <= 5
-        let b_prop = -5 <= b && b <= 10
-        let c_prop = -100 <= c && c <= 100
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop && b_prop && c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -5 <= a && a <= 5
+    let b_prop = -5 <= b && b <= 10
+    let c_prop = -100 <= c && c <= 100
+
+    should.be_true(a_prop && b_prop && c_prop)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, -6, 0)")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -5 <= a && a <= 5
-        let b_prop = -10 <= b && b <= 10
-        let c_prop = -100 <= c && c <= 50
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop && b_prop && c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -5 <= a && a <= 5
+    let b_prop = -10 <= b && b <= 10
+    let c_prop = -100 <= c && c <= 50
+
+    should.be_true(a_prop && b_prop && c_prop)
   }
+
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 0, 51)")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -5 <= a && a <= 5
-        let b_prop = -10 <= b && b <= 10
-        let c_prop = -50 <= c && c <= 100
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop && b_prop && c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -5 <= a && a <= 5
+    let b_prop = -10 <= b && b <= 10
+    let c_prop = -50 <= c && c <= 100
+
+    should.be_true(a_prop && b_prop && c_prop)
   }
+
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(0, 0, -51)")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -5 <= a && a <= 3
-        let b_prop = -10 <= b && b <= 5
-        let c_prop = -100 <= c && c <= 50
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop || b_prop || c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -5 <= a && a <= 3
+    let b_prop = -10 <= b && b <= 5
+    let c_prop = -100 <= c && c <= 50
+
+    should.be_true(a_prop || b_prop || c_prop)
   }
+
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal("#(4, 6, 51)")
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
-      config: qcheck.default_config(),
-      generator: generator,
-      property: fn(ns) {
-        let #(a, b, c) = ns
-        let a_prop = -3 <= a && a <= 3
-        let b_prop = -5 <= b && b <= 5
-        let c_prop = -50 <= c && c <= 50
+    use ns <- qcheck.run(config: qcheck.default_config(), generator: generator)
 
-        a_prop || b_prop || c_prop
-      },
-    )
+    let #(a, b, c) = ns
+    let a_prop = -3 <= a && a <= 3
+    let b_prop = -5 <= b && b <= 5
+    let c_prop = -50 <= c && c <= 50
+
+    should.be_true(a_prop || b_prop || c_prop)
   }
 
   let parse_numbers = fn(str) {
@@ -658,6 +609,8 @@ pub fn bind_and_then_are_aliases__test() {
   let seed = qcheck.seed(seed)
   let count = 10
 
-  qcheck.generate(generator_with_bind, count, seed)
-  == qcheck.generate(generator_with_then, count, seed)
+  should.equal(
+    qcheck.generate(generator_with_bind, count, seed),
+    qcheck.generate(generator_with_then, count, seed),
+  )
 }

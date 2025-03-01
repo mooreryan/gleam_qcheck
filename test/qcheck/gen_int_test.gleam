@@ -10,14 +10,14 @@ import qcheck/test_error_message
 
 pub fn small_non_negative_int__test() {
   use n <- qcheck.given(qcheck.small_non_negative_int())
-  n + 1 == 1 + n
+  should.equal(n + 1, 1 + n)
 }
 
 pub fn small_non_negative_int__failures_shrink_to_zero__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
     use n <- qcheck.given(qcheck.small_non_negative_int())
-    n + 1 != 1 + n
+    should.not_equal(n + 1, 1 + n)
   }
 
   test_error_message.test_error_message_shrunk_value(msg)
@@ -27,11 +27,11 @@ pub fn small_non_negative_int__failures_shrink_to_zero__test() {
 pub fn small_non_negative_int__failures_shrink_to_smaller_values__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.small_non_negative_int(),
-      property: fn(n) { n == 0 || n > 1 },
     )
+    should.be_true(n == 0 || n > 1)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(1))
@@ -42,32 +42,32 @@ pub fn small_non_negative_int__failures_shrink_to_smaller_values__test() {
 //
 
 pub fn small_strictly_positive_int__test() {
-  qcheck.run(
+  use n <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.small_strictly_positive_int(),
-    property: fn(n) { n > 0 },
   )
+  should.be_true(n > 0)
 }
 
 pub fn small_strictly_positive_int__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.small_strictly_positive_int(),
-      property: fn(n) { n > 1 },
     )
+    should.be_true(n > 1)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(1))
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.small_strictly_positive_int(),
-      property: fn(n) { n == 1 || n > 2 },
     )
+    should.be_true(n == 1 || n > 2)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(2))
@@ -78,21 +78,21 @@ pub fn small_strictly_positive_int__failures_shrink_ok__test() {
 //
 
 pub fn uniform_int__test() {
-  qcheck.run(
+  use n <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.uniform_int(),
-    property: fn(n) { n + 1 == 1 + n },
   )
+  should.equal(n + 1, 1 + n)
 }
 
 pub fn uniform_int__failures_shrink_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.uniform_int(),
-      property: fn(n) { n < 55_555 },
     )
+    should.be_true(n < 55_555)
   }
 
   test_error_message.test_error_message_shrunk_value(msg)
@@ -102,12 +102,11 @@ pub fn uniform_int__failures_shrink_ok__test() {
 pub fn uniform_int__negative_numbers_shrink_towards_zero__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.uniform_int(),
-      // All integers are greater than -5
-      property: fn(n) { n > -5 },
     )
+    should.be_true(n > -5)
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(-5))
@@ -120,11 +119,11 @@ pub fn uniform_int__negative_numbers_shrink_towards_zero__test() {
 pub fn uniform_int_range__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.bounded_int(-10, 10),
-      property: fn(n) { -5 <= n && n <= 5 },
     )
+    should.be_true(-5 <= n && n <= 5)
   }
 
   let assert Ok(n) =
@@ -146,11 +145,11 @@ pub fn uniform_int_range__test() {
 pub fn positive_uniform_int_range_not_including_zero__shrinks_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.bounded_int(5, 10),
-      property: fn(n) { 7 <= n && n <= 8 },
     )
+    should.be_true(7 <= n && n <= 8)
   }
 
   test_error_message.test_error_message_shrunk_value(msg)
@@ -162,11 +161,11 @@ pub fn positive_uniform_int_range_not_including_zero__shrinks_ok__test() {
 pub fn negative_uniform_int_range_not_including_zero__shrinks_ok__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use n <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.bounded_int(-10, -5),
-      property: fn(n) { -8 >= n && n >= -7 },
     )
+    should.be_true(-8 >= n && n >= -7)
   }
 
   test_error_message.test_error_message_shrunk_value(msg)
@@ -175,6 +174,5 @@ pub fn negative_uniform_int_range_not_including_zero__shrinks_ok__test() {
 
 pub fn bounded_int__high_less_than_low_ok__test() {
   use n <- qcheck.given(qcheck.bounded_int(10, -10))
-
-  -10 <= n && n <= 10
+  should.be_true(-10 <= n && n <= 10)
 }

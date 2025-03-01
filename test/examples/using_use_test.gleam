@@ -1,4 +1,5 @@
 import gleam/string
+import gleeunit/should
 import qcheck
 
 const test_count: Int = 2500
@@ -10,7 +11,7 @@ pub fn using_use__test() {
   }
 
   use n <- qcheck.given(generator)
-  n >= 10
+  should.be_true(n >= 10)
 }
 
 type Person {
@@ -44,12 +45,16 @@ fn valid_name_and_age_generator() {
 }
 
 pub fn person__test() {
-  use #(name, age) <- qcheck.run_result(
+  use #(name, age) <- qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(test_count),
     generator: valid_name_and_age_generator(),
   )
 
-  make_person(name, age)
+  make_person(name, age) |> should.be_ok |> ignore
+}
+
+fn ignore(_) {
+  Nil
 }
 
 pub fn bind_with_use__test() {
@@ -74,7 +79,7 @@ pub fn bind_with_use__test() {
   )
 
   case generated_value {
-    Ok(n) -> n >= 0
-    Error(s) -> string.length(s) >= 0
+    Ok(n) -> should.be_true(n >= 0)
+    Error(s) -> { string.length(s) >= 0 } |> should.be_true
   }
 }

@@ -3,24 +3,23 @@ import gleam/int
 import gleam/list
 import gleam/set
 import gleam/string
+import gleeunit/should
 import qcheck
 import qcheck/tree
 
 pub fn generic_set__generates_valid_values__test() {
-  qcheck.run(
+  use s <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.generic_set(
       elements_from: qcheck.bounded_int(-5, 5),
       size_from: qcheck.bounded_int(0, 5),
     ),
-    property: fn(s) {
-      let len = set.size(s)
-      let correct_elements =
-        set.to_list(s)
-        |> list.all(fn(n) { -5 <= n && n <= 5 })
-      len <= 5 && correct_elements
-    },
   )
+  let len = set.size(s)
+  let correct_elements =
+    set.to_list(s)
+    |> list.all(fn(n) { -5 <= n && n <= 5 })
+  should.be_true(len <= 5 && correct_elements)
 }
 
 fn int_set_to_string(s) {

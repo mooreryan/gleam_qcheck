@@ -5,17 +5,15 @@ import qcheck
 import qcheck/test_error_message
 
 pub fn option__test() {
-  qcheck.run(
+  use int_option <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.small_non_negative_int()
       |> qcheck.option_from,
-    property: fn(int_option) {
-      case int_option {
-        Some(n) -> n + 1 == 1 + n
-        None -> True
-      }
-    },
   )
+  case int_option {
+    Some(n) -> should.equal(n + 1, 1 + n)
+    None -> should.be_true(True)
+  }
 }
 
 pub fn option__failures_shrink_ok__test() {
@@ -30,36 +28,33 @@ pub fn option__failures_shrink_ok__test() {
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    run(fn(n) {
-      case n {
-        Some(n) -> n == n + 1
-        None -> True
-      }
-    })
+    use n <- run
+    case n {
+      Some(n) -> should.equal(n, n + 1)
+      None -> should.be_true(True)
+    }
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(Some(0)))
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    run(fn(n) {
-      case n {
-        Some(n) -> n <= 5 || n == n + 1
-        None -> True
-      }
-    })
+    use n <- run
+    case n {
+      Some(n) -> should.be_true(n <= 5 || n == n + 1)
+      None -> should.be_true(True)
+    }
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(Some(6)))
 
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    run(fn(n) {
-      case n {
-        Some(n) -> n == n
-        None -> False
-      }
-    })
+    use n <- run
+    case n {
+      Some(n) -> should.equal(n, n)
+      None -> should.be_true(False)
+    }
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(None))
@@ -68,13 +63,13 @@ pub fn option__failures_shrink_ok__test() {
 pub fn option_sometimes_generates_none__test() {
   let assert Error(msg) = {
     use <- test_error_message.rescue
-    qcheck.run(
+    use value <- qcheck.run(
       config: qcheck.default_config(),
       generator: qcheck.small_non_negative_int()
         |> qcheck.option_from,
-      // All values are `Some` (False)
-      property: option.is_some,
     )
+    // All values are `Some` (False)
+    should.be_true(option.is_some(value))
   }
   test_error_message.test_error_message_shrunk_value(msg)
   |> should.equal(string.inspect(None))

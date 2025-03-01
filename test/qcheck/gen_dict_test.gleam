@@ -2,31 +2,31 @@ import birdie
 import gleam/dict
 import gleam/int
 import gleam/list
+import gleeunit/should
 import qcheck
 import qcheck/tree
 
 pub fn generic_dict__generates_valid_values__test() {
-  qcheck.run(
+  use d <- qcheck.run(
     config: qcheck.default_config(),
     generator: qcheck.generic_dict(
       qcheck.bounded_int(0, 2),
       qcheck.bounded_int(10, 12),
       qcheck.bounded_int(0, 5),
     ),
-    property: fn(d) {
-      let size_is_good = dict.size(d) <= 5
-
-      let keys_are_good =
-        dict.keys(d)
-        |> list.all(fn(n) { n == 0 || n == 1 || n == 2 })
-
-      let values_are_good =
-        dict.values(d)
-        |> list.all(fn(n) { n == 10 || n == 11 || n == 12 })
-
-      size_is_good && keys_are_good && values_are_good
-    },
   )
+
+  let size_is_good = dict.size(d) <= 5
+
+  let keys_are_good =
+    dict.keys(d)
+    |> list.all(fn(n) { n == 0 || n == 1 || n == 2 })
+
+  let values_are_good =
+    dict.values(d)
+    |> list.all(fn(n) { n == 10 || n == 11 || n == 12 })
+
+  should.be_true(size_is_good && keys_are_good && values_are_good)
 }
 
 import gleam/string_tree
@@ -75,5 +75,5 @@ pub fn generic_dict__allows_empty_dict__test() {
     qcheck.bounded_int(10, 12),
     qcheck.constant(0),
   ))
-  True
+  should.be_true(True)
 }
