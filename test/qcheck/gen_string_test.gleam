@@ -140,12 +140,6 @@ fn check_tree_nodes(tree: Tree(a), predicate: fn(a) -> Bool) -> Bool {
   }
 }
 
-// TODO: once string generators generate strings whose length always matches
-// `string.length`, change this back to being an exact equality.
-fn string_length_is_at_most(length) {
-  fn(s) { should.be_true(string.length(s) <= length) }
-}
-
 pub fn string_generators_with_specific_length_dont_shrink_on_length__test() {
   // Keep this low to keep the speed of the test high.
   let length = 3
@@ -161,15 +155,10 @@ pub fn string_generators_with_specific_length_dont_shrink_on_length__test() {
       qcheck.random_seed(),
     )
 
-  let string_length_is_at_most = fn(length) {
-    fn(s) { string.length(s) <= length }
-  }
+  let string_length_is = fn(length) { fn(s) { string.length(s) == length } }
 
   tree
-  // We use at most here because string.length will "merge" some values it
-  // considers a single grapheme, but we generate strings that have the given
-  // number of codepoints.
-  |> check_tree_nodes(string_length_is_at_most(length))
+  |> check_tree_nodes(string_length_is(length))
   |> should.be_true
 }
 
@@ -193,18 +182,18 @@ pub fn non_empty_string_generates_non_empty_strings__test() {
 }
 
 pub fn fixed_length_string__generates_length_n_strings__test() {
-  qcheck.run(
+  use s <- qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(test_count),
+    // This generator will frequently generate codepoints that combine with
+    // others to make multicodepoint graphemes. I.e., there grapheme length is
+    // less than their number of codepoints.
     generator: qcheck.fixed_length_string_from(qcheck.codepoint(), 3),
-    // We use at most here because string.length will "merge" some values it
-    // considers a single grapheme (e.g., `\r\n`), but we generate strings that
-    // have the given number of codepoints.
-    property: string_length_is_at_most(3),
   )
+  should.equal(string.length(s), 3)
 }
 
 pub fn fixed_length_string__generates_length_n_strings_2__test() {
-  qcheck.run(
+  use s <- qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(test_count),
     generator: qcheck.fixed_length_string_from(
       // This generator will never generate codepoints that can combine to form
@@ -212,11 +201,8 @@ pub fn fixed_length_string__generates_length_n_strings_2__test() {
       qcheck.lowercase_ascii_codepoint(),
       3,
     ),
-    // We use at most here because string.length will "merge" some values it
-    // considers a single grapheme (e.g., `\r\n`), but we generate strings that
-    // have the given number of codepoints.
-    property: fn(s) { should.equal(string.length(s), 3) },
   )
+  should.equal(string.length(s), 3)
 }
 
 pub fn string_from__generates_correct_values__test() {

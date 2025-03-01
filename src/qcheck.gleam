@@ -1956,30 +1956,60 @@ pub fn ascii_whitespace_codepoint() -> Generator(UtfCodepoint) {
 // MARK: Strings
 
 fn do_gen_string(
+  target_length: Int,
   i: Int,
   acc: List(UtfCodepoint),
-  char_gen: Generator(UtfCodepoint),
-  char_trees_rev: List(Tree(UtfCodepoint)),
+  codepoint_gen: Generator(UtfCodepoint),
+  codepoint_trees_rev: List(Tree(UtfCodepoint)),
   seed: Seed,
 ) -> #(String, List(Tree(UtfCodepoint)), Seed) {
-  let Generator(gen_char_tree) = char_gen
+  let Generator(gen_codepoint_tree) = codepoint_gen
 
-  let #(char_tree, seed) = gen_char_tree(seed)
+  let #(codepoint_tree, seed) = gen_codepoint_tree(seed)
 
-  case i <= 0 {
-    True -> #(
-      list.reverse(acc) |> string.from_utf_codepoints,
-      char_trees_rev,
-      seed,
-    )
+  case i >= target_length {
+    True -> {
+      // Here things get a little weird because we could have generated the
+      // correct number of codepoints, but the length of the string as reported
+      // by stdlib string.legnth is in graphemes, and certain codepoints will
+      // combine such that the grapheme length of the string will be <= the
+      // number of codepoints in that string. _But_, we don't want to check the
+      // string length on every iteration, because that is a slow operation in
+      // Gleam. So only check it once we have the potential to be done.
+      let generated_string = list.reverse(acc) |> string.from_utf_codepoints
+
+      case string.length(generated_string) < target_length {
+        True -> {
+          // At least one codepoint has combined with a previous one to create a
+          // grapheme that has more than one codepoint. So we need to keep
+          // going.
+
+          let Tree(root, _) = codepoint_tree
+
+          do_gen_string(
+            target_length,
+            i + 1,
+            [root, ..acc],
+            codepoint_gen,
+            [codepoint_tree, ..codepoint_trees_rev],
+            seed,
+          )
+        }
+        False -> {
+          // The length is what we expect so we're good.
+          #(generated_string, codepoint_trees_rev, seed)
+        }
+      }
+    }
     False -> {
-      let Tree(root, _) = char_tree
+      let Tree(root, _) = codepoint_tree
 
       do_gen_string(
-        i - 1,
+        target_length,
+        i + 1,
         [root, ..acc],
-        char_gen,
-        [char_tree, ..char_trees_rev],
+        codepoint_gen,
+        [codepoint_tree, ..codepoint_trees_rev],
         seed,
       )
     }
@@ -1991,16 +2021,11 @@ fn do_gen_string(
 /// ### Arguments
 ///
 /// - `generator`: A generator for codepoints
-/// - `length`: Number of codepoints in the generated string
+/// - `length`: Number of graphemes in the generated string
 ///
 /// ### Returns
 ///
-/// A generator that produces strings with the specified number of codepoints
-///
-/// ### Notes
-///
-/// - Length refers to the number of codepoints, not the number grapheme
-///   clusters as `string.length` from the standard library reports.
+/// A generator that produces strings with the specified number of graphemes
 ///
 /// ### Example
 ///
@@ -2014,7 +2039,7 @@ pub fn fixed_length_string_from(
 ) -> Generator(String) {
   Generator(fn(seed) {
     let #(generated_string, reversed_codepoint_trees, seed) =
-      do_gen_string(length, [], generator, [], seed)
+      do_gen_string(length, 0, [], generator, [], seed)
 
     let shrink = fn() {
       let codepoint_list_tree =
@@ -2041,17 +2066,12 @@ pub fn fixed_length_string_from(
 /// ### Arguments
 ///
 /// - `codepoint_generator`: A generator for codepoints
-/// - `length_generator`: A generator to determine number of codepoints in the
+/// - `length_generator`: A generator to determine number of graphemes in the
 ///      generated strings
 ///
 /// ### Returns
 ///
 /// A string generator
-///
-/// ### Notes
-///
-/// - Length refers to the number of codepoints, not the number grapheme
-///   clusters as `string.length` from the standard library reports.
 ///
 /// ### Example
 ///
