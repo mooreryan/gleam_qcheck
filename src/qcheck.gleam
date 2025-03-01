@@ -96,7 +96,7 @@
 ////
 //// ### Codepoint and String Generators
 ////
-//// The main purpose of codepoint generators are to use them to generate
+//// The main purpose of codepoint generators is to use them to generate
 //// strings.
 ////
 //// #### Codepoints
