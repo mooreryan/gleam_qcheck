@@ -36,7 +36,7 @@ pub type Tree(a) {
 }
 
 // `shrink` should probably be `shrink_steps` or `make_shrink_steps`
-pub fn new(root x: a, shrink shrink: fn(a) -> Yielder(a)) -> Tree(a) {
+pub fn new(x: a, shrink: fn(a) -> Yielder(a)) -> Tree(a) {
   let shrink_trees =
     shrink(x)
     |> yielder.map(new(_, shrink))
@@ -148,10 +148,10 @@ pub fn to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
 
 /// Like `to_string` but with a configurable `max_depth`.
 ///
-pub fn to_string_with_max_depth(
+pub fn to_string_max_depth(
   tree: Tree(a),
   a_to_string: fn(a) -> String,
-  max_depth max_depth: Int,
+  max_depth: Int,
 ) -> String {
   do_to_string(tree, a_to_string, level: 0, max_level: max_depth, acc: [])
 }

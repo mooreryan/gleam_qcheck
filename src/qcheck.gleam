@@ -1381,7 +1381,7 @@ pub fn small_non_negative_int() -> Generator(Int) {
           False -> random.int(0, 100)
         }
       }),
-    fn(n) { tree.new(root: n, shrink: shrink.int_towards_zero()) },
+    fn(n) { tree.new(n, shrink.int_towards_zero()) },
   )
 }
 
@@ -1437,7 +1437,7 @@ pub fn bounded_int(from low: Int, to high: Int) -> Generator(Int) {
   generator(random.int(low, high), fn(n) {
     let origin = pick_origin_within_range(low, high, goal: 0)
 
-    tree.new(root: n, shrink: shrink.int_towards(origin))
+    tree.new(n, shrink.int_towards(origin))
   })
 }
 
@@ -1455,7 +1455,7 @@ fn bounded_int_with_shrink_target(
   generator(random.int(low, high), fn(n) {
     let origin = pick_origin_within_range(low, high, goal: shrink_target)
 
-    tree.new(root: n, shrink: shrink.int_towards(origin))
+    tree.new(n, shrink.int_towards(origin))
   })
 }
 
@@ -1552,7 +1552,7 @@ pub fn bounded_float(from low: Float, to high: Float) {
   generator(random.float(low, high), fn(n) {
     let origin = pick_origin_within_range_float(low, high, goal: 0.0)
 
-    tree.new(root: n, shrink: shrink.float_towards(origin))
+    tree.new(n, shrink.float_towards(origin))
   })
 }
 

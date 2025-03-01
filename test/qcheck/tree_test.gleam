@@ -115,7 +115,7 @@ fn my_int_to_string(my_int) {
 // Note, these trees will not be the same as the ones generated with the map.
 pub fn custom_type_tree_with_bind__test() {
   tree.new(3, shrink.int_towards_zero())
-  |> tree.bind(fn(n) { tree.new(MyInt(n), shrink: my_int_towards_zero()) })
+  |> tree.bind(fn(n) { tree.new(MyInt(n), my_int_towards_zero()) })
   |> tree.to_string(my_int_to_string)
   |> birdie.snap("custom_type_tree_with_bind__test")
 }
