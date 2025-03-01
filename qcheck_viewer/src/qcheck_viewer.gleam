@@ -135,21 +135,21 @@ fn qcheck_function_to_html_option(
 
 pub fn qcheck_function_to_string(qcheck_function: QcheckFunction) -> String {
   case qcheck_function {
-    IntUniform -> "int_uniform"
-    IntUniformInclusive -> "int_uniform_inclusive"
-    IntSmallStrictlyPositive -> "int_small_strictly_positive"
-    IntSmallPositiveOrZero -> "int_small_positive_or_zero"
+    IntUniform -> "uniform_int"
+    IntUniformInclusive -> "bounded_int"
+    IntSmallStrictlyPositive -> "small_strictly_positive_int"
+    IntSmallPositiveOrZero -> "small_non_negative_int"
     Float -> "float"
-    FloatUniformInclusive -> "float_uniform_inclusive"
-    CharUniformInclusive -> "char_uniform_inclusive"
-    CharUppercase -> "char_uppercase"
-    CharLowercase -> "char_lowercase"
-    CharDigit -> "char_digit"
-    CharPrintableUniform -> "char_printable_uniform"
-    CharAlpha -> "char_alpha"
-    CharAlphaNumeric -> "char_alpha_numeric"
-    CharWhitespace -> "char_whitespace"
-    CharPrintable -> "char_printable"
+    FloatUniformInclusive -> "bounded_float"
+    CharUniformInclusive -> "bounded_codepoint"
+    CharUppercase -> "uppercase_ascii_codepoint"
+    CharLowercase -> "lowercase_ascii_codepoint"
+    CharDigit -> "ascii_digit_codepoint"
+    CharPrintableUniform -> "uniform_printable_ascii_codepoint"
+    CharAlpha -> "alphabetic_ascii_codepoint"
+    CharAlphaNumeric -> "alphanumeric_ascii_codepoint"
+    CharWhitespace -> "ascii_whitespace_codepoint"
+    CharPrintable -> "printable_ascii_codepoint"
   }
 }
 
@@ -163,21 +163,21 @@ fn qcheck_function_from_string(
   function_name: String,
 ) -> Result(QcheckFunction, String) {
   case function_name {
-    "int_uniform" -> Ok(IntUniform)
-    "int_uniform_inclusive" -> Ok(IntUniformInclusive)
-    "int_small_positive_or_zero" -> Ok(IntSmallPositiveOrZero)
-    "int_small_strictly_positive" -> Ok(IntSmallStrictlyPositive)
+    "uniform_int" -> Ok(IntUniform)
+    "bounded_int" -> Ok(IntUniformInclusive)
+    "small_strictly_positive_int" -> Ok(IntSmallPositiveOrZero)
+    "small_non_negative_int" -> Ok(IntSmallStrictlyPositive)
     "float" -> Ok(Float)
-    "float_uniform_inclusive" -> Ok(FloatUniformInclusive)
-    "char_uniform_inclusive" -> Ok(CharUniformInclusive)
-    "char_uppercase" -> Ok(CharUppercase)
-    "char_lowercase" -> Ok(CharLowercase)
-    "char_digit" -> Ok(CharDigit)
-    "char_printable_uniform" -> Ok(CharPrintableUniform)
-    "char_alpha" -> Ok(CharAlpha)
-    "char_alpha_numeric" -> Ok(CharAlphaNumeric)
-    "char_whitespace" -> Ok(CharWhitespace)
-    "char_printable" -> Ok(CharPrintable)
+    "bounded_float" -> Ok(FloatUniformInclusive)
+    "bounded_codepoint" -> Ok(CharUniformInclusive)
+    "uppercase_ascii_codepoint" -> Ok(CharUppercase)
+    "lowercase_ascii_codepoint" -> Ok(CharLowercase)
+    "ascii_digit_codepoint" -> Ok(CharDigit)
+    "uniform_printable_ascii_codepoint" -> Ok(CharPrintableUniform)
+    "alphabetic_ascii_codepoint" -> Ok(CharAlpha)
+    "alphanumeric_ascii_codepoint" -> Ok(CharAlphaNumeric)
+    "ascii_whitespace_codepoint" -> Ok(CharWhitespace)
+    "printable_ascii_codepoint" -> Ok(CharPrintable)
     _ -> Error("bad function name")
   }
 }
@@ -320,7 +320,7 @@ fn maybe_show_error(error_message) {
 fn maybe_function_options(model: Model) {
   case model.function {
     // TODO: make a float input box for the float functions.
-    IntUniformInclusive | FloatUniformInclusive -> {
+    IntUniformInclusive | FloatUniformInclusive | CharUniformInclusive -> {
       html.div([], [
         html.label([], [
           html.text("High"),
