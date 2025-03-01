@@ -211,8 +211,8 @@ pub fn fixed_size_byte_aligned_bit_array__makes_arrays_of_correct_size__test() {
 
 pub fn generic_byte_aligned_bit_array__test() {
   use bytes <- qcheck.given(qcheck.generic_byte_aligned_bit_array(
-    value_generator: qcheck.bounded_int(0, 255),
-    byte_size_generator: qcheck.bounded_int(0, 8),
+    values_from: qcheck.bounded_int(0, 255),
+    byte_size_from: qcheck.bounded_int(0, 8),
   ))
   should.be_true(bit_array.byte_size(bytes) <= 8)
 }

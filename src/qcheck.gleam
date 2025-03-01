@@ -2079,8 +2079,8 @@ pub fn fixed_length_string_from(
 /// ```
 ///
 pub fn generic_string(
-  codepoint_generator: Generator(UtfCodepoint),
-  length_generator: Generator(Int),
+  codepoints_from codepoint_generator: Generator(UtfCodepoint),
+  length_from length_generator: Generator(Int),
 ) -> Generator(String) {
   use length <- bind(length_generator)
   fixed_length_string_from(codepoint_generator, length)
@@ -2806,8 +2806,8 @@ pub fn fixed_size_byte_aligned_bit_array_from(
 /// A byte-aligned bit array generator
 ///
 pub fn generic_byte_aligned_bit_array(
-  value_generator value_generator: Generator(Int),
-  byte_size_generator byte_size_generator: Generator(Int),
+  values_from value_generator: Generator(Int),
+  byte_size_from byte_size_generator: Generator(Int),
 ) -> Generator(BitArray) {
   use byte_size <- bind(byte_size_generator)
   fixed_size_byte_aligned_bit_array_from(value_generator, byte_size)
