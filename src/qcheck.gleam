@@ -91,7 +91,6 @@
 //// - [bounded_int](#bounded_int)
 //// - [small_non_negative_int](#small_non_negative_int)
 //// - [small_strictly_positive_int](#small_strictly_positive_int)
-//// - [unsigned_byte](#unsigned_byte)
 ////
 //// #### Floats
 ////
@@ -2423,7 +2422,7 @@ pub fn bool() -> Generator(Bool) {
 
 // MARK: Bit arrays
 
-pub fn unsigned_byte() -> Generator(Int) {
+fn unsigned_byte() -> Generator(Int) {
   bounded_int(0, 255)
 }
 
