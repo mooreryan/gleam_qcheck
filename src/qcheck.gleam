@@ -1381,7 +1381,7 @@ pub fn small_non_negative_int() -> Generator(Int) {
           False -> random.int(0, 100)
         }
       }),
-    fn(n) { tree.new(n, shrink.int_towards_zero()) },
+    fn(n) { tree.new(n, shrink.int_towards(0)) },
   )
 }
 
@@ -1514,7 +1514,7 @@ pub fn float() -> Generator(Float) {
     // sure about that.
     let generated_value = exp(x) *. y *. z
 
-    let tree = tree.new(generated_value, shrink.float_towards_zero())
+    let tree = tree.new(generated_value, shrink.float_towards(0.0))
 
     #(tree, seed)
   })

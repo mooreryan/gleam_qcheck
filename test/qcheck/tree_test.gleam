@@ -11,7 +11,7 @@ fn identity(x) {
 }
 
 pub fn int_tree_root_8_shrink_towards_zero__test() {
-  tree.new(8, shrink.int_towards_zero())
+  tree.new(8, shrink.int_towards(0))
   |> tree.to_string(int.to_string)
   |> birdie.snap("int_tree_root_8_shrink_towards_zero__test")
 }
@@ -29,7 +29,7 @@ pub fn int_tree_atomic_shrinker__test() {
 }
 
 pub fn int_option_tree__test() {
-  tree.new(4, shrink.int_towards_zero())
+  tree.new(4, shrink.int_towards(0))
   |> tree.option()
   |> tree.to_string(fn(n) {
     case n {
@@ -53,7 +53,7 @@ fn either_to_string(either: Either(a, b), a_to_string, b_to_string) -> String {
 }
 
 pub fn custom_type_tree__test() {
-  tree.new(4, shrink.int_towards_zero())
+  tree.new(4, shrink.int_towards(0))
   |> tree.map(fn(n) {
     case n % 2 == 0 {
       True -> First(n)
@@ -76,11 +76,11 @@ fn do_trivial_map_test(i) {
     True -> Nil
     False -> {
       let a =
-        tree.new(i, shrink.int_towards_zero())
+        tree.new(i, shrink.int_towards(0))
         |> tree.to_string(int.to_string)
 
       let b =
-        tree.new(i, shrink.int_towards_zero())
+        tree.new(i, shrink.int_towards(0))
         |> tree.map(identity)
         |> tree.to_string(int.to_string)
 
@@ -101,7 +101,7 @@ type MyInt {
 fn my_int_towards_zero() {
   fn(my_int) {
     let MyInt(n) = my_int
-    shrink.int_towards_zero()(n)
+    shrink.int_towards(0)(n)
     |> yielder.map(MyInt)
   }
 }
@@ -114,7 +114,7 @@ fn my_int_to_string(my_int) {
 
 // Note, these trees will not be the same as the ones generated with the map.
 pub fn custom_type_tree_with_bind__test() {
-  tree.new(3, shrink.int_towards_zero())
+  tree.new(3, shrink.int_towards(0))
   |> tree.bind(fn(n) { tree.new(MyInt(n), my_int_towards_zero()) })
   |> tree.to_string(my_int_to_string)
   |> birdie.snap("custom_type_tree_with_bind__test")
@@ -170,7 +170,7 @@ pub fn apply_with_shrinking__test() {
     |> curry2
 
   let make_int_tree = fn(root: Int) -> Tree(Int) {
-    tree.new(root, shrink.int_towards_zero())
+    tree.new(root, shrink.int_towards(0))
   }
 
   let result =

@@ -2,7 +2,7 @@
 ////
 //// This module contains helper functions that can be used to build custom generators (not by composing other generators).
 ////
-//// They are mostly inteded for internal use or "advanced" manual construction
+//// They are mostly intended for internal use or "advanced" manual construction
 //// of generators.  In typical usage, you will probably not need to interact
 //// with these functions much, if at all.  As such, they are currently mostly
 //// undocumented.
@@ -11,7 +11,7 @@
 //// and let me know if there are any generator combinators that you're missing.
 ////
 
-import gleam/yielder.{type Yielder}
+import gleam/yielder
 
 fn float_half_difference(x: Float, y: Float) -> Float {
   { x /. 2.0 } -. { y /. 2.0 }
@@ -63,9 +63,7 @@ fn float_shrink_step(
   }
 }
 
-pub fn int_towards(
-  destination destination: Int,
-) -> fn(Int) -> yielder.Yielder(Int) {
+pub fn int_towards(destination: Int) -> fn(Int) -> yielder.Yielder(Int) {
   fn(x) {
     yielder.unfold(destination, fn(current_shrink) {
       int_shrink_step(x: x, current_shrink: current_shrink)
@@ -73,9 +71,7 @@ pub fn int_towards(
   }
 }
 
-pub fn float_towards(
-  destination destination: Float,
-) -> fn(Float) -> yielder.Yielder(Float) {
+pub fn float_towards(destination: Float) -> fn(Float) -> yielder.Yielder(Float) {
   fn(x) {
     yielder.unfold(destination, fn(current_shrink) {
       float_shrink_step(x: x, current_shrink: current_shrink)
@@ -86,16 +82,8 @@ pub fn float_towards(
   }
 }
 
-pub fn int_towards_zero() -> fn(Int) -> yielder.Yielder(Int) {
-  int_towards(destination: 0)
-}
-
-pub fn float_towards_zero() -> fn(Float) -> yielder.Yielder(Float) {
-  float_towards(destination: 0.0)
-}
-
 /// The `atomic` shrinker treats types as atomic, and never attempts to produce
 /// smaller values.
-pub fn atomic() -> fn(a) -> Yielder(a) {
+pub fn atomic() -> fn(a) -> yielder.Yielder(a) {
   fn(_) { yielder.empty() }
 }
