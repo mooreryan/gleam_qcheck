@@ -40,14 +40,14 @@ fn regexp_first_submatch(
   // Apply the regular expression
   |> result.map(regexp.scan(_, value))
   // We should see only a single match
-  |> result.then(fn(matches) {
+  |> result.try(fn(matches) {
     case matches {
       [match] -> Ok(match)
       _ -> Error("expected exactly one match")
     }
   })
   // We should see only a single successful submatch
-  |> result.then(fn(match) {
+  |> result.try(fn(match) {
     let regexp.Match(_content, submatches) = match
 
     case submatches {
@@ -88,9 +88,9 @@ pub fn rescue(thunk: fn() -> a) -> Result(a, TestErrorMessage) {
     Error(err) -> {
       // If this assert causes a panic, then you have an implementation error.
       let assert Ok(test_error_message) = {
-        use original_value <- result.then(get_original_value(err))
-        use shrunk_value <- result.then(get_shrunk_value(err))
-        use shrink_steps <- result.then(get_shrink_steps(err))
+        use original_value <- result.try(get_original_value(err))
+        use shrunk_value <- result.try(get_shrunk_value(err))
+        use shrink_steps <- result.try(get_shrink_steps(err))
 
         Ok(new_test_error_message(
           original_value: original_value,

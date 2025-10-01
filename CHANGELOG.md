@@ -1,10 +1,11 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-
-This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
 ## [Unreleased]
+
+## [1.0.1] -- 2025-10-01
+
+- Update Gleam stdlib and other deps
+- Replace deprecated `result.then` with `result.try`
 
 ## [1.0.0] -- 2025-03-01
 
@@ -25,5 +26,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 </details>
 
-[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.8...v1.0.0

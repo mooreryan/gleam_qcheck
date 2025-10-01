@@ -4,7 +4,7 @@ import gleam/option.{None, Some}
 import gleam/yielder
 import gleeunit/should
 import qcheck/shrink
-import qcheck/tree.{type Tree, Tree}
+import qcheck/tree.{type Tree}
 
 fn identity(x) {
   x

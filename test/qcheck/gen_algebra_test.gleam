@@ -541,14 +541,14 @@ pub fn shrinking_works_with_apply__test() {
     // Apply the regular expression
     |> result.map(regexp.scan(_, str))
     // We should see only a single match
-    |> result.then(fn(matches) {
+    |> result.try(fn(matches) {
       case matches {
         [match] -> Ok(match)
         _ -> Error("expected exactly one match")
       }
     })
     // Get submatches
-    |> result.then(fn(match) {
+    |> result.try(fn(match) {
       let regexp.Match(_content, submatches) = match
 
       case submatches {
@@ -557,7 +557,7 @@ pub fn shrinking_works_with_apply__test() {
       }
     })
     // Parse to ints
-    |> result.then(fn(tup) {
+    |> result.try(fn(tup) {
       let #(a, b, c) = tup
 
       // The way this is set up, the failing values will either be positve or
