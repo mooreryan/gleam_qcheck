@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.0.2] -- 2025-11-03
+
+- Remove an unused argument in a private function
+  - This addresses the warning that shows up when users upgrade to Gleam v1.13
+
 ## [1.0.1] -- 2025-10-01
 
 - Update Gleam stdlib and other deps
@@ -26,6 +31,7 @@
 
 </details>
 
-[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.8...v1.0.0
