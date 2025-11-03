@@ -143,7 +143,7 @@ fn do_collect(tree: Tree(a), f: fn(a) -> b, acc: List(b)) -> List(b) {
 /// - `element_to_string`: a function that converts individual elements of the tree to strings.
 ///
 pub fn to_string(tree: Tree(a), a_to_string: fn(a) -> String) -> String {
-  do_to_string(tree, a_to_string, level: 0, max_level: 99_999_999, acc: [])
+  do_to_string(tree, a_to_string, level: 0, max_level: 99_999_999)
 }
 
 /// Like `to_string` but with a configurable `max_depth`.
@@ -153,7 +153,7 @@ pub fn to_string_max_depth(
   a_to_string: fn(a) -> String,
   max_depth: Int,
 ) -> String {
-  do_to_string(tree, a_to_string, level: 0, max_level: max_depth, acc: [])
+  do_to_string(tree, a_to_string, level: 0, max_level: max_depth)
 }
 
 fn do_to_string(
@@ -161,7 +161,6 @@ fn do_to_string(
   a_to_string a_to_string: fn(a) -> String,
   level level: Int,
   max_level max_level: Int,
-  acc acc: List(String),
 ) -> String {
   case tree {
     Tree(root, children) -> {
@@ -171,7 +170,7 @@ fn do_to_string(
         False ->
           children
           |> yielder.map(fn(tree) {
-            do_to_string(tree, a_to_string, level + 1, max_level, acc)
+            do_to_string(tree, a_to_string, level + 1, max_level)
           })
           |> yielder.to_list
           |> string.join("")
