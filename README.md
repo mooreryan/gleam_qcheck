@@ -254,6 +254,8 @@ You may also be interested in [qcheck_gleeunit_utils](https://github.com/moorery
 
 Very heavily inspired by the [qcheck](https://github.com/c-cube/qcheck) and [base_quickcheck](https://github.com/janestreet/base_quickcheck) OCaml packages.
 
+Check out the `licenses` directory to view their licenses.
+
 ## Contributing
 
 Thank you for your interest in the project!
