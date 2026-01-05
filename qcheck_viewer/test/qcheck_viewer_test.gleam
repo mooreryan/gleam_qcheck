@@ -235,3 +235,40 @@ fn qcheck_function_generator() {
 fn domino_from_element(element) {
   element |> element.to_string |> domino.from_string
 }
+
+// Check the boundary conditions for codepoint_to_string function
+
+pub fn codepoint_to_string__shows_nice_repr_for_non_printable_ascii_0__test() {
+  assert qv.codepoint_to_string(codepoint(0)) == "U+00"
+}
+
+// 15 and 16 are here to check the padding
+
+pub fn codepoint_to_string__shows_nice_repr_for_non_printable_ascii_15__test() {
+  assert qv.codepoint_to_string(codepoint(15)) == "U+0F"
+}
+
+pub fn codepoint_to_string__shows_nice_repr_for_non_printable_ascii_16__test() {
+  assert qv.codepoint_to_string(codepoint(16)) == "U+10"
+}
+
+pub fn codepoint_to_string__shows_nice_repr_for_non_printable_ascii_32__test() {
+  assert qv.codepoint_to_string(codepoint(32)) == "U+20"
+}
+
+pub fn codepoint_to_string__shows_nice_repr_for_non_printable_ascii_33__test() {
+  assert qv.codepoint_to_string(codepoint(33)) == "!"
+}
+
+pub fn codepoint_to_string__shows_nice_repr_for_non_printable_ascii_126__test() {
+  assert qv.codepoint_to_string(codepoint(126)) == "~"
+}
+
+pub fn codepoint_to_string__shows_nice_repr_for_non_printable_ascii_127__test() {
+  assert qv.codepoint_to_string(codepoint(127)) == "U+7F"
+}
+
+fn codepoint(n: Int) -> UtfCodepoint {
+  let assert Ok(codepoint) = string.utf_codepoint(n)
+  codepoint
+}

@@ -514,7 +514,23 @@ fn generate_histogram(model: Model) -> json.Json {
 }
 
 fn codepoint_to_json(codepoint: UtfCodepoint) -> json.Json {
-  string.from_utf_codepoints([codepoint]) |> json.string
+  codepoint_to_string(codepoint) |> json.string
+}
+
+// TODO: this works well for viewing non-printable ascii codepoints, but it will
+// not to anything special with stuff outside of the ascii range. Additionally,
+// the sorting on the y-axis does get weird as something like "U+20" would be
+// right next to "U" rather than where it should be numerically.
+//
+// It's public so we can test. Probably should pull out some of these utils into
+// their own module.
+pub fn codepoint_to_string(codepoint: UtfCodepoint) -> String {
+  case string.utf_codepoint_to_int(codepoint) {
+    127 -> "U+7F"
+    n if 0 <= n && n <= 32 ->
+      "U+" <> { int.to_base16(n) |> string.pad_start(to: 2, with: "0") }
+    _ -> string.from_utf_codepoints([codepoint])
+  }
 }
 
 fn gen_histogram(generator, of to_json, bin bin) {
