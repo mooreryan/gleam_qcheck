@@ -145,7 +145,7 @@ Okay, first we need to write a generator of valid points. In this case, it isn't
 
 ```gleam
 fn point_generator() {
-  qcheck.map2(qcheck.int_uniform(), qcheck.int_uniform(), make_point)
+  qcheck.map2(qcheck.uniform_int(), qcheck.uniform_int(), make_point)
 }
 ```
 
@@ -153,7 +153,7 @@ Alternatively, if you prefer the `use` syntax, you could write:
 
 ```gleam
 fn point_generator() {
-  use x, y <- qcheck.map2(qcheck.int_uniform(), qcheck.int_uniform())
+  use x, y <- qcheck.map2(qcheck.uniform_int(), qcheck.uniform_int())
 
   make_point(x, y)
 }
@@ -232,13 +232,13 @@ fn box_generator() {
     Box(x:, y:, w:, h:)
   })
   // Set the `x` generator.
-  |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+  |> qcheck.apply(qcheck.bounded_int(-100, 100))
   // Set the `y` generator.
-  |> qcheck.apply(qcheck.int_uniform_inclusive(-100, 100))
+  |> qcheck.apply(qcheck.bounded_int(-100, 100))
   // Set the `width` generator.
-  |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+  |> qcheck.apply(qcheck.bounded_int(1, 100))
   // Set the `height` generator.
-  |> qcheck.apply(qcheck.int_uniform_inclusive(1, 100))
+  |> qcheck.apply(qcheck.bounded_int(1, 100))
 }
 ```
 
