@@ -22,4 +22,3 @@ pub fn given_failing__test() {
   test_error_message.shrunk_value(msg)
   |> should.equal(string.inspect(0))
 }
-// TODO: delete this test file

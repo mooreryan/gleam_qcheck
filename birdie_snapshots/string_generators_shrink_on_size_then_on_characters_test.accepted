@@ -1,7 +1,7 @@
 ---
-version: 1.1.4
+version: 1.4.1
 title: string_generators_shrink_on_size_then_on_characters__test
-file: ./test/gen_string_test.gleam
+file: ./test/qcheck/gen_string_test.gleam
 test_name: string_generators_shrink_on_size_then_on_characters__test
 ---
 baac
@@ -22,3 +22,4 @@ baac
 ---aaaa
 --baaa
 ---aaaa
+

@@ -1,0 +1,17 @@
+---
+version: 1.4.1
+title: reporting_test.reporting_assertion_errors_test
+file: ./test/qcheck/reporting_test.gleam
+test_name: reporting_assertion_errors_test
+---
+a property was falsified![1m[33m
+qcheck assert[39m[22m [90mtest/qcheck/reporting_test.gleam:27[39m
+[36m code[39m: assert x == y
+[36m left[39m: 10
+[36mright[39m: 2
+[36m info[39m: Assertion failed.
+[1m[33mqcheck shrinks
+[39m[22m[36m orig[39m: 10
+[36mshrnk[39m: 0
+[36msteps[39m: 1
+

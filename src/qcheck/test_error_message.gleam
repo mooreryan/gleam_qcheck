@@ -43,7 +43,7 @@ fn regexp_first_submatch(
   |> result.try(fn(matches) {
     case matches {
       [match] -> Ok(match)
-      _ -> Error("expected exactly one match")
+      _ -> Error("expected exactly one match in " <> value)
     }
   })
   // We should see only a single successful submatch
@@ -52,7 +52,7 @@ fn regexp_first_submatch(
 
     case submatches {
       [Some(submatch)] -> Ok(submatch)
-      _ -> Error("expected exactly one submatch")
+      _ -> Error("expected exactly one submatch in" <> value)
     }
   })
 }
@@ -60,19 +60,19 @@ fn regexp_first_submatch(
 /// Mainly for asserting values in qcheck internal tests.
 ///
 fn get_original_value(test_error_str: String) -> Result(String, String) {
-  regexp_first_submatch(pattern: "original_value: (.+?);", in: test_error_str)
+  regexp_first_submatch(pattern: "orig.*: (.+)\n", in: test_error_str)
 }
 
 /// Mainly for asserting values in qcheck internal tests.
 ///
 fn get_shrunk_value(test_error_str: String) -> Result(String, String) {
-  regexp_first_submatch(pattern: "shrunk_value: (.+?);", in: test_error_str)
+  regexp_first_submatch(pattern: "shrnk.*: (.+)\n", in: test_error_str)
 }
 
 /// Mainly for asserting values in qcheck internal tests.
 ///
 fn get_shrink_steps(test_error_str: String) -> Result(String, String) {
-  regexp_first_submatch(pattern: "shrink_steps: (.+?);", in: test_error_str)
+  regexp_first_submatch(pattern: "steps.*: (.+)\n", in: test_error_str)
 }
 
 /// This function should only be called to rescue a function that may call

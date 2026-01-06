@@ -1,7 +1,7 @@
 name = "qcheck"
-version = "1.0.2"
+version = "1.0.3"
 
-internal_modules = ["qcheck/test_error_message"]
+internal_modules = ["qcheck/test_error_message", "qcheck/internal/*"]
 
 description = "QuickCheck-inspired property testing with integrated shrinking"
 licences = ["Apache-2.0", "MIT"]

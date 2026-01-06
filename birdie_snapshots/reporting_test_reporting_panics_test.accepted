@@ -1,0 +1,14 @@
+---
+version: 1.4.1
+title: reporting_test.reporting_panics_test
+file: ./test/qcheck/reporting_test.gleam
+test_name: reporting_panics_test
+---
+a property was falsified![1m[33m
+qcheck panic[39m[22m [90mtest/qcheck/reporting_test.gleam:7[39m
+[36m info[39m: there was a panic
+[1m[33mqcheck shrinks
+[39m[22m[36m orig[39m: 1234
+[36mshrnk[39m: 0
+[36msteps[39m: 1
+

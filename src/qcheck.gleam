@@ -230,6 +230,7 @@ import gleam/order
 import gleam/set
 import gleam/string
 import gleam/yielder
+import qcheck/internal/reporting
 import qcheck/random
 import qcheck/shrink
 import qcheck/tree.{type Tree, Tree}
@@ -320,7 +321,7 @@ fn do_run(
             original_value: value,
             shrunk_value: shrunk_value,
             shrink_steps: shrink_steps,
-            error_msg: string.inspect(exn),
+            exception: exn,
           )
         }
       }
@@ -2795,70 +2796,47 @@ fn byte_aligned_bit_size_generator(min: Int) -> Generator(Int) {
   num_bits
 }
 
-// MARK: TestError
-
-type TestError(a) {
-  TestError(
-    original_value: a,
-    shrunk_value: a,
-    shrink_steps: Int,
-    error_msg: String,
-  )
-}
-
-fn new_test_error(
-  original_value orig: a,
-  shrunk_value shrunk: a,
-  shrink_steps steps: Int,
-  error_msg error_msg: String,
-) -> TestError(a) {
-  TestError(
-    original_value: orig,
-    shrunk_value: shrunk,
-    shrink_steps: steps,
-    error_msg: error_msg,
-  )
-}
-
-fn test_error_to_string(test_error: TestError(a)) -> String {
-  "TestError[original_value: "
-  <> string.inspect(test_error.original_value)
-  <> "; shrunk_value: "
-  <> string.inspect(test_error.shrunk_value)
-  <> "; shrink_steps: "
-  <> string.inspect(test_error.shrink_steps)
-  <> "; error: "
-  <> test_error.error_msg
-  <> ";]"
-}
-
-@external(erlang, "qcheck_ffi", "fail")
-@external(javascript, "./qcheck_ffi.mjs", "fail")
-fn do_fail(msg: String) -> a
-
-fn fail(test_error_display: String) -> a {
-  do_fail(test_error_display)
-}
-
 fn failwith(
   original_value original_value: a,
   shrunk_value shrunk_value: a,
   shrink_steps shrink_steps: Int,
-  error_msg error_msg: String,
+  exception exception: exception.Exception,
 ) -> b {
   // If this returned an opaque Exn type then you couldn't mess up the
   // `test_error_message.rescue` call later, but it could potentially conflict
   // with non-gleeunit test frameworks, depending on how they deal with
   // exceptions.
+  //
 
-  new_test_error(
-    original_value: original_value,
-    shrunk_value: shrunk_value,
-    shrink_steps: shrink_steps,
-    error_msg: error_msg,
-  )
-  |> test_error_to_string
-  |> fail
+  let test_failed_message = case exception {
+    exception.Errored(dynamic) ->
+      reporting.test_failed_message(
+        dynamic,
+        original_value:,
+        shrunk_value:,
+        shrink_steps:,
+      )
+    exception.Exited(dynamic) ->
+      reporting.test_failed_message(
+        dynamic,
+        original_value:,
+        shrunk_value:,
+        shrink_steps:,
+      )
+    exception.Thrown(dynamic) ->
+      reporting.test_failed_message(
+        dynamic,
+        original_value:,
+        shrunk_value:,
+        shrink_steps:,
+      )
+  }
+
+  // Rather than using custom failure, set up a custom message, use panic, and
+  // let gleeunit or whatever the runner is handle the printing. This is fairly
+  // janky, but it works okay.
+  //
+  panic as test_failed_message
 }
 
 // MARK: Try
