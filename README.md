@@ -34,52 +34,57 @@ pub fn int_addition_commutativity__failures_shrink_to_zero__test() {
 }
 ```
 
-That second example will fail with an error that may look something like this if you are targeting Erlang.
-
-```
- Failures:
-
-  1) examples/basic_example_test.small_non_negative_int__failures_shrink_to_zero__test
-     Failure: <<"TestError[original_value: 5; shrunk_value: 0; shrink_steps: 1; error: Errored(
-                  atom.create_from_string(\"assertNotEqual\")(
-                    [Module(GleeunitFfi), Line(17), Expression([65, 99, 116, 117, 97, 108]), Value(6)]
-                  )
-                );]">>
-     stacktrace:
-       qcheck_ffi.fail
-```
+Let's go through the code:
 
 - `qcheck.given` sets up the test
   - If a property holds for all generated values, then `qcheck.given` returns `Nil`.
   - If a property does not hold for all generated values, then `qcheck.given` will panic.
 - `qcheck.small_non_negative_int()` generates small integers greater than or equal to zero.
-- `should.equal(n + 1, 1 + n)` is the property being tested in the first test.
+- `assert n + 1 == 1 + n` is the property being tested in the first test.
   - It should be true for all generated values.
   - The return value of `qcheck.given` will be `Nil`, because the property does hold for all generated values.
-- `should.not_equal(n + 1, 1 + n)` is the property being tested in the second test.
-  - It should be false for all generated values.
-  - `qcheck.given` will be panic, because the property does not hold for all generated values.
+  - You can use Gleam's `assert` keyword to get nicer error messages
+- `assert n + 1 != 1 + n` is the property being tested in the second test.
+  - It should be false for any generated values.
+  - `qcheck.given` will be panic, because the property does not hold for any generated values.
+
+If you run it, that second example will fail with an error that may look something like this if you are targeting Erlang.
+
+```
+panic src/qcheck.gleam:2833
+ test: examples@basic_example_test.int_addition_commutativity__failures_shrink_to_zero__test
+ info: a property was falsified!
+qcheck assert test/examples/basic_example_test.gleam:12
+ code: assert n + 1 != 1 + n
+ left: 4
+right: 4
+ info: Assertion failed.
+qcheck shrinks
+ orig: 3
+shrnk: 0
+steps: 1
+```
+
+The error message gives some info to help you diagnose the issue. Since we used `assert`, we get some info about the code that was run, it's location in the test file, the values on the left and right side.
+Additionally, there is some info about the "shrinking". You will see:
+
+- `orig`, which lists the original generated value that triggered the error
+- `shrnk`, which shows the "shrunk" value.
+  - I.e., a value that is usually easiear to interpret.
+  - In this example `3` and `0` aren't too bad, but you will often see shrunk values that look like this: `#(Some(0), None, None, None, None)` which is much easier to figure out what the issue might be than something like this: `#(Some(1371457222), Some(369023.1034975077), Some(True), Some("2x"), None)`.
+  - (That is a real result from a property test I intionally broke for illustration from the [bsql3](https://github.com/mooreryan/bsql3/blob/b0d60113e83a8a30b00660b1190b0334be6a04a7/test/bsql3_test.gleam#L245) repository.)
+- `steps`, which shows the number of "shrink steps" it took to get to the shrunk value.
+  - If this is really high, you may need to adjust your generation process.
 
 ### In-depth example
 
 Here is a more in-depth example. We will create a simple `Point` type, write some serialization functions, and then check that the serializing round-trips.
 
-First here is some code to define a `Point`.
+First, here is some code to define a `Point`, and a `to_string` function that makes a string representation like this: `(x y)`.
 
 ```gleam
 type Point {
   Point(Int, Int)
-}
-
-fn make_point(x: Int, y: Int) -> Point {
-  Point(x, y)
-}
-
-fn point_equal(p1: Point, p2: Point) -> Bool {
-  let Point(x1, y1) = p1
-  let Point(x2, y2) = p2
-
-  x1 == x2 && y1 == y2
 }
 
 fn point_to_string(point: Point) -> String {
@@ -93,7 +98,7 @@ Next, let's write a function that parses the string representation into a `Point
 Here is one possible way to parse that string representation into a `Point`. (Note that this implementation is intentionally broken for illustration.)
 
 ```gleam
-fn point_of_string(string: String) -> Result(Point, String) {
+fn point_from_string(string: String) -> Result(Point, String) {
   // Create the regex.
   use re <- result.try(
     regex.from_string("\\((\\d+) (\\d+)\\)")
@@ -127,78 +132,109 @@ fn point_of_string(string: String) -> Result(Point, String) {
 Now we would like to test our implementation. Of course, we could make some examples and test it like so:
 
 ```gleam
-import gleeunit/should
-
 pub fn roundtrip_test() {
   let point = Point(1, 2)
   let parsed_point = point |> point_to_string |> point_of_string
 
-  point_equal(point, parsed_point) |> should.be_true
+  assert point == parsed_point
 }
 ```
 
-That's fine, and you can imagine taking some corner cases like putting in `0` or `-1` or the max and min values for integers on your selected target. Rather, let's think of a property to test.
+That's good, and you can imagine taking some corner cases like putting in `0` or `-1` or the max and min values for integers on your selected target. I think you should still test some interesting cases manually to "anchor" your test suite. But, let's think of a property to test.
 
 I mention round-tripping, but how can you write a property to test it. Something like, "given a valid point, when serializing it to a string, and then deserializing that string into another point, both points should always be equal".
 
-Okay, first we need to write a generator of valid points. In this case, it isn't too interesting as any integer can be used for both `x` and `y` values of the point. So we can use `generator.map2` like so:
+Okay, first we need to write a generator of valid points. In this case, it isn't too tricky as any integer can be used for both `x` and `y` values of the point. So we can use `generator.map2` like so:
 
 ```gleam
 fn point_generator() {
-  qcheck.map2(qcheck.uniform_int(), qcheck.uniform_int(), make_point)
+  qcheck.map2(qcheck.uniform_int(), qcheck.uniform_int(), Point)
 }
 ```
 
-Alternatively, if you prefer the `use` syntax, you could write:
+For illustration, you could also utilize the `use` syntax. You could write:
 
 ```gleam
 fn point_generator() {
   use x, y <- qcheck.map2(qcheck.uniform_int(), qcheck.uniform_int())
-
-  make_point(x, y)
+  Point(x, y)
 }
 ```
 
-Now that we have the point generator, we can write a property test. (It uses the `gleeunit/should.be_true` function again.)
+Now that we have the point generator, we can write a property test.
 
 ```gleam
 pub fn point_serialization_roundtripping__test() {
   use generated_point <- qcheck.given(point_generator())
 
   let assert Ok(parsed_point) =
-    generated_point
-    |> point_to_string
-    |> point_of_string
+    generated_point |> point_to_string |> point_from_string
 
-  should.be_true(point_equal(generated_point, parsed_point))
+  assert generated_point == parsed_point
 }
 ```
 
-Let's try and run the test. (Note that your output won't look exactly like this.)
+Let's try and run the test. You should see an error that looks something like this:
 
 ```
-$ gleam test
-
-  1) examples/parsing_example_test.point_serialization_roundtripping__test: module 'examples@parsing_example_test'
-     Failure: <<"TestError[original_value: Point(-875333649, -1929681101); shrunk_value: Point(0, -1); shrink_steps: 31; error: Errored(dict.from_list([#(Function, \"point_serialization_roundtripping__test\"), #(Line, 74), #(Message, \"Assertion pattern match failed\"), #(Module, \"examples/parsing_example_test\"), #(Value, Error(\"expected a single match\")), #(GleamError, LetAssert)]));]">>
-     stacktrace:
-       qcheck_ffi.fail
-     output:
+panic src/qcheck.gleam:2833
+ test: examples@parsing_example_test.point_serialization_roundtripping__test
+ info: a property was falsified!
+qcheck let assert test/examples/parsing_example_test.gleam:62
+ code: let assert Ok(parsed_point) =
+    generated_point |> point_to_string |> point_from_string
+value: Error("expected a single match")
+ info: Pattern match failed, no pattern matched the value.
+qcheck shrinks
+ orig: Point(-1827478708, -274074946)
+shrnk: Point(0, -1)
+steps: 29
 ```
 
-There is a failure. Now, currently, this output is pretty noisy. Here are the important parts to highlight.
+Here are the important parts to highlight.
 
-- `original_value: Point(-875333649, -1929681101)`
+- original value: `Point(-1827478708, -274074946)`
   - This is the original counter-example that causes the test to fail.
-- `shrunk_value: Point(0, -1)`
+- shrunk value: `Point(0, -1)`
   - Because `qcheck` generators have integrated shrinking, that counter-example "shrinks" to this simpler example.
   - The "shrunk" examples can help you better identify what the problem may be.
-- `Error(\"expected a single match\"))`
+- `Error("expected a single match")`
   - Here is the error message that actually caused the failure.
 
-So we see a failure with `Point(0, -1)`, which means it probably has something to do with the negative number. Also, we see that the `Error("expected a single match")` is what triggered the failure. That error comes about when `regex.scan` fails in the `point_of_string` function.
+Let me point out that you could write this test in a slightly different way and get what I think is a bit better output:
 
-Given those two pieces of information, we can infer that the issue is in our regular expression definition: `regex.from_string("\\((\\d+) (\\d+)\\)")`. And now we may notice that we are not allowing for negative numbers in the regular expression. To fix it, change that line to the following:
+```gleam
+pub fn point_serialization_roundtripping__test() {
+  use generated_point <- qcheck.given(point_generator())
+
+  let parsed_point = generated_point |> point_to_string |> point_from_string
+
+  assert Ok(generated_point) == parsed_point
+}
+```
+
+Which would output:
+
+```
+panic src/qcheck.gleam:2833
+ test: examples@parsing_example_test.point_serialization_roundtripping__assert__test
+ info: a property was falsified!
+qcheck assert test/examples/parsing_example_test.gleam:56
+ code: assert Ok(generated_point) == parsed_point
+ left: Ok(Point(-694965642, -939456627))
+right: Error("expected a single match")
+ info: Assertion failed.
+qcheck shrinks
+ orig: Point(-694965642, -939456627)
+shrnk: Point(0, -1)
+steps: 30
+```
+
+Either way is fine, but I think the second way gives a bit more clarity.
+
+Anyway, back to interpreting the failure. So we see a failure with `Point(0, -1)`, which means it probably has something to do with the negative number. Also, we see that the `Error("expected a single match")` is what triggered the failure. That error comes about when `regex.scan` fails in the `point_from_string` function.
+
+Given those two pieces of information, we can infer that the issue is probably in our regular expression definition: `regex.from_string("\\((\\d+) (\\d+)\\)")`. And now we may notice that we are not allowing for negative numbers in the regular expression. To fix it, change that line to the following:
 
 ```gleam
     regex.from_string("\\((-?\\d+) (-?\\d+)\\)")
@@ -212,7 +248,7 @@ You could imagine combining a property test like the one above, with a few well 
 
 ### Applicative style
 
-The applicative style provides a nice interface for creating generators for custom types.
+The applicative style provides a nice interface for creating generators for custom types. When you have independent generators, this way can often given better shrinking then using `bind` when you don't need it.
 
 ```gleam
 import qcheck
@@ -242,11 +278,38 @@ fn box_generator() {
 }
 ```
 
+You could also write this example using `map4`:
+
+```gleam
+fn x_gen() {
+  qcheck.bounded_int(-100, 100)
+}
+
+fn y_gen() {
+  qcheck.bounded_int(-100, 100)
+}
+
+fn w_gen() {
+  qcheck.bounded_int(1, 100)
+}
+
+fn h_gen() {
+  qcheck.bounded_int(1, 100)
+}
+
+fn box_generator_with_map4() {
+  use x, y, w, h <- qcheck.map4(x_gen(), y_gen(), w_gen(), h_gen())
+  Box(x:, y:, w:, h:)
+}
+```
+
+For more info about this, see this [issue](https://github.com/mooreryan/gleam_qcheck/issues/13).
+
 ### Integrating with testing frameworks
 
 You don't have to do anything special to integrate `qcheck` with a testing framework like [gleeunit](https://github.com/lpil/gleeunit). The only thing required is that your testing framework of choice be able to handle panics/exceptions.
 
-_Note: [startest](https://github.com/maxdeviant/startest) should be fine._
+_Note: [startest](https://github.com/maxdeviant/startest) should be fine. (I last checked it on Jan 6, 2026.)_
 
 You may also be interested in [qcheck_gleeunit_utils](https://github.com/mooreryan/qcheck_gleeunit_utils) for running your tests in parallel and controlling test timeouts when using gleeunit and targeting Erlang.
 
@@ -270,6 +333,6 @@ Thank you for your interest in the project!
 [![license MIT or Apache
 2.0](https://img.shields.io/badge/license-MIT%20or%20Apache%202.0-blue)](https://github.com/mooreryan/gleam_qcheck)
 
-Copyright (c) 2024 - 2025 Ryan M. Moore
+Copyright (c) 2024 - 2026 Ryan M. Moore
 
 Licensed under the Apache License, Version 2.0 or the MIT license, at your option. This program may not be copied, modified, or distributed except according to those terms.

@@ -2802,12 +2802,6 @@ fn failwith(
   shrink_steps shrink_steps: Int,
   exception exception: exception.Exception,
 ) -> b {
-  // If this returned an opaque Exn type then you couldn't mess up the
-  // `test_error_message.rescue` call later, but it could potentially conflict
-  // with non-gleeunit test frameworks, depending on how they deal with
-  // exceptions.
-  //
-
   let test_failed_message = case exception {
     exception.Errored(dynamic) ->
       reporting.test_failed_message(
@@ -2832,9 +2826,9 @@ fn failwith(
       )
   }
 
-  // Rather than using custom failure, set up a custom message, use panic, and
-  // let gleeunit or whatever the runner is handle the printing. This is fairly
-  // janky, but it works okay.
+  // Rather than using custom failure, we set up a custom message, then use
+  // panic, and let gleeunit or whatever the runner is handle the printing. This
+  // is fairly janky, but it works okay.
   //
   panic as test_failed_message
 }

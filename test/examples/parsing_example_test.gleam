@@ -3,26 +3,14 @@ import gleam/option.{Some}
 import gleam/regexp.{Match}
 import gleam/result
 import gleam/string
-import gleeunit/should
 import qcheck.{type Generator}
 
 type Point {
   Point(Int, Int)
 }
 
-fn make_point(x: Int, y: Int) -> Point {
-  Point(x, y)
-}
-
 fn point_generator() -> Generator(Point) {
-  qcheck.map2(qcheck.uniform_int(), qcheck.uniform_int(), make_point)
-}
-
-fn point_equal(p1: Point, p2: Point) -> Bool {
-  let Point(x1, y1) = p1
-  let Point(x2, y2) = p2
-
-  x1 == x2 && y1 == y2
+  qcheck.map2(qcheck.uniform_int(), qcheck.uniform_int(), Point)
 }
 
 fn point_to_string(point: Point) -> String {
@@ -30,7 +18,7 @@ fn point_to_string(point: Point) -> String {
   "(" <> int.to_string(x) <> " " <> int.to_string(y) <> ")"
 }
 
-fn point_of_string(string: String) -> Result(Point, String) {
+fn point_from_string(string: String) -> Result(Point, String) {
   use re <- result.try(
     // This is the one that is intentionally broken:
     // regexp.from_string("\\((\\d+) (\\d+)\\)")
@@ -59,13 +47,19 @@ fn point_of_string(string: String) -> Result(Point, String) {
   Ok(Point(xy.0, xy.1))
 }
 
-pub fn point_serialization_roundtripping__test() {
+pub fn point_serialization_roundtripping__assert__test() {
+  use generated_point <- qcheck.given(point_generator())
+
+  let parsed_point = generated_point |> point_to_string |> point_from_string
+
+  assert Ok(generated_point) == parsed_point
+}
+
+pub fn point_serialization_roundtripping__let_assert__test() {
   use generated_point <- qcheck.given(point_generator())
 
   let assert Ok(parsed_point) =
-    generated_point
-    |> point_to_string
-    |> point_of_string
+    generated_point |> point_to_string |> point_from_string
 
-  point_equal(generated_point, parsed_point) |> should.be_true
+  assert generated_point == parsed_point
 }

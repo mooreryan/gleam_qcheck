@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## [1.0.3] -- 2026-01-06
+
+- Better error reporting. The errors used to look something like this:
+
+```
+bsql3_test.coerce_roundtrip_test
+An unexpected error occurred:
+
+  //js(Error: TestError[original_value: #(Some(287951460), Some(-117181.6780709644), Some(True), Some("uvESV5N"), Some(<<>>)); shrunk_value: #(Some(0), None, None, None, None); shrink_steps: 5; error: Errored(//js(Error: Assertion failed.));])
+```
+
+Now, you might get something that looks like this:
+
+```
+panic src/qcheck.gleam:2839
+ test: bsql3_test.coerce_roundtrip_test
+ info: a property was falsified!
+qcheck assert test/bsql3_test.gleam:287
+ code: assert row == #(None, a_float, a_bool, some_text, a_blob)
+ left: #(Some(1371457222), Some(369023.1034975077), Some(True), Some("2x"), None)
+right: #(None, Some(369023.1034975077), Some(True), Some("2x"), None)
+ info: Assertion failed.
+qcheck shrinks
+ orig: #(Some(1371457222), Some(369023.1034975077), Some(True), Some("2x"), None)
+ shrnk: #(Some(0), None, None, None, None)
+ steps: 4
+```
+
 ## [1.0.2] -- 2025-11-03
 
 - Remove an unused argument in a private function
@@ -31,7 +59,12 @@
 
 </details>
 
-[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.1...v1.0.3
 [1.0.2]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.8...v1.0.0
+
+```
+
+```
