@@ -38,7 +38,7 @@ pub opaque type Seed {
 /// ```
 ///
 pub fn seed(n: Int) -> Seed {
-  prng_seed.new(n) |> Seed
+  prng_random.new_seed(n) |> Seed
 }
 
 /// `random_seed()` creates a new randomly-generated seed.  You can use it when
@@ -55,7 +55,7 @@ pub fn seed(n: Int) -> Seed {
 /// ```
 ///
 pub fn random_seed() -> Seed {
-  prng_seed.random() |> Seed
+  int.random(max_int) |> seed()
 }
 
 /// Attempting to generate values below this limit will not lead to good random results.
@@ -145,19 +145,22 @@ pub fn map(generator: Generator(a), fun: fn(a) -> b) -> Generator(b) {
 }
 
 pub fn to_random_yielder(generator: Generator(a)) -> Yielder(a) {
-  prng_random.to_random_yielder(generator.generator)
+  to_yielder(generator, random_seed())
 }
 
 pub fn to_yielder(generator: Generator(a), seed: Seed) -> Yielder(a) {
-  prng_random.to_yielder(generator.generator, seed.seed)
+  yielder.unfold(seed, fn(current_seed) {
+    let #(value, next_seed) = step(generator, current_seed)
+    yielder.Next(value, next_seed)
+  })
 }
 
 pub fn random_sample(generator: Generator(a)) -> a {
-  prng_random.random_sample(generator.generator)
+  sample(generator, random_seed())
 }
 
 pub fn sample(generator: Generator(a), seed: Seed) -> a {
-  prng_random.sample(generator.generator, seed.seed)
+  step(generator, seed).0
 }
 
 pub fn constant(value: a) -> Generator(a) {
