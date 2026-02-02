@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Update prng dependency to v5.0.0
+
 ## [1.0.3] -- 2026-01-06
 
 - Better error reporting. The errors used to look something like this:

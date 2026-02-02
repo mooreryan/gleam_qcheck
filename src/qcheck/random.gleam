@@ -15,14 +15,13 @@ import gleam/order.{Eq, Gt, Lt}
 import gleam/pair
 import gleam/yielder.{type Yielder}
 import prng/random as prng_random
-import prng/seed as prng_seed
 
 // MARK: Seeds
 
 /// An opaque type representing a seed value used to initialize random generators.
 ///
 pub opaque type Seed {
-  Seed(seed: prng_seed.Seed)
+  Seed(seed: prng_random.Seed)
 }
 
 /// `seed(n) creates a new seed from the given integer, `n`.
@@ -38,7 +37,7 @@ pub opaque type Seed {
 /// ```
 ///
 pub fn seed(n: Int) -> Seed {
-  prng_seed.new(n) |> Seed
+  prng_random.new_seed(n) |> Seed
 }
 
 /// `random_seed()` creates a new randomly-generated seed.  You can use it when
@@ -55,7 +54,7 @@ pub fn seed(n: Int) -> Seed {
 /// ```
 ///
 pub fn random_seed() -> Seed {
-  prng_seed.random() |> Seed
+  int.random(4_294_967_296) |> prng_random.new_seed |> Seed
 }
 
 /// Attempting to generate values below this limit will not lead to good random results.
@@ -145,19 +144,23 @@ pub fn map(generator: Generator(a), fun: fn(a) -> b) -> Generator(b) {
 }
 
 pub fn to_random_yielder(generator: Generator(a)) -> Yielder(a) {
-  prng_random.to_random_yielder(generator.generator)
+  to_yielder(generator, random_seed())
 }
 
 pub fn to_yielder(generator: Generator(a), seed: Seed) -> Yielder(a) {
-  prng_random.to_yielder(generator.generator, seed.seed)
+  yielder.unfold(seed, fn(current_seed) {
+    let #(value, next_seed) = step(generator, current_seed)
+    yielder.Next(value, next_seed)
+  })
 }
 
 pub fn random_sample(generator: Generator(a)) -> a {
-  prng_random.random_sample(generator.generator)
+  sample(generator, random_seed())
 }
 
 pub fn sample(generator: Generator(a), seed: Seed) -> a {
-  prng_random.sample(generator.generator, seed.seed)
+  let #(value, _) = step(generator, seed)
+  value
 }
 
 pub fn constant(value: a) -> Generator(a) {
