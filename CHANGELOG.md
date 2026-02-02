@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.0.4] -- 2026-02-01
+
 - Update prng dependency to v5.0.0
 
 ## [1.0.3] -- 2026-01-06
@@ -61,8 +63,9 @@ qcheck shrinks
 
 </details>
 
-[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.3...HEAD
-[1.0.3]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.1...v1.0.3
+[Unreleased]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.4...HEAD
+[1.0.3]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.3...v1.0.4
+[1.0.3]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mooreryan/gleam_qcheck/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mooreryan/gleam_qcheck/compare/v0.0.8...v1.0.0
