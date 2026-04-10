@@ -9,12 +9,12 @@ While there are a ton of great articles introducing quickcheck or property-based
 - [An introduction to property based testing](https://fsharpforfunandprofit.com/pbt/)
 - [What is Property Based Testing?](https://hypothesis.works/articles/what-is-property-based-testing/)
 
-You might also be interested in checking out [this project](https://github.com/mooreryan/gleam_stdlib_testing) that uses qcheck to test Gleam's stdlib.
-
 ## Usage & Examples
 
 - See the API docs for detailed usage,
 - See [qcheck_viewer](https://mooreryan.github.io/gleam_qcheck/) to visualize the distributions of some of the qcheck generators.
+- See the Gleam [time](https://github.com/gleam-lang/time/tree/main/test/gleam/time) package for some examples of qcheck in action.
+- _Note: The tests contained in `./test/qcheck` aren't really great examples of how you would use the qcheck package to write tests for your own package._
 
 ### Basic example
 
