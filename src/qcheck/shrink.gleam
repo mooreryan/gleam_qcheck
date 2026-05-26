@@ -71,7 +71,9 @@ pub fn int_towards(destination: Int) -> fn(Int) -> yielder.Yielder(Int) {
   }
 }
 
-pub fn float_towards(destination: Float) -> fn(Float) -> yielder.Yielder(Float) {
+pub fn float_towards(
+  destination: Float,
+) -> fn(Float) -> yielder.Yielder(Float) {
   fn(x) {
     yielder.unfold(destination, fn(current_shrink) {
       float_shrink_step(x: x, current_shrink: current_shrink)

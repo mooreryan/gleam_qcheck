@@ -63,7 +63,10 @@ fn do_test(
   |> should.equal(True)
 }
 
-fn behaves_the_same(gen1: random.Generator(a), gen2: random.Generator(a)) -> Nil {
+fn behaves_the_same(
+  gen1: random.Generator(a),
+  gen2: random.Generator(a),
+) -> Nil {
   let seed =
     random.int(random.min_int, random.max_int)
     |> random.map(random.seed)

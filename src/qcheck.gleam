@@ -1584,7 +1584,10 @@ pub fn bounded_float(from low: Float, to high: Float) {
 /// let cyrillic_character = bounded_codepoint(from: 0x0400, to: 0x04FF)
 /// ```
 ///
-pub fn bounded_codepoint(from low: Int, to high: Int) -> Generator(UtfCodepoint) {
+pub fn bounded_codepoint(
+  from low: Int,
+  to high: Int,
+) -> Generator(UtfCodepoint) {
   let #(low, high) = case low <= high {
     True -> #(low, high)
     False -> #(high, low)
@@ -2734,7 +2737,9 @@ pub fn non_empty_byte_aligned_bit_array() -> Generator(BitArray) {
 /// fixed_size_byte_aligned_bit_array(4)
 /// ```
 ///
-pub fn fixed_size_byte_aligned_bit_array(num_bytes: Int) -> Generator(BitArray) {
+pub fn fixed_size_byte_aligned_bit_array(
+  num_bytes: Int,
+) -> Generator(BitArray) {
   let num_bits = ensure_positive_or_zero(num_bytes) * 8
   fixed_size_bit_array(num_bits)
 }

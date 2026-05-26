@@ -109,7 +109,11 @@ pub fn choose(one: a, other: a) -> Generator(a) {
   uniform(one, [other])
 }
 
-fn get_by_weight(first: #(Int, a), others: List(#(Int, a)), countdown: Int) -> a {
+fn get_by_weight(
+  first: #(Int, a),
+  others: List(#(Int, a)),
+  countdown: Int,
+) -> a {
   let #(weight, value) = first
   case others {
     [] -> value
